@@ -1,0 +1,49 @@
+{% extends 'blog/base.html' %}
+{% comment %}
+extends로 두 템플릿 연결
+{% endcomment %}}
+
+{% comment %}
+{% for %} 와 {% endfor %}사이에 넣은 모든 것은 목록의 모든 객체를 반복하게 됩니다
+'/'에서 mysite/urls.py에서 path('', include('blog.urls')), 이니까 blog.urls을 호출하고
+여기의 posts는 blog/urls.py에서 path('', views.post_list, name='post_list'),에서 '/'으로 오면 views.post_list를 호출하고
+views.post_list에
+posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
+return render(request, 'blog/post_list.html', {'posts': posts})
+으로 posts에 Post.objects.filter한거를 넣어서 blog/post_list.html에 posts를 'posts'라는 이름으로 넣어줌
+이제 그러면 여기에서 posts는 위에서 필터한게 된거임
+{% endcomment %}
+{% block content %}
+{% for post in posts %}
+    <div class="post">
+        <div class="date">
+            <p>published: {{ post.published_date }}</p>
+        </div>
+            {% comment %}
+            blog.views.post_detail는 post_detail 뷰 경로입니다.
+            blog는 응용프로그램(디렉터리 blog)의 이름인 것을 꼭 기억하세요.
+            views는 views.py파일명이에요.
+            마지막 부분 post_detail는 view 이름입니다.
+            pk = post.pk이란 무엇일까요? 
+            pk는 데이터베이스의 각 레코드를 식별하는 기본키(Prmiary Key)의 줄임말 입니다. 
+            Post 모델에서 기본키를 지정하지 않았기 때문에 
+            장고는 pk라는 필드를 추가해 새로운 블로그 게시물이 추가될 때마다 
+            그 값이 1,2,3 등으로 증가하게 됩니다.
+            Post 객체의 다른 필드 (제목, 작성자 등)에 액세스하는 것과 같은 방식으로 
+            post.pk를 작성하여 기본 키에 액세스합니다 
+            post.pk를 써서 기본키에 접근할 수 있고 
+            같은 방법으로 Post객체내 다른 필드(title, author)에도 접근할 수 있습니다!
+            urls.py에서 path('post/<int:pk>/', views.post_detail, name='post_detail'), 즉
+            post/<int:pk>/ 와 같은 url에 'post_detail'이라는 이름을 붙였으니 밑의 href에서도 
+            누르면 'post_detail'로 가라고 한거임
+            {% endcomment %}
+        <h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
+            {% comment %}
+            또한 |linebreaksbr같이 파이프 문자(|)도 사용해요. 이건 블로그 글 텍스트에서 행이 바뀌면 문단으로 변환하도록 하라는 의미입니다.
+            행바뀜을 문단으로 변환하는 필터를 적용한다는 표현을 쓰기도 합니다.
+            {% endcomment %}
+        <p>{{ post.text|linebreaksbr }}</p>
+        <a href="{% url 'post_detail' pk=post.pk %}">Comments: {{ post.approved_comments.count }}</a>
+    </div>
+{% endfor %}
+{% endblock %}0

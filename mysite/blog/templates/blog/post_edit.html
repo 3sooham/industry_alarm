@@ -1,0 +1,22 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <h1>New post</h1>
+    {% comment %}
+        위 코드를 HTML 태그로 폼을 감싸세요. <form method="POST">...</form>
+    {% endcomment %}
+    {% comment %}
+        {% csrf_token %}를 추가하세요. 이 작업은 폼 보안을 위해 중요하답니다!
+    {% endcomment %}
+    <form method="POST" class="post-form">{% csrf_token %}
+        {% comment %}
+            먼저 폼이 보여야 합니다. 그 예로, {{ form.as_p }}로 간단히 만들 수 있어요….
+            {{ form.as_p }}를 사용하면 빠르게 템플릿을 만들 수 있지만 HTML 코드가 자동으로 생성되므로 디자인 측면에서 많은 제한이 생기게 된다. 
+        {% endcomment %}
+        {{ form.as_p }}
+        {% comment %}
+            Save 버튼이 필요합니다. 이것은 HTML 버튼으로 만들 수 있어요: <button type="submit">Save</button>
+        {% endcomment %}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+{% endblock %}

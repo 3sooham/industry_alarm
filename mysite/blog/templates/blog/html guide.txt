@@ -1,0 +1,12 @@
+head 는 문서 정보를 가지고 있지만, 웹 페이지에서 보이지 않는 정보들을 담는 영역입니다.
+
+body 란 웹 페이지에 직접적으로 보이는 내용이 들어갑니다. 웹 페이지의 내용은 모두 이 body태그안에 들어갑니다.
+<h1>A heading</h1> - 큰 제목
+<h2>A sub-heading</h2> - 중 제목
+<h3>A sub-sub-heading</h3> - 소 제목... <h6>레벨까지 사용할 수 있습니다.
+<em>text</em> - 텍스트 기울기 (Italic)
+<strong>text</strong> - 텍스트를 두껍게(Bold)
+<br /> - 줄바꿈 (br은 스스로 닫히는 태그로 속성을 사용할 수 없습니다)
+<a href="http://djangogirls.org">link</a> - 하이퍼링크 걸기
+<ul><li>first item</li><li>second item</li></ul>- 목록 만들기
+<div></div> - 페이지 섹션
