@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
+
 class Post(models.Model):
     # models.ForeignKey - 다른 모델에 대한 링크를 의미합니다.
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -22,7 +23,7 @@ class Post(models.Model):
     def publish(self):
         self.published_date = timezone.now()
         self.save()
-    
+
     # 메서드는 자주 무언가를 되돌려주죠. (return) 그 예로 __str__ 메서드를 봅시다. 
     # 이 시나리오대로라면, __str__를 호출하면 Post 모델의 제목 텍스트(string)를 얻게 될 거에요.
     def __str__(self):
@@ -32,6 +33,7 @@ class Post(models.Model):
     # 에서 post.approved_comments 함수를 사용해
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
+
 
 # 댓글
 class Comment(models.Model):
@@ -51,16 +53,21 @@ class Comment(models.Model):
     def __str__(self):
         return self.text
 
+
+# https://docs.djangoproject.com/en/3.2/ref/contrib/auth/
 class AccountManager(BaseUserManager):
-    def create_user(self, email, password=None):
+    def create_user(self, email, password):
         if not email:
             raise ValueError('Users must have an email address')
 
+        # 이거 근데 꼭 해야하는건지는 모르겠음
         user = self.model(
             # normalize_email()이거는 @domain에서 domain만 소문자로 만듬
-            email = self.normalize_email(email),
+            email=self.normalize_email(email),
         )
 
+        # Sets the user’s password to the given raw string,
+        # taking care of the password hashing. Doesn’t save the User object.
         user.set_password(password)
         user.save()
         return user
@@ -77,6 +84,7 @@ class AccountManager(BaseUserManager):
         user.is_superuser = True
         user.save()
 
+
 # drf login
 # https://medium.com/geekculture/register-login-and-logout-users-in-django-rest-framework-51486390c29
 # https://github.com/django/django/blob/910ecd1b8df7678f45c3d507dde6bcb1faafa243/django/contrib/auth/base_user.py#L16 참조하기
@@ -86,7 +94,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(verbose_name='password',max_length=16)
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-   
+
     USERNAME_FIELD = 'email'
 
     objects = AccountManager()

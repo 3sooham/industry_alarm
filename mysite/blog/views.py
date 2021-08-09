@@ -9,8 +9,11 @@ from django.contrib.auth.decorators import login_required
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from blog.models import Post, Comment
-from blog.serializers import PostSerializer, CommentSerializer, RegistrationSerializer, LoginSerializer
+from blog.models import Post, Comment, User
+from blog.serializers import PostSerializer, CommentSerializer, LoginSerializer, UserSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework.authtoken.models import Token
+from rest_framework import serializers
 
 # curl 확인용
 #from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -25,6 +28,9 @@ from blog.serializers import PostSerializer, CommentSerializer, RegistrationSeri
 
 # drf viewset
 class PostViewSet(viewsets.ViewSet):
+    # 기본 설정이 is_authenticaed여서 이거 해줘야함
+    permission_classes = [AllowAny]
+
     def list(self, request):
         queryset = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
         serializer = PostSerializer(queryset, many=True)
@@ -37,26 +43,87 @@ class PostViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
 # drf login
+# https://stackoverflow.com/questions/26906630/django-rest-framework-authentication-credentials-were-not-provided 이거 지금 해결안되고있음
 class AccountViewSet(viewsets.GenericViewSet):
-    @action(detail=True, methods=['post']) 
-    def registration(self, request):
-        serializer = RegistrationSerializer(data=request.data)
+    # curl --user aaa@aaa.com:aaa -X GET http://127.0.0.1:8000/test/login/ 이거로 체크하면됨
+    # method 별로 권한 주는거 찾아봐야함
+    # permission_classes = [AllowAny]
 
-        if serializer.is_valid():
+    # @action은 
+    # This decorator can be used to add any custom endpoints that don't fit into the standard create/update/delete style.
+    # @action decorator will respond to GET requests by default. 
+    # We can use the methods argument if we wanted an action that responded to POST requests.
+    # /.../foo/bar나
+    # /.../foo/{pk}/bar
+    # 이런 api를 추가하고싶을때쓰는거임
+    # detail=False면 위 detail=True면 아래
+
+    # @action하면 지금 안됨 왜인지는 모르겠음
+    # @action(detail=True, methods=['get'])
+    # @action(detail=True, methods=['get'])
+    # def asd(self, request, pk):
+    # 이거면 http://localhost:8000/test/login/[pk]/asd 여기로 등록됨
+    # detail=False여야지만 http://localhost:8000/test/login/asd/로 감
+    @action(methods=['get'], detail=False, permission_classes=[AllowAny])
+    def asd(self, request):
+
+        queryset = User.objects.all()
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    # /api/v1/user 로 GET요청 받을 user list api (UserSerializer 사용)
+    def list(self, request):
+        queryset = User.objects.all()
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)   
+
+    # /api/v1/user/pk 로 GET요청 받을 user retrieve api (UserSerializer사용)
+    def retrieve(self, request, pk):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    #  /api/v1/user/pk 로 PATCH 요청 받을 user update ap
+
+    #  /api/v1/user/pk 로 DELETE 요청 받을 user delete api (Serializer 사용 x)
+
+    # /api/v1/user 로 POST요청을 받을 registration api (UserSerializer 사용) # 이게 회원가입인가봄
+    # 디버깅
+    # curl --user aaa@aaa.com:aaa -X POST http://127.0.0.1:8000/test/login/login/
+    # http POST http://127.0.0.1:8000/test/login/register/ email="l55@gmail.com" password="pw"
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny]) 
+    def register(self, request):
+        serializer = UserSerializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
             serializer.save()
+            # 이거 pw는 write_only라서 안보임
+            print(serializer.data)
+            return Response(serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
 
-        return Response('Registered')
-    
-    @action(detail=True, methods=['post'])
+    # /api/v1/user/login 으로 POST요청을 받을 login api (LoginSerializer 사용)
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login(self, request, pk):
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer.authenticate(email=request.data['email'], password=request.data['password'])
+        print(serializer)
 
         if serializer.is_valid():
             result = serializer.authenticate()
             # 이메일에 대해서 비밀번호가 일치하면
-            if result == True:
-                return Response('Login Success')
-            return Response('Login Failure')
+            contents = {
+                'status' : 'Login Success'
+            }
+            if result:
+                return Response(contents)
+            contents = {
+                'status': 'Registered'
+            }   
+            return Response(contents)
+
+    # /api/v1/user/logout 으로 DELETE 요청을 받을 logout api(Serializer 사용 x)
 
 def post_list(request):
     # 쿼리를 만들어서 html로 보냄

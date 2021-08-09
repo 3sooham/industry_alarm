@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from blog.models import Post, Comment
+from .models import Post, Comment, User
 
 #drf
 from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
 # get_user_model() : 클래스이다.
 # >>> get_user_model()
 # <class 'accounts.models.User'>
@@ -29,18 +30,10 @@ class CommentSerializer(serializers.ModelSerializer):
 # 2. 각 serializer는 아래와 같은 field를 가지고 이름에 맞는 동작을 해야함
 
 # https://eunjin3786.tistory.com/253
-# UserSerializer
-#     둘 다 : 필요한 모든 유저정보들
-#     쓰기전용 : password
-#     읽기전용 : token
-#     동작 : 받은 user정보를 통해 User를 생성하고, 생성된 user의 token을 새로 발행해서 password를 제외한 나머지 정보와 함께 돌려줌
-
-
 # LoginSerializer
 #     쓰기전용 : username, password
 #     읽기전용 : token
 #     동작 : username과 password로 user인증을 하고, user의 token이 있으면 그것을, 없으면 새로 발행해서 돌려줌
-
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only=True)
@@ -63,18 +56,25 @@ class LoginSerializer(serializers.Serializer):
             return True
         return False
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)   
-
+# UserSerializer
+#     둘 다 : 필요한 모든 유저정보들
+#     쓰기전용 : password
+#     읽기전용 : token
+#     동작 : 받은 user정보를 통해 User를 생성하고, 생성된 user의 token을 새로 발행해서 password를 제외한 나머지 정보와 함께 돌려줌
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = get_user_model()
         fields = ['email', 'password']
 
-    def create(self):
-        # account는 email, password를 가진 User instance임
-        account = get_user_model()(
-                    email=self.validated_data['email'],
-                    password = self.validated_data['password']
-                )
-        account.save()
-        return account
+    # 이거 근데 user.mode()에서 해주는데 없어야하는거 같음
+    # override하는거니까 인자 맞춰줘야함
+    def create(self, validated_data):
+        # 이제 이 validate_data는 validation도 끝났으니 정합한 데이터니 그냥 때려버리면 됨
+        # 이거 **은
+        # **d means "take all additional named arguments to this function
+        # and insert them into this parameter as dictionary entries."
+        # 이거 create_user가 인자를 2개 받아야하니 **validated_data
+        user = User.objects.create_user(**validated_data)
+
+        return user
