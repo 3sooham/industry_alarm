@@ -99,7 +99,6 @@ class AccountViewSet(viewsets.GenericViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             # 이거 pw는 write_only라서 안보임
-            print(serializer.data)
             return Response(serializer.data)
         except serializers.ValidationError:
             return Response({"status": "failed", "errors": serializer.errors})
