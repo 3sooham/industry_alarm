@@ -10,14 +10,16 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from blog.models import Post, Comment, User
-from blog.serializers import PostSerializer, CommentSerializer, LoginSerializer, UserSerializer
+from blog.serializers import PostSerializer, CommentSerializer, LoginSerializer, UserSerializer, InvalidPassword
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
+from rest_framework.parsers import JSONParser
 
 # curl 확인용
 #from django.views.decorators.csrf import csrf_exempt, csrf_protect
 #@csrf_exempt
+
 
 # 뷰(view) 는 애플리케이션의 "로직"을 넣는 곳이에요. 
 # 뷰는 이전 장에서 만들었던 모델에서 필요한 정보를 받아와서 템플릿에 전달하는 역할을 합니다.
@@ -35,7 +37,7 @@ class PostViewSet(viewsets.ViewSet):
         queryset = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
         serializer = PostSerializer(queryset, many=True)
         return Response(serializer.data)
-    
+
     def retrieve(self, request, pk):
         queryset = Post.objects.all()
         post = get_object_or_404(queryset, pk=pk)
@@ -75,7 +77,7 @@ class AccountViewSet(viewsets.GenericViewSet):
     def list(self, request):
         queryset = User.objects.all()
         serializer = UserSerializer(queryset, many=True)
-        return Response(serializer.data)   
+        return Response(serializer.data)
 
     # /api/v1/user/pk 로 GET요청 받을 user retrieve api (UserSerializer사용)
     def retrieve(self, request, pk):
@@ -92,35 +94,37 @@ class AccountViewSet(viewsets.GenericViewSet):
     # 디버깅
     # curl --user aaa@aaa.com:aaa -X POST http://127.0.0.1:8000/test/login/login/
     # http POST http://127.0.0.1:8000/test/login/register/ email="l55@gmail.com" password="pw"
-    @action(detail=False, methods=['post'], permission_classes=[AllowAny]) 
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
         serializer = UserSerializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
+            # 이거 save()했을때 불려오는 method는
+            # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
+            # UserSerializer.create()를 불러오는거임
             serializer.save()
             # 이거 pw는 write_only라서 안보임
+            print(serializer.data)
             return Response(serializer.data)
         except serializers.ValidationError:
             return Response({"status": "failed", "errors": serializer.errors})
 
     # /api/v1/user/login 으로 POST요청을 받을 login api (LoginSerializer 사용)
+    # http POST http://127.0.0.1:8000/test/login/login/ email="test@gmail.com" password="testpw"
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
-    def login(self, request, pk):
-        serializer = LoginSerializer.authenticate(email=request.data['email'], password=request.data['password'])
-        print(serializer)
-
-        if serializer.is_valid():
-            result = serializer.authenticate()
-            # 이메일에 대해서 비밀번호가 일치하면
-            contents = {
-                'status' : 'Login Success'
-            }
-            if result:
-                return Response(contents)
-            contents = {
-                'status': 'Registered'
-            }   
-            return Response(contents)
+    def login(self, request):
+        serializer = LoginSerializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        # 토큰이 제공 안돼면 이제 여기서 토큰을 넣어서 Response에서 토큰을 반환해줘야함
+        # 이거 근데 TOKEN이 안들어와서 except들어가는거랑
+        # EMAIL/PW가 이상한 데이터가 오는거랑구별해야할듯
+        except InvalidPassword:
+            return Response({'success': False, 'error': '패스워드가 일치하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExists:
+            return Response({'success': False, 'error': '유저가 존재하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)
 
     # /api/v1/user/logout 으로 DELETE 요청을 받을 logout api(Serializer 사용 x)
 

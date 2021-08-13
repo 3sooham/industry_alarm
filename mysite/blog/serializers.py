@@ -13,6 +13,11 @@ from rest_framework.authtoken.models import Token
 # 'accounts.User'
 
 
+# 이거 따로 .py파서 옮기기
+class InvalidPassword(Exception):
+    pass
+
+
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
@@ -37,26 +42,42 @@ class CommentSerializer(serializers.ModelSerializer):
 #     읽기전용 : token
 #     동작 : username과 password로 user인증을 하고, user의 token이 있으면 그것을, 없으면 새로 발행해서 돌려줌
 class LoginSerializer(serializers.Serializer):
+    # write_only는 값을 받아서 create/update같은거만 하는거임
     email = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only=True)
+    # 입력받는게 아니라 return으로 돌려주는 값이니까 read_only임
+    token = serializers.CharField(read_only=True)
 
     class Meta:
         model = get_user_model()
-        fields = ['email', 'password',]
+        fields = ['email', 'password', 'token']
 
     # 로그인 확인
-    def authenticate(self):
-        email = self.validated_data['email'],
-        password = self.validated_data['password']
-        # email에 해당하는 user 불러옴
-        # 이거 근데 email에 해당하는 유저가 없으면 처리하는게 있어야할거같음
-        user = get_user_model().objects.filter(email=email)
-        # 그 해당 user의 비밀번호를 불러옴
-        user_password = user.get('password')
-        
-        if password == user_password:
-            return True
-        return False
+    def create(self, validated_data):
+        email = validated_data['email']
+        password = validated_data['password']
+
+        user = User.objects.get(email=email)
+        print(user)
+        # 비밀번호 일치하면
+        if user.check_password(password):
+            token, _ = Token.objects.get_or_create(user=user)
+            # 이거 그냥 return token 하면 안돼는 이유는
+            # 밑의 유저시리얼라이저에서는 user.token에 token.key를 넣어줬는데
+            # 이거 리턴되는 object에서 getattr로 리턴 field들이 다 있으면 알아서 만들어주는건데
+            # 밑에서는 리턴이 user객체였고 이 객체에는 class Meta에 있는 3개의 field가 다 있어서 문제없이 된거고
+            # 지금은 token을 리턴하게 되면 token.token은 없고 token.key에 원하는값이있지
+            # 그래서 지금 에러인 {}가 가는거임
+            # token을 리턴하면 Token object인데 내가 serializer에 리턴하겠다고 명시한건
+            # token이라는 필드고 리턴한걸 serialize했을때 리턴 결과물에 token이라는 attribute가 있어야하는데
+            # token.token이 없으니 아무런 결과물이 안나오는거임
+            # 이제 {'token': token.key}를 리턴하면 getattr(리턴 결과물, 'token')하면
+            # 값이 있으니 결과물이 나오는거임
+            # 객체 serialize하면 __str__()로 나오는 결과물이 나옴
+            # print(getattr(token, 'key'))
+            return {'token': token.key}
+        # 일치하는 비밀번호가 없으면
+        raise InvalidPassword
 
 
 # UserSerializer
