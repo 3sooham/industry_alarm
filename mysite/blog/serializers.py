@@ -48,17 +48,12 @@ class LoginSerializer(serializers.Serializer):
     # 입력받는게 아니라 return으로 돌려주는 값이니까 read_only임
     token = serializers.CharField(read_only=True)
 
-    class Meta:
-        model = get_user_model()
-        fields = ['email', 'password', 'token']
-
     # 로그인 확인
     def create(self, validated_data):
         email = validated_data['email']
         password = validated_data['password']
 
         user = User.objects.get(email=email)
-        print(user)
         # 비밀번호 일치하면
         if user.check_password(password):
             token, _ = Token.objects.get_or_create(user=user)
@@ -75,6 +70,7 @@ class LoginSerializer(serializers.Serializer):
             # 값이 있으니 결과물이 나오는거임
             # 객체 serialize하면 __str__()로 나오는 결과물이 나옴
             # print(getattr(token, 'key'))
+            print(token.key)
             return {'token': token.key}
         # 일치하는 비밀번호가 없으면
         raise InvalidPassword
@@ -96,6 +92,7 @@ class UserSerializer(serializers.ModelSerializer):
     # 이거 근데 user.mode()에서 해주는데 없어야하는거 같음
     # override하는거니까 인자 맞춰줘야함
     def create(self, validated_data):
+        print("유저시리얼라이저 - create")
         # 이제 이 validate_data는 validation도 끝났으니 정합한 데이터니 그냥 때려버리면 됨
         # 이거 **은
         # **d means "take all additional named arguments to this function
@@ -114,3 +111,31 @@ class UserSerializer(serializers.ModelSerializer):
         # 추가로 걍 객체를 serialize시키면 아까말한 __str__()값이 들어감
         user.token = token
         return user
+
+    # def update(self, instance, validated_data):
+    #     print(instance)
+    #     print(validated_data)
+    #     try:
+    #         email = validated_data['email']
+    #         instance.email = email
+    #     except KeyError:
+    #         pass
+    #     try:
+    #         password = validated_data['password']
+    #         instance.set_password(password)
+    #     except KeyError:
+    #         pass
+    #
+    #     instance.save()
+    #
+    #     return instance
+
+    def update(self, instance, validated_data):
+        # items()은 key, value 튜플쌍을 튜플로 리턴하는 함수임
+        for key, value in validated_data.items():
+            # 제일 첫번째 인자에 key가 있으면 True 없으면 False 반환하는게 hasattr이고
+            if hasattr(instance, key):
+                # 값 저장하는게 setattr
+                setattr(instance, key, value)
+        instance.save()
+        return instance

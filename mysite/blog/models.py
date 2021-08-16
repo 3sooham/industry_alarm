@@ -59,7 +59,7 @@ class AccountManager(BaseUserManager):
     def create_user(self, email, password):
         if not email:
             raise ValueError('Users must have an email address')
-
+        print('어카운트')
         # 이거 근데 꼭 해야하는건지는 모르겠음
         user = self.model(
             # normalize_email()이거는 @domain에서 domain만 소문자로 만듬

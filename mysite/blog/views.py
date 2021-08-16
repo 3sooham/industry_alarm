@@ -11,10 +11,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from blog.models import Post, Comment, User
 from blog.serializers import PostSerializer, CommentSerializer, LoginSerializer, UserSerializer, InvalidPassword
-from rest_framework.permissions import AllowAny
-from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import serializers
-from rest_framework.parsers import JSONParser
+from rest_framework import status
+from django.core.exceptions import ObjectDoesNotExist
 
 # curl 확인용
 #from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -50,6 +50,8 @@ class AccountViewSet(viewsets.GenericViewSet):
     # curl --user aaa@aaa.com:aaa -X GET http://127.0.0.1:8000/test/login/ 이거로 체크하면됨
     # method 별로 권한 주는거 찾아봐야함
     # permission_classes = [AllowAny]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
     # @action은 
     # This decorator can be used to add any custom endpoints that don't fit into the standard create/update/delete style.
@@ -62,33 +64,52 @@ class AccountViewSet(viewsets.GenericViewSet):
 
     # @action하면 지금 안됨 왜인지는 모르겠음
     # @action(detail=True, methods=['get'])
-    # @action(detail=True, methods=['get'])
     # def asd(self, request, pk):
     # 이거면 http://localhost:8000/test/login/[pk]/asd 여기로 등록됨
     # detail=False여야지만 http://localhost:8000/test/login/asd/로 감
     @action(methods=['get'], detail=False, permission_classes=[AllowAny])
     def asd(self, request):
-
         queryset = User.objects.all()
         serializer = UserSerializer(queryset, many=True)
         return Response(serializer.data)
 
     # /api/v1/user 로 GET요청 받을 user list api (UserSerializer 사용)
+    # http GET http://127.0.0.1:8000/test/login/
     def list(self, request):
-        queryset = User.objects.all()
-        serializer = UserSerializer(queryset, many=True)
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     # /api/v1/user/pk 로 GET요청 받을 user retrieve api (UserSerializer사용)
+    # http GET http://127.0.0.1:8000/test/login/{pk}/
     def retrieve(self, request, pk):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, pk=pk)
-        serializer = UserSerializer(user)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    #  /api/v1/user/pk 로 PATCH 요청 받을 user update ap
+    # /api/v1/user/pk 로 PATCH 요청 받을 user update ap
+    # http PUT http://127.0.0.1:8000/test/login/patch/ email="l55@gmail.com" password="pw"
+    # 이거 근데 비밀번호 변경하려면 무언가 더 해줘야함
+    def update(self, request, pk):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-    #  /api/v1/user/pk 로 DELETE 요청 받을 user delete api (Serializer 사용 x)
+        # 비밀번호 업데이트하는거 만들어야함
+        # instance = self.get_object()
+        # serializer = self.get_serializer(instance, data=request.data, partial=True)
+        # try:
+        #     serializer.is_valid()
+
+        return Response(serializer.data)
+
+    # /api/v1/user/pk 로 DELETE 요청 받을 user delete api (Serializer 사용 x)
+    # http DELETE http://127.0.0.1:8000/test/login/<int:pk>/
+    def delete(self, request, pk):
+        instance = self.get_object()
+        instance.delete()
+        return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
 
     # /api/v1/user 로 POST요청을 받을 registration api (UserSerializer 사용) # 이게 회원가입인가봄
     # 디버깅
@@ -127,6 +148,19 @@ class AccountViewSet(viewsets.GenericViewSet):
             return Response({'success': False, 'error': '유저가 존재하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)
 
     # /api/v1/user/logout 으로 DELETE 요청을 받을 logout api(Serializer 사용 x)
+    # http POST http://127.0.0.1:8000/test/login/logout/ "Authorization: Token 41767e806c72c91be3b966f39fe10cb2705160ea"
+    # 미완성임
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def logout(self, request):
+        try:
+            request.user.auth_token.delete()
+        except ObjectDoesNotExist:
+            return Response({'success': False, 'error': '잘못된 토큰'}, status=status.HTTP_400_BAD_REQUEST)
+        except AttributeError:
+            return Response({'success': False, 'error': '???'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 지웠을때 토큰에 해당하는 유저가 없거나 토큰의 양식이 이상하면 에러 처리
+        return Response({'success': "로그아웃 성공"}, status=status.HTTP_200_OK)
 
 def post_list(request):
     # 쿼리를 만들어서 html로 보냄
