@@ -31,8 +31,18 @@ class Post(models.Model):
 
     # <a href="{% url 'post_detail' pk=post.pk %}">Comments: {{ post.approved_comments.count }}</a>
     # 에서 post.approved_comments 함수를 사용해
+    @property
     def approved_comments(self):
         return self.comments.filter(approved_comment=True)
+
+    # 원래 functinoo은 동사인데 @property로 명사로 바꿔줌
+    # @proporty 안쓰면 get_all_comments ㅇ렇게 이름함
+    # 메서드 이름은 동사처럼
+    # 프로퍼티 이름은 명사처럼
+    # 프로터피는 ()가 안붙으니까 명사로 하는거임 ()는 뭔가 실행한다는 의미여서
+    @property
+    def all_comments(self):
+        return self.comments.all()
 
 
 # 댓글
@@ -43,7 +53,9 @@ class Comment(models.Model):
     author = models.CharField(max_length=200)
     text = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
+    # 이거 나중에 modified_date 추가하기
     # models.BooleanField - 참/거짓(true/false) 필드랍니다.
+    # 이거 is_approved로 이름 바꾸기
     approved_comment = models.BooleanField(default=False)
 
     def approve(self):
@@ -56,7 +68,7 @@ class Comment(models.Model):
 
 # https://docs.djangoproject.com/en/3.2/ref/contrib/auth/
 class AccountManager(BaseUserManager):
-    def create_user(self, email, password):
+    def create_user(self, email, password, name):
         if not email:
             raise ValueError('Users must have an email address')
         print('어카운트')
@@ -64,6 +76,7 @@ class AccountManager(BaseUserManager):
         user = self.model(
             # normalize_email()이거는 @domain에서 domain만 소문자로 만듬
             email=self.normalize_email(email),
+            name=name
         )
 
         # Sets the user’s password to the given raw string,
@@ -88,13 +101,16 @@ class AccountManager(BaseUserManager):
 # drf login
 # https://medium.com/geekculture/register-login-and-logout-users-in-django-rest-framework-51486390c29
 # https://github.com/django/django/blob/910ecd1b8df7678f45c3d507dde6bcb1faafa243/django/contrib/auth/base_user.py#L16 참조하기
-# my는 빼도됨 이름에 있을 이유가없음
+# 여기에 이름 생년월일 전화번호 같은 거 더 추가하기
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name="email", max_length=60, unique=True, default=None)
     password = models.CharField(verbose_name='password',max_length=16)
+    # charfield는 null true하는거아님 값이 비어있다를 표시하는게 빈스트링이랑 null 두가지가 다되면서 곱창남
+    name = models.CharField(verbose_name='name', max_length=30, default='', blank=True)
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
+    # username으로 'email' field 사용함
     USERNAME_FIELD = 'email'
 
     objects = AccountManager()

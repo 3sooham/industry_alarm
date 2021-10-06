@@ -15,13 +15,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import serializers
 from rest_framework import status
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.authtoken.models import Token
 
-# curl 확인용
-#from django.views.decorators.csrf import csrf_exempt, csrf_protect
-#@csrf_exempt
-
-
-# 뷰(view) 는 애플리케이션의 "로직"을 넣는 곳이에요. 
+# 뷰(view) 는 애플리케이션의 "로직"을 넣는 곳이에요.
 # 뷰는 이전 장에서 만들었던 모델에서 필요한 정보를 받아와서 템플릿에 전달하는 역할을 합니다.
 
 # 방금 post_list라는 함수(def)를 만들었습니다. 
@@ -29,26 +25,209 @@ from django.core.exceptions import ObjectDoesNotExist
 # 이 함수는 render 메서드를 호출하여 받은(return) blog/post_list.html템플릿을 보여줍니다.
 
 # drf viewset
-class PostViewSet(viewsets.ViewSet):
-    # 기본 설정이 is_authenticaed여서 이거 해줘야함
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
     permission_classes = [AllowAny]
 
+# view는 들어온 요청을
+# 적절한 serializer를 가져다가 serializer의 매서드를 실행하는거지
+# 직접 뭘 하는부분은아니거든
+class PostViewSet2(viewsets.GenericViewSet):
+    # 기본 설정이 is_authenticaed여서 이거 해줘야함
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [AllowAny]
+
+    # http GET http://127.0.0.1:8000/api/v1/post
     def list(self, request):
-        queryset = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
-        serializer = PostSerializer(queryset, many=True)
+        queryset = self.get_queryset().filter(published_date__lte=timezone.now()).order_by('published_date')
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    # http GET http://127.0.0.1:8000/api/v1/post/<int:pk>
     def retrieve(self, request, pk):
-        queryset = Post.objects.all()
-        post = get_object_or_404(queryset, pk=pk)
-        serializer = PostSerializer(post)
+        post = self.get_object()
+        serializer = self.serializer_class(post)
         return Response(serializer.data)
+
+    # 내 published 된 post 검색
+    # http GET http://127.0.0.1:8000/api/v1/post/published "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    # 이거 /api/v1/post/published로 등록됨
+    # 그리고 이전에 했던 것 처럼 cur_user = UserSerializer(request.user) 이렇게 시리얼라이져 탈 필요없음
+    # 왜냐면 request.user가 실제 User 인스턴스라서 걍 바로 넣어도 됨
+    @action(methods=['get'], detail=False, url_path='published')
+    def get_users_published_posts(self, request):
+        # lte = less than equal
+        # __ 이거는 역으로 접근하는거임
+        queryset = self.get_queryset().filter(author=request.user, published_date__lte=timezone.now())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    # 이거도 위에 것 처럼 바꾸기
+    # http GET http://127.0.0.1:8000/api/v1/post/get_users_posts "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb"
+    @action(methods=['get'], detail=False)
+    def get_users_posts(self, request):
+        cur_user = UserSerializer(request.user)
+        cur_user_name = cur_user.data['email']
+        # 이거 왜 name=cur_user_name이렇게는 안됨?
+        # 이거 모델 수정해서 name != email이라서 안대는거임
+        asd = User.objects.get(email=cur_user_name)
+        print(asd.id)
+        # 일단 유저 id 출력하는거 까지는 했음
+        # lte = lees than or equal
+        queryset = self.get_queryset().filter(author=asd.id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    # author가 id로 들어가야함 지금 post모델에서 author가 아래와 같이 있음
+    # author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # http POST http://127.0.0.1:8000/api/v1/post "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb" title="asddf" text="포스트내용2"
+    def create(self, request):
+        print(request.user)
+        cur_user = UserSerializer(request.user)
+        cur_user_name = cur_user.data['email']
+        user_instance = User.objects.get(email=cur_user_name)
+        request.data['author'] = user_instance.id
+        print(request.data)
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            # 이거 save()했을때 불려오는 method는
+            # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
+            # UserSerializer.create()를 불러오는거임
+            serializer.save()
+            # 이거 pw는 write_only라서 안보임
+            print(serializer.data)
+            return Response(serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
+
+    # http DELETE http://127.0.0.1:8000/api/v1/post/12 "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb"
+    #  get_object() looks for a pk_url_kwarg argument in the arguments to the view;
+    #  if this argument is found, this method performs a primary-key based lookup using that value.
+    # https://docs.djangoproject.com/en/3.2/ref/class-based-views/mixins-single-object/#django.views.generic.detail.SingleObjectMixin.get_object
+    def delete(self, request, pk):
+        print("in delete")
+        instance = self.get_object()
+        print(instance)
+        instance.delete()
+        # 이거 왜 resoponse가 안나오는거임?
+        # https://developer.mozilla.org/ko/docs/Web/HTTP/Status/204
+        return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
+
+    # http POST http://127.0.0.1:8000/api/v1/post/20/publish "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb"
+    @action(methods=['post'], detail=True)
+    def publish(self, request, pk):
+        post = self.get_object()
+        print(post.text)
+        post.publish()
+        return Response({"status": "succsess"})
+
+    # http PUT http://127.0.0.1:8000/api/v1/post/21 "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb" text="올암"
+    def update(self, request, pk):
+        instance = self.get_object()
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
+
+    # 코멘트 달기
+    # http POST http://127.0.0.1:8000/api/v1/post/21/create_comment "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb" text="댓ㅁㄴㅇㅁㄴㅇd글내용1"
+    # get_serializer_context(self) - Returns a dictionary containing any extra context that should be supplied to the serializer.
+    # Defaults to including 'request', 'view' and 'format' keys.
+    # 추가로 뭘 넘겨줄 수 있음
+    @action(methods=['post'], detail=True)
+    def create_comment(self, request, pk):
+        context = self.get_serializer_context()
+        context['post_id'] = pk
+        serializer = CommentSerializer(data=request.data, context=context)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
+
+
+    # 질문할거
+    # 이거 로갓 안하면 토큰 계속 남아있는데 이 토큰 계속 사용할 수 있는지 확인해보기
+    # 저번에 질문한거랑은 약간 다른건데 그래도 확인해서 좀 더 괜찮은 질문으로 바꾸기
+    # 이거 그리고 이전의 토큰이 남아있으면 그거를 그냥 써버리면 접근이 가능한데 이거 어케 수정함?
+
+    # 코멘트 승인하기
+    # http POST http://127.0.0.1:8000/api/v1/post/25/approve_comment "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    @action(methods=['post'], detail=True)
+    def approve_comment(self, request, pk):
+        comment = get_object_or_404(Comment, pk=pk)
+        comment.approve()
+        return Response({"status": "success"})
+
+    # 포스트에 해당하는 전체 코멘트 가져오기
+    # http POST http://127.0.0.1:8000/api/v1/post/25/comment "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    @action(methods=['post'], detail=True, serializer_class=CommentSerializer)
+    def comment(self, request, pk):
+        post = self.get_object()
+        comments = post.all_comments
+        serializer = self.get_serializer(comments, many=True)
+        return Response(serializer.data)
+
+    # 포스트에 해당하는 승인된 코멘트 가져오기
+    # http POST http://127.0.0.1:8000/api/v1/post/25/approved_comment "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    # @action에다가
+    @action(methods=['post'], detail=True, serializer_class=CommentSerializer)
+    def approved_comment(self, request, pk):
+        post = self.get_object()
+        comments = post.approved_comments
+        serializer = self.get_serializer(comments, many=True)
+        return Response(serializer.data)
+
+class CommentViewSet(viewsets.GenericViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+    # 전체 코멘트
+    # http GET http://127.0.0.1:8000/api/v1/comment "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    # 코멘트 삭제
+    # http DELETE http://127.0.0.1:8000/api/v1/comment/17 "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    def delete(self, request, pk):
+        instance = self.get_object()
+        instance.delete()
+        return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
+
+    # 특정 코멘트 가져오기
+    # http GET http://127.0.0.1:8000/api/v1/comment/17 "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    def retrieve(self, request, pk):
+        post = self.get_object()
+        serializer = self.serializer_class(post)
+        return Response(serializer.data)
+
+    # http PUT http://127.0.0.1:8000/api/v1/comment/16 "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6" text="올암"
+    def update(self, request, pk):
+        instance = self.get_object()
+        # context로 comment가 들어간 post의 id를 넘겨줘야함
+        context = self.get_serializer_context()
+        context['post_id'] = instance.post_id
+        serializer = self.get_serializer(instance, data=request.data, context=context, partial=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
 
 # drf login
 # https://stackoverflow.com/questions/26906630/django-rest-framework-authentication-credentials-were-not-provided 이거 지금 해결안되고있음
 class AccountViewSet(viewsets.GenericViewSet):
-    # curl --user aaa@aaa.com:aaa -X GET http://127.0.0.1:8000/test/login/ 이거로 체크하면됨
-    # method 별로 권한 주는거 찾아봐야함
     # permission_classes = [AllowAny]
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -62,62 +241,64 @@ class AccountViewSet(viewsets.GenericViewSet):
     # 이런 api를 추가하고싶을때쓰는거임
     # detail=False면 위 detail=True면 아래
 
-    # @action하면 지금 안됨 왜인지는 모르겠음
     # @action(detail=True, methods=['get'])
     # def asd(self, request, pk):
     # 이거면 http://localhost:8000/test/login/[pk]/asd 여기로 등록됨
     # detail=False여야지만 http://localhost:8000/test/login/asd/로 감
+    # http GET http://127.0.0.1:8000/api/v1/user/asd
     @action(methods=['get'], detail=False, permission_classes=[AllowAny])
     def asd(self, request):
-        queryset = User.objects.all()
-        serializer = UserSerializer(queryset, many=True)
+        serializer = self.serializer_class(self.queryset, many=True)
         return Response(serializer.data)
 
     # /api/v1/user 로 GET요청 받을 user list api (UserSerializer 사용)
-    # http GET http://127.0.0.1:8000/test/login/
+    # http GET http://127.0.0.1:8000/api/v1/user "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"
     def list(self, request):
+        # self.get_queryset() 이거로 queryset = User.objects.all() 이거 가져오는거임
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     # /api/v1/user/pk 로 GET요청 받을 user retrieve api (UserSerializer사용)
-    # http GET http://127.0.0.1:8000/test/login/{pk}/
+    # http GET http://127.0.0.1:8000/api/v1/user/48 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"
     def retrieve(self, request, pk):
+        # queryset과 pk값을 인자로 받아서,
+        # queryset.filter(pk=pk)로 queryset을 뽑고,
+        # instance = queryset.get()으로 객체만 뽑아서 리턴해 주는 메소드임
+        # => 결국, 위 코드는 Customer.objects.get(pk=pk) 리턴함
+        # https://velog.io/@jcinsh/RetrieveUpdateDestroyView-%EC%9D%B4%ED%95%B4 참조
+        # queryset = User.objects.all() 이거를 기반으로 하는거임
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
     # /api/v1/user/pk 로 PATCH 요청 받을 user update ap
-    # http PUT http://127.0.0.1:8000/test/login/patch/ email="l55@gmail.com" password="pw"
-    # 이거 근데 비밀번호 변경하려면 무언가 더 해줘야함
+    # http PUT http://127.0.0.1:8000/api/v1/user/50 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"
+    # 이거 비밀번호를 바꾸려면 userserilaier에서 비밀번호가 readonly여서 안보이니 비밀번호를 바꾸려면 serializer를 새로 만들어야함
     def update(self, request, pk):
         instance = self.get_object()
+
         serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        # 비밀번호 업데이트하는거 만들어야함
-        # instance = self.get_object()
-        # serializer = self.get_serializer(instance, data=request.data, partial=True)
-        # try:
-        #     serializer.is_valid()
-
-        return Response(serializer.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
 
     # /api/v1/user/pk 로 DELETE 요청 받을 user delete api (Serializer 사용 x)
-    # http DELETE http://127.0.0.1:8000/test/login/<int:pk>/
+    # http DELETE http://127.0.0.1:8000/api/v1/user/2000 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"
     def delete(self, request, pk):
+        print("in delete")
         instance = self.get_object()
         instance.delete()
         return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
 
-    # /api/v1/user 로 POST요청을 받을 registration api (UserSerializer 사용) # 이게 회원가입인가봄
-    # 디버깅
-    # curl --user aaa@aaa.com:aaa -X POST http://127.0.0.1:8000/test/login/login/
-    # http POST http://127.0.0.1:8000/test/login/register/ email="l55@gmail.com" password="pw"
+    # /api/v1/user 로 POST요청을 받을 registration api (UserSerializer 사용)
+    # http POST http://127.0.0.1:8000/api/v1/user/register email="id@gmail.com" password="pw"
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
             # 이거 save()했을때 불려오는 method는
@@ -131,7 +312,10 @@ class AccountViewSet(viewsets.GenericViewSet):
             return Response({"status": "failed", "errors": serializer.errors})
 
     # /api/v1/user/login 으로 POST요청을 받을 login api (LoginSerializer 사용)
-    # http POST http://127.0.0.1:8000/test/login/login/ email="test@gmail.com" password="testpw"
+    # http POST http://127.0.0.1:8000/api/v1/user/login email="id@gmail.com" password="pw"
+    # 로그아웃 안하고 서버가 그냥 닫아지면 토큰 값이 유지되는거 같음 어떻게 해결해야함?
+    # 이거 get_or_create로 하기때문에 같은거임 안그러면 서버껐다켰는데 애들다 토큰 날아가서 다 에러나거나 로그인페이지로 날아감
+    # 해결하기 위해서는 토큰에 만료기한을 두고 토큰유출대도 credential이 없으면 만료시점이후에는 무효처리되도록 다시로그인시켜보는거지
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -139,28 +323,21 @@ class AccountViewSet(viewsets.GenericViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
-        # 토큰이 제공 안돼면 이제 여기서 토큰을 넣어서 Response에서 토큰을 반환해줘야함
-        # 이거 근데 TOKEN이 안들어와서 except들어가는거랑
-        # EMAIL/PW가 이상한 데이터가 오는거랑구별해야할듯
         except InvalidPassword:
             return Response({'success': False, 'error': '패스워드가 일치하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)
-        except User.DoesNotExists:
+        # 이거는 user = User.objects.get(email=email)에서 없으면 자동으로 raise됨
+        except User.DoesNotExist:
             return Response({'success': False, 'error': '유저가 존재하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)
 
     # /api/v1/user/logout 으로 DELETE 요청을 받을 logout api(Serializer 사용 x)
-    # http POST http://127.0.0.1:8000/test/login/logout/ "Authorization: Token 41767e806c72c91be3b966f39fe10cb2705160ea"
-    # 미완성임
+    # http POST http://127.0.0.1:8000/api/v1/user/logout "Authorization: Token f44c39fec18227d5aa555dcbd20aa7d56d0f55ef"
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def logout(self, request):
-        try:
-            request.user.auth_token.delete()
-        except ObjectDoesNotExist:
-            return Response({'success': False, 'error': '잘못된 토큰'}, status=status.HTTP_400_BAD_REQUEST)
-        except AttributeError:
-            return Response({'success': False, 'error': '???'}, status=status.HTTP_400_BAD_REQUEST)
+        request.user.auth_token.delete()
 
-        # 지웠을때 토큰에 해당하는 유저가 없거나 토큰의 양식이 이상하면 에러 처리
         return Response({'success': "로그아웃 성공"}, status=status.HTTP_200_OK)
+    
+    # 특정 유저가 publish 한 post 보기
 
 def post_list(request):
     # 쿼리를 만들어서 html로 보냄

@@ -6,18 +6,18 @@ from . import views
 # drf
 from rest_framework.routers import DefaultRouter
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 # 이 baseanem에 넣은거 기준으로
 # basename='post'면
 # list api는 post-list
 # create api는 post-create
-router.register(r'test', views.PostViewSet, basename='posts')
-router.register(r'login', views.AccountViewSet, basename='logins')
-
+router.register(r'post', views.PostViewSet2, basename='posts')
+router.register(r'comment', views.CommentViewSet, basename='comments')
+router.register(r'user', views.AccountViewSet, basename='logins')
 
 urlpatterns = [
     # drf
-    path('test/', include(router.urls)),
+    path('api/v1/', include(router.urls)),
 
     # post_list라는 view가 루트 URL에 할당되었습니다.
     # 이 URL 패턴은 빈 문자열에 매칭이 되며, 
