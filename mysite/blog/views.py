@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone # timezone.now() 사용하기 위함임
+from rest_framework.exceptions import ParseError
+
 from .models import Post, Comment # Post모델, Comment모델을 불러오기 위함임
 from .forms import PostForm, CommentForm
 from django.shortcuts import redirect
@@ -24,6 +26,11 @@ from rest_framework.authtoken.models import Token
 # 이 함수는 요청(request)을 넘겨받아 render메서드를 호출합니다. 
 # 이 함수는 render 메서드를 호출하여 받은(return) blog/post_list.html템플릿을 보여줍니다.
 
+# 이미지 테스트
+from .models import EntryImage
+from .serializers import ImageSerializer
+from django.contrib.contenttypes.models import ContentType
+
 # drf viewset
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
@@ -32,14 +39,14 @@ class PostViewSet(viewsets.ModelViewSet):
 
 # view는 들어온 요청을
 # 적절한 serializer를 가져다가 serializer의 매서드를 실행하는거지
-# 직접 뭘 하는부분은아니거든
+# 직접 뭘 하는부분은 아님
+
 class PostViewSet2(viewsets.GenericViewSet):
     # 기본 설정이 is_authenticaed여서 이거 해줘야함
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [AllowAny]
 
-    # http GET http://127.0.0.1:8000/api/v1/post
+    # http GET http://127.0.0.1:8000/api/v1/post "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
     def list(self, request):
         queryset = self.get_queryset().filter(published_date__lte=timezone.now()).order_by('published_date')
         serializer = self.get_serializer(queryset, many=True)
@@ -83,25 +90,54 @@ class PostViewSet2(viewsets.GenericViewSet):
     # author가 id로 들어가야함 지금 post모델에서 author가 아래와 같이 있음
     # author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # http POST http://127.0.0.1:8000/api/v1/post "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb" title="asddf" text="포스트내용2"
+
+    def add_image(self, instance, request):
+        try:
+            #  fields = ['id', 'image', 'content_type', 'object_id']
+            import pdb; pdb.set_trace()
+            # verbose_name 옵션을 지정하지 않으면 CamelCase 클래스 이름을 기준으로 camel case 이와 같이 모두 소문자로 변경한다.
+            # https://wikidocs.net/6667#verbose_name
+            # user_type = ContentType.objects.get(app_label='blog', model='post')
+            image = request.data['image']
+            data = {'image':request.data['image'],
+                    'content_type':ContentType.objects.get_for_model(Post).id,
+                    'object_id':instance.id}
+            image_serializer = ImageSerializer(data=data)
+            image_serializer.is_valid(raise_exception=True)
+            image_serializer.save()
+        # exception KeyError
+        # Raised when a mapping (dictionary) key is not found in the set of existing keys.
+        except KeyError:
+            pass
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": image_serializer.errors})
+
     def create(self, request):
-        print(request.user)
-        cur_user = UserSerializer(request.user)
-        cur_user_name = cur_user.data['email']
-        user_instance = User.objects.get(email=cur_user_name)
-        request.data['author'] = user_instance.id
-        print(request.data)
+        # 이거 하면
+        # def get_serializer(self):
+        #     context = self.get_serializer_context()
+        #     serializer = self.get_serializer_class(self.validated_data, context=context)
+        #     return serializer
+        # 대충 이렇게 생김 자세한 코드는 찾아보기
+        # import pdb; pdb.set_trace()
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
             # 이거 save()했을때 불려오는 method는
             # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
             # UserSerializer.create()를 불러오는거임
-            serializer.save()
+            # 일단 post를 생성하고
+            post_instance = serializer.save()
+            result = self.add_image(post_instance, request)
+            if result:
+                return result
             # 이거 pw는 write_only라서 안보임
             print(serializer.data)
-            return Response(serializer.data)
         except serializers.ValidationError:
             return Response({"status": "failed", "errors": serializer.errors})
+
+        return Response(serializer.data)
+
 
     # http DELETE http://127.0.0.1:8000/api/v1/post/12 "Authorization: Token bf8bf34417deb3cbd2bfa502d37013243cd9f5eb"
     #  get_object() looks for a pk_url_kwarg argument in the arguments to the view;
@@ -211,6 +247,7 @@ class CommentViewSet(viewsets.GenericViewSet):
         serializer = self.serializer_class(post)
         return Response(serializer.data)
 
+    # comment 수정
     # http PUT http://127.0.0.1:8000/api/v1/comment/16 "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6" text="올암"
     def update(self, request, pk):
         instance = self.get_object()
@@ -277,7 +314,7 @@ class AccountViewSet(viewsets.GenericViewSet):
     # 이거 비밀번호를 바꾸려면 userserilaier에서 비밀번호가 readonly여서 안보이니 비밀번호를 바꾸려면 serializer를 새로 만들어야함
     def update(self, request, pk):
         instance = self.get_object()
-
+        # data앞에 뭐가 있으니 업데이트함
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         try:
             serializer.is_valid(raise_exception=True)

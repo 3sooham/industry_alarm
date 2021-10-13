@@ -6,6 +6,24 @@ from django.utils import timezone
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 
+# image
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericRelation
+# uuid
+from uuid import uuid4
+
+class EntryImage(models.Model):
+    def productFile(instance, filename):
+        return f'EntryImage/{filename}'
+
+    image = models.ImageField(
+        upload_to=productFile,
+        max_length=254, blank=True, null=True
+    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
 class Post(models.Model):
     # models.ForeignKey - 다른 모델에 대한 링크를 의미합니다.
@@ -19,6 +37,7 @@ class Post(models.Model):
             default=timezone.now)
     published_date = models.DateTimeField(
             blank=True, null=True)
+    image = GenericRelation(EntryImage, related_query_name='post', null=True)
 
     def publish(self):
         self.published_date = timezone.now()

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Comment, User
+from .models import Post, Comment, User, EntryImage
 
 # drf
 from django.contrib.auth import get_user_model
@@ -12,6 +12,16 @@ from rest_framework.authtoken.models import Token
 # >>> settings.AUTH_USER_MODEL
 # 'accounts.User'
 
+# 이미지 테스트
+from .models import EntryImage
+
+class ImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+
+    class Meta:
+        model = EntryImage
+        # 'content_object' 이거는 db에 실제로 써지는게 아니라서 없어도 됨
+        fields = ['id', 'image', 'content_type', 'object_id']
 
 # 이거 따로 .py파서 옮기기
 class InvalidPassword(Exception):
@@ -19,10 +29,16 @@ class InvalidPassword(Exception):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    # https://github.com/encode/django-rest-framework/blob/fdb49314754ff13d91c6eec7ccdb8ece52bea9eb/rest_framework/fields.py#L286
+    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    # post instance에서 이미지가 있는데 image는 image instance여서 seralize해줘야지 json으로 보여줄 수 있는거니까 image=ImageSerializer로 중첩해서 함
+    # one to many realation 이어서 many=True 해줘야함
+    image = ImageSerializer(read_only=True, allow_null=True, many=True)
+
     class Meta:
         model = Post
         # fieds에 id나 pk로 지정된 필드 꼭 있어야함
-        fields = ['id', 'author', 'title', 'text', 'created_date', 'published_date']
+        fields = ['id', 'author', 'title', 'image', 'text', 'created_date', 'published_date']
 
 # 이게 해야하는 일
 # 1. post에 딸린 comment list가져오는거
@@ -70,7 +86,7 @@ class CommentSerializer(serializers.ModelSerializer):
         author = self.context['request'].user
         if author.is_anonymous:
             raise ValidationError('anonymous user cannot create comment')
-        attr['author'] = self.context['request'].user.name
+        attr['author'] = self.context['request'].user.id
         attr['post_id'] = self.context['post_id']
         return attr
 
