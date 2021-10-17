@@ -69,7 +69,7 @@ class Comment(models.Model):
     # dels.ForeignKey의 related_name 옵션은 Post 모델에서 댓글에 액서스할 수 있게 합니다.
     # 역참조 대상인 Post에서 comment를 접근할 수 있음
     post = models.ForeignKey('blog.Post', on_delete=models.CASCADE, related_name='comments')
-    author = models.CharField(max_length=200)
+    author = models.CharField(max_length=200, help_text="This is the grey text")
     text = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
     # 이거 나중에 modified_date 추가하기
