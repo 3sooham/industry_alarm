@@ -14,6 +14,7 @@ router = DefaultRouter(trailing_slash=False)
 router.register(r'post', views.PostViewSet2, basename='posts')
 router.register(r'comment', views.CommentViewSet, basename='comments')
 router.register(r'user', views.AccountViewSet, basename='logins')
+router.register(r'evelogin', views.EveLoginViewSet, basename='evelogins')
 
 urlpatterns = [
     # drf

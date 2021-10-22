@@ -31,6 +31,18 @@ from .models import EntryImage
 from .serializers import ImageSerializer
 from django.contrib.contenttypes.models import ContentType
 
+# 이브 로그인 관련
+class EveLoginViewSet(viewsets.GenericViewSet):
+    permission_classes = [AllowAny]
+
+    @action(methods=['get'], detail=False, url_path='redirect')
+    def get_users_published_posts(self, request):
+        return redirect('https://login.eveonline.com/v2/oauth/authorize/')
+
+    @action(methods=['get'], detail=False)
+    def callback(self, request):
+        pass
+
 # drf viewset
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()

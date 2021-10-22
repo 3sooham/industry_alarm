@@ -33,6 +33,14 @@ class CommentAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'created_date'
 
+    # By default, the admin uses a select-box interface (<select>) for those fields.
+    # Sometimes you don’t want to incur the overhead of selecting all the related instances to display in the dropdown.
+    # You must define search_fields on the related object’s ModelAdmin because the autocomplete search uses it.
+    autocomplete_fields = ['post']
+    # search_fields = ['author__email', 'title']
+    # 밑의 post admin에서 seracrh_fields = ['title']을 사용함
+
+
 class EntryImageInline(GenericTabularInline):
     model = EntryImage
 
@@ -126,7 +134,8 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = (PostListFilter,
                    AdvancedDecadeBornListFilter,
                    'author', 'published_date', 'author__name',
-                   ('text', admin.EmptyFieldListFilter),)
+                   ('text', admin.EmptyFieldListFilter),
+                   ('author', admin.RelatedOnlyFieldListFilter),)
 
     # Set list_per_page to control how many items appear on each paginated admin change list page.
     # By default, this is set to 100.
@@ -156,6 +165,28 @@ class PostAdmin(admin.ModelAdmin):
     # 이거 하면 change 페이지에서 field 값 수정가능함
     # list_editable = ('text', )
 
+    search_fields = ['author__email', 'title']
+
+    # default로 chage list page에서 모델의 모든 field에 대해서 sorting 가능함
+    # 이거로 sorting 하는거 필드 설정할 수 있음(list_display의 subset으로)
+    sortable_by = ['author_email',
+                    'published_date_view',
+                    'default_created_view']
+
+    # save_model method를 override 하면 doing pre- or post-save operations 할 수 있음
+    # 아래 코드에서는 어드민페이지에서 수정하면서 저장하면 유저를 뭘 고르던간에
+    # 포스트의 author를 현재 admin 페이지에 로그인한 유저로 바꿔줌
+    # def save_model(self, request, obj, form, change):
+    #     obj.author = request.user
+    #     super().save_model(request, obj, form, change)
+
+    # 이거도 마찬가지로 pre- or post delete operation 할 수 있음
+    # 아래는 그냥 지우기전에 폴더하나 생성하는거임
+    def delete_model(self, request, obj):
+        import os
+        os.mkdir("C:\\Users\\Home\\Desktop\\djangotestfolder")
+        super().delete_model(request, obj)
+
     # 이거 링크는 링크 눌러서 들어가는거를 설정해주는거임
     # By default, the change list page will link the first column
     # list_display = ('text', )
@@ -167,12 +198,12 @@ class PostAdmin(admin.ModelAdmin):
     # def default_author_view(self, obj):
     #     return obj.author
     # description 안쓰면 method 이름이 들어감
-    @admin.display(description='published date',empty_value='unknown')
+    @admin.display(ordering='published_date', description='published date',empty_value='unknown')
     def published_date_view(self, obj):
         return obj.published_date
 
     # descending으로 정렬하려면 '-first_name'으로 하면됨
-    @admin.display(description='created date', ordering='created_date')
+    @admin.display(description='created_date', ordering='created_date')
     def default_created_view(self, obj):
         return obj.created_date
 
