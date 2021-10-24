@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-&et!cpto5x^^$4(@g9o$ow!#4r9#(8$--3y^1p@j9c4khb!f5+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com', '3.34.122.127']
+#ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com', '3.34.122.127']
+ALLOWED_HOSTS = ['*']
 
 # 파일들
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
