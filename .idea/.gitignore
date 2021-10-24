@@ -3,3 +3,5 @@
 /workspace.xml
 myvenv
 .idea
+__pycache__
+.DS_Store
