@@ -105,11 +105,10 @@ class AccountManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, email, password, name):
+    def create_superuser(self, email, password):
         user = self.create_user(
             email=self.normalize_email(email),
             password=password,
-            name=name
         )
 
         # https://docs.djangoproject.com/en/3.2/ref/contrib/auth/
@@ -136,7 +135,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # superuser 생성시 추가로 받을거
     # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
-    REQUIRED_FIELDS = ['name']
+    # REQUIRED_FIELDS = ['name']
     
     objects = AccountManager()
 
