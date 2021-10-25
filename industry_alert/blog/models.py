@@ -136,7 +136,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # superuser 생성시 추가로 받을거
     # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/
-    # REQUIRED_FIELDS = ['name']
+    REQUIRED_FIELDS = ['name']
     
     objects = AccountManager()
 
