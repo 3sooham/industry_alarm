@@ -105,10 +105,11 @@ class AccountManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email, password, name):
         user = self.create_user(
             email=self.normalize_email(email),
             password=password,
+            name=name
         )
 
         # https://docs.djangoproject.com/en/3.2/ref/contrib/auth/
