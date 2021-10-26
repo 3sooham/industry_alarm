@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     # drf login
     "rest_framework",
     "rest_framework.authtoken",
+	# drf-spectacular
+	'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -152,7 +154,16 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
+	# drf-spectacular
+	'DEFAULT_SCHEMA_CLASS' : 'drf_spectacular.openapi.AutoSchema',
+}
+
+# drf-spectacular
+SPECTACULAR_SETTINGS = {
+	'TITLE': 'Job Finished API',
+	'DESCRIPTION': 'personal toy project',
+	'VERSION': '0.1.2',
 }
 
 # drf

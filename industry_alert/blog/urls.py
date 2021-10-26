@@ -6,6 +6,9 @@ from . import views
 # drf
 from rest_framework.routers import DefaultRouter
 
+# drf-spectacular
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+
 router = DefaultRouter(trailing_slash=False)
 # 이 baseanem에 넣은거 기준으로
 # basename='post'면
@@ -17,6 +20,12 @@ router.register(r'user', views.AccountViewSet, basename='logins')
 router.register(r'evelogin', views.EveLoginViewSet, basename='evelogins')
 
 urlpatterns = [
+	# YOUR PATTERNS
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Optional UI:
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
     # drf
     path('api/v1/', include(router.urls)),
 
