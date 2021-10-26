@@ -1,0 +1,69 @@
+/* h1 a는 CSS 셀렉터(Selector)라고 합니다.
+   h1요소 안에 어떠한 a요소를 넣어 스타일을 적용 할 수 있다는 거죠. 
+   예를 들어 <h1><a href="">link</a></h1> 라면, 
+   오렌지색 #FCA205으로 바꿀 수 있어요. 
+   물론, 내가 원하는 다른 색상을 지정할 수 있어요! */
+/* 
+CSS 파일에서는 HTML 파일에 있는 각 요소들에 스타일을 정의할 수 있어요. 
+요소를 식별하는 첫 번째 방법은 요소 이름을 사용하는 것입니다. 
+HTML 섹션에서 태그로 기억할 수 있습니다. 
+a,h1,body와 같은 것은 모두 요소 이름의 예입니다. 
+또 class 속성이나 id 속성에 의해 요소를 식별합니다. 
+클래스와 ID는 요소에 직접 부여한 이름이에요. 
+클래스는 요소 그룹을 정의하고 ID는 특정 요소를 가리킵니다. 
+아래 코드와 같이 태그 이름은 a, 
+클래스는 external_link 또는 ID는 link_to_wiki_page로 사용하여 태그를 통해 요소를 식별할 수 있습니다.
+<a href="https://en.wikipedia.org/wiki/Django" class="external_link" id="link_to_wiki_page">
+*/
+
+/* 클래스 선택자는 .으로 시작함 */
+.page-header {
+    background-color: #ff9400;
+    margin-top: 0;
+    padding: 20px 20px 20px 40px;
+}
+
+.page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
+    color: #ffffff;
+    font-size: 36pt;
+    text-decoration: none;
+}
+
+.content {
+    margin-left: 40px;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Lobster', cursive;
+}
+
+.date {
+    color: #828282;
+}
+
+.save {
+    float: right;
+}
+
+.post-form textarea, .post-form input {
+    width: 100%;
+}
+
+.top-menu, .top-menu:hover, .top-menu:visited {
+    color: #ffffff;
+    float: right;
+    font-size: 26pt;
+    margin-right: 20px;
+}
+
+.post {
+    margin-bottom: 70px;
+}
+
+.post h1 a, .post h1 a:visited {
+    color: #000000;
+}
+
+.comment {
+    margin: 20px 0px 20px 20px;
+}
