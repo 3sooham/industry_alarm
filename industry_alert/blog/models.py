@@ -125,7 +125,7 @@ class AccountManager(BaseUserManager):
 # 여기에 이름 생년월일 전화번호 같은 거 더 추가하기
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name="email", max_length=60, unique=True, default=None)
-    password = models.CharField(verbose_name='password',max_length=16)
+    password = models.CharField(verbose_name='password',max_length=255)
     # charfield는 null true하는거아님 값이 비어있다를 표시하는게 빈스트링이랑 null 두가지가 다되면서 곱창남
     name = models.CharField(verbose_name='name', max_length=30, default='', blank=True)
     is_admin = models.BooleanField(default=False)
