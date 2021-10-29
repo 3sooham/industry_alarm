@@ -13,12 +13,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
-load_dotenv()
-
-
+import environ
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# env = environ.Env()
+# environ.Env.read_env(os.path.join(BASE_DIR, 'mysite', '.env'))
+
+# load .env
+# load_dotenv(os.path.join(BASE_DIR, 'mysite', '.env'))
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -98,14 +101,14 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('NAME'),
-        'USER': os.getenv('USER'),
-        'PASSWORD': os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'),
-        'PORT': os.getenv('PORT'),
+        'NAME': os.getenv('INDUSTRY_ALERT_DB_NAME'),
+        'USER': os.getenv('INDUSTRY_ALERT_DB_USER'),
+        'PASSWORD': os.getenv('INDUSTRY_ALERT_DB_PASSWORD'),
+        'HOST': os.getenv('INDUSTRY_ALERT_DB_HOST'),
+        'PORT': os.getenv('INDUSTRY_ALERT_DB_PORT'),
     }
 }
-
+print(DATABASES)
 
 
 # Password validation
