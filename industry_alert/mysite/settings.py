@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import environ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # env = environ.Env()
@@ -22,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # load .env
 # load_dotenv(os.path.join(BASE_DIR, 'mysite', '.env'))
 load_dotenv()
+
+# celery
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
