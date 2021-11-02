@@ -20,7 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
 
 # CELERY TASK
-from blog.tasks import count_widget()
+from blog.tasks import count_widgets
 
 # 뷰(view) 는 애플리케이션의 "로직"을 넣는 곳이에요.
 # 뷰는 이전 장에서 만들었던 모델에서 필요한 정보를 받아와서 템플릿에 전달하는 역할을 합니다.
@@ -40,7 +40,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
     @action(methods=['get'], detail=False, url_path='redirect')
     def get_users_published_posts(self, request):
-        print(count_widget.delay())
+        print(count_widgets.delay())
         return redirect('https://login.eveonline.com/v2/oauth/authorize/')
 
     @action(methods=['get'], detail=False)
