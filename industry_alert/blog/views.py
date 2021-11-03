@@ -37,7 +37,8 @@ from django.contrib.contenttypes.models import ContentType
 # eve login
 import requests
 import base64
-
+from dotenv import load_dotenv
+import os
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
@@ -60,6 +61,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
     @action(methods=['get'], detail=False)
     def callback(self, request):
+        print("asdasds")
         # get()
         # Returns the value for key in the dictionary; if not found returns a default value.
         # Optional. 
@@ -67,15 +69,20 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         code = request.GET.get('code')
         state = request.GET.get('state')
         print(type(code))
+        print(code)
+        print(state)
 
         # Now that your application has the authorization code, 
         # it needs to send a POST request to
         # https://login.eveonline.com/v2/oauth/token
         # where your application’s client ID will be the user
         #  your secret key will be the password
-        id = '8e86edc0f4ee45b6a5f70cdba2f01ea7'
-        key = '67zbdkELotOetMeFqIiDiiLLnHiBIsqD4k6nmbt2'
 
+        load_dotenv()
+        id = os.getenv('ID')
+        key = os.getenv('KEY')
+        print(id)
+        print(type(id))
         # You will need to send the following HTTP headers (replace anything between <>, including <>)
         # Authorization: Basic <URL safe Base64 encoded credentials>
         # Content-Type: application/x-www-form-urlencoded
@@ -84,6 +91,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
         auth_header = f'Basic {basic_auth}'
 
+        print("auth_header")
         headers = {
             "Authorization": auth_header,
             "Content-Type": "application/x-www-form-urlencoded",
@@ -94,15 +102,34 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             'grant_type': 'authorization_code',
             'code': code
         }
+
+        # get a new token which lasts for 20 min
         res = requests.post(
             'https://login.eveonline.com/v2/oauth/token',
             headers=headers,
             data=body
         )
+        print("after get a 20 min token")
+        res2 = res.json()
+        print(res2)
+        acc= 'Bearer ' + res2['access_token']
+        res3 = requests.get(
+             "https://login.eveonline.com/oauth/verify",
+             headers= {'Authorization': acc}
+        )
+        ididi = res3.json()['CharacterID']
+        print(ididi)
 
-        print(res)
-        
-        return Response({"state": request.GET.get('state'), 'code': request.GET.get('code'), 'res': res})
+        urll = 'https://esi.evetech.net/latest/characters/' + str(ididi) + '/industry/jobs/?datasource=tranquility'
+        print(urll)
+        res4 = requests.get(
+             urll,
+             headers= {'Authorization': acc}
+        )
+
+        dd = res4.json()
+        print(dd)
+        return Response({"너는": dd})
 
 # drf viewset
 class PostViewSet(viewsets.ModelViewSet):
