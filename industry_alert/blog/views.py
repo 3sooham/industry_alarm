@@ -34,6 +34,9 @@ from .models import EntryImage
 from .serializers import ImageSerializer
 from django.contrib.contenttypes.models import ContentType
 
+# eve login
+import requests
+import base64
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
@@ -41,7 +44,18 @@ class EveLoginViewSet(viewsets.GenericViewSet):
     @action(methods=['get'], detail=False, url_path='redirect')
     def get_users_published_posts(self, request):
         print(count_widgets.delay())
-        return redirect('https://login.eveonline.com/v2/oauth/authorize/')
+        # 이거 state는 원래 random한  스트링 넣어야하는데 지금은 그냥 걍함
+        return redirect('https://login.eveonline.com/v2/oauth/authorize/? \
+                         response_type=code \
+                         & \
+                         redirect_uri=http%3A%2F%2F13.124.169.90%3A8000%2Fapi%2Fv1%2Fevelogin%2Fcallback \
+                         & \
+                         client_id=8e86edc0f4ee45b6a5f70cdba2f01ea7 \
+                         & \
+                         scope=esi-industry.read_character_jobs.v1 \
+                         & \
+                         state=3sooham')
+        # return redirect('https://login.eveonline.com/v2/oauth/authorize/')
 
     @action(methods=['get'], detail=False)
     def callback(self, request):
@@ -49,9 +63,23 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # Returns the value for key in the dictionary; if not found returns a default value.
         # Optional. 
         # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
-        print(request.Get.get('code', ''))
-
-        return Response({"status": "failed"})
+        code = request.GET.get('code')
+        state = request.GET.get('state')
+        print(type(code))
+        # Now that your application has the authorization code, 
+        # it needs to send a POST request to
+        # https://login.eveonline.com/v2/oauth/token
+        # where your application’s client ID will be the user
+        #  your secret key will be the password
+        id = '8e86edc0f4ee45b6a5f70cdba2f01ea7'
+        key = '67zbdkELotOetMeFqIiDiiLLnHiBIsqD4k6nmbt2'
+        user_pass = f'{id}:{key}'
+        basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
+        auth_header = f'Basic {basic_auth}'
+        # You will need to send the following HTTP headers (replace anything between <>, including <>)
+        headers = {"Authorization": auth_header}
+        
+        return Response({"state": request.GET.get('state'), 'code': request.GET.get('code')})
 
 # drf viewset
 class PostViewSet(viewsets.ModelViewSet):
