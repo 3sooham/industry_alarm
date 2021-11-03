@@ -37,6 +37,7 @@ from django.contrib.contenttypes.models import ContentType
 # eve login
 import requests
 import base64
+
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
@@ -66,6 +67,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         code = request.GET.get('code')
         state = request.GET.get('state')
         print(type(code))
+
         # Now that your application has the authorization code, 
         # it needs to send a POST request to
         # https://login.eveonline.com/v2/oauth/token
@@ -73,13 +75,34 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         #  your secret key will be the password
         id = '8e86edc0f4ee45b6a5f70cdba2f01ea7'
         key = '67zbdkELotOetMeFqIiDiiLLnHiBIsqD4k6nmbt2'
+
+        # You will need to send the following HTTP headers (replace anything between <>, including <>)
+        # Authorization: Basic <URL safe Base64 encoded credentials>
+        # Content-Type: application/x-www-form-urlencoded
+        # Host: login.eveonline.com
         user_pass = f'{id}:{key}'
         basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
         auth_header = f'Basic {basic_auth}'
-        # You will need to send the following HTTP headers (replace anything between <>, including <>)
-        headers = {"Authorization": auth_header}
+
+        headers = {
+            "Authorization": auth_header,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Host": "login.eveonline.com",
+        }
+
+        body = {
+            'grant_type': 'authorization_code',
+            'code': code
+        }
+        res = requests.post(
+            'https://login.eveonline.com/v2/oauth/token',
+            headers=headers,
+            data=body
+        )
+
+        print(res)
         
-        return Response({"state": request.GET.get('state'), 'code': request.GET.get('code')})
+        return Response({"state": request.GET.get('state'), 'code': request.GET.get('code'), 'res': res})
 
 # drf viewset
 class PostViewSet(viewsets.ModelViewSet):
