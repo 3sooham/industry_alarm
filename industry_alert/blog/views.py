@@ -45,7 +45,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
     @action(methods=['get'], detail=False)
     def callback(self, request):
-        pass
+        print(request.data)
+
+        return Response({"status": "failed"})
 
 # drf viewset
 class PostViewSet(viewsets.ModelViewSet):
