@@ -49,7 +49,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # Returns the value for key in the dictionary; if not found returns a default value.
         # Optional. 
         # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
-        print(request.Get.get("code"))
+        print(request.Get.get('code', ''))
 
         return Response({"status": "failed"})
 
