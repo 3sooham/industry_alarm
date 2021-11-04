@@ -73,12 +73,10 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # Returns the value for key in the dictionary; if not found returns a default value.
         # Optional. 
         # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
+        
+        # 저쪽에서 이쪽으로 request 보낸거는 정상으로 간주하고 해야함
         auth_code = request.GET.get('code')
         state = request.GET.get('state')
-        
-        # code를 못받으면
-        if auth_code == None:
-            pass
 
         # Now that your application has the authorization code, 
         # it needs to send a POST request to
@@ -114,31 +112,52 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 headers=headers,
                 data=body
             )
-        except:
-            pass
-
+            res.raise_for_status()
+            res_dict = res.json()
+        except requests.exceptions.ConnectionError as e:
+            return Response({"status": "failed", "errors": str(e)})
+        except requests.exceptions.Timeout as e:
+            return Response({"status": "failed", "errors": str(e)})
+        except requests.exceptions.TooManyRedirects as e:
+            return Response({"status": "failed", "errors": str(e)})
+        # raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            return Response({"status": "failed", "errors": str(e)})
+        # res.json()
+        except requests.exceptions.JSONDecodeError as e:
+            return Response({"status": "failed", "errors": str(e)})
+        # 위에서 걸리지 않은 다른 모든 exceptions
+        except requests.exceptions.RequestException as e:
+            return Response({"status": "failed", "errors": str(e)})
+        
+        if 'error' in res_dict:
+            return Response({"status": "failed", "errors": "something went wrong"})
         # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
         # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
-        try:
-            res_dict = res.json()
-        except:
-            pass
-
+        # 이게 res에 저장됨
         acc = 'Bearer ' + res_dict['access_token']
         try:
             character_res = requests.get(
                 "https://login.eveonline.com/oauth/verify",
                 headers= {'Authorization': acc}
             )
-        except:
-            pass
-
-        # character_dict = character_res.json()['CharacterID']
-
-        try:
+            character_res.raise_for_status()
             character_dict = character_res.json()
-        except:
-            pass
+        except requests.exceptions.ConnectionError as e:
+            return Response({"status": "failed", "errors": str(e)})
+        except requests.exceptions.Timeout as e:
+            return Response({"status": "failed", "errors": str(e)})
+        except requests.exceptions.TooManyRedirects as e:
+            return Response({"status": "failed", "errors": str(e)})
+        # raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            return Response({"status": "failed", "errors": str(e)})
+        # res.json()
+        except requests.exceptions.JSONDecodeError as e:
+            return Response({"status": "failed", "errors": str(e)})
+        # 위에서 걸리지 않은 다른 모든 exceptions
+        except requests.exceptions.RequestException as e:
+            return Response({"status": "failed", "errors": str(e)})
 
         # urll = 'https://esi.evetech.net/latest/characters/' + str(character_id)+ '/industry/jobs/?datasource=tranquility'
         esi_request_url = self.url_creater(character_dict['CharacterID'], 'industry_jobs')
@@ -149,7 +168,6 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         )
 
         dd = res4.json()
-        print(dd)
 
         # create django user and return its token
 
