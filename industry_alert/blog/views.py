@@ -43,6 +43,15 @@ import os
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
 
+    # create url for esi request
+    def url_creater(self, character_id, scopes):
+        base_url = 'https://esi.evetech.net/latest/characters/'
+
+        # 이거 뒤에 query string 떼내야함
+        esi_scopes = {'industry_jobs': '/industry/jobs/?datasource=tranquility'}
+
+        return base_url + str(character_id) + esi_scopes[scopes]
+
     @action(methods=['get'], detail=False, url_path='redirect')
     def get_users_published_posts(self, request):
         print(count_widgets.delay())
@@ -57,78 +66,93 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                          scope=esi-industry.read_character_jobs.v1 \
                          & \
                          state=3sooham')
-        # return redirect('https://login.eveonline.com/v2/oauth/authorize/')
 
     @action(methods=['get'], detail=False)
     def callback(self, request):
-        print("asdasds")
         # get()
         # Returns the value for key in the dictionary; if not found returns a default value.
         # Optional. 
         # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
-        code = request.GET.get('code')
+        auth_code = request.GET.get('code')
         state = request.GET.get('state')
-        print(type(code))
-        print(code)
-        print(state)
+        
+        # code를 못받으면
+        if auth_code == None:
+            pass
 
         # Now that your application has the authorization code, 
         # it needs to send a POST request to
         # https://login.eveonline.com/v2/oauth/token
         # where your application’s client ID will be the user
         #  your secret key will be the password
-
         load_dotenv()
-        id = os.getenv('ID')
-        key = os.getenv('KEY')
-        print(id)
-        print(type(id))
+        client_id = os.getenv('ID')
+        secret_key = os.getenv('KEY')
+
         # You will need to send the following HTTP headers (replace anything between <>, including <>)
         # Authorization: Basic <URL safe Base64 encoded credentials>
         # Content-Type: application/x-www-form-urlencoded
         # Host: login.eveonline.com
-        user_pass = f'{id}:{key}'
+        user_pass = f'{client_id}:{secret_key}'
         basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
         auth_header = f'Basic {basic_auth}'
 
-        print("auth_header")
         headers = {
             "Authorization": auth_header,
             "Content-Type": "application/x-www-form-urlencoded",
             "Host": "login.eveonline.com",
         }
-
         body = {
             'grant_type': 'authorization_code',
-            'code': code
+            'code': auth_code
         }
 
-        # get a new token which lasts for 20 min
-        res = requests.post(
-            'https://login.eveonline.com/v2/oauth/token',
-            headers=headers,
-            data=body
-        )
-        print("after get a 20 min token")
-        res2 = res.json()
-        print(res2)
-        acc= 'Bearer ' + res2['access_token']
-        res3 = requests.get(
-             "https://login.eveonline.com/oauth/verify",
-             headers= {'Authorization': acc}
-        )
-        ididi = res3.json()['CharacterID']
-        print(ididi)
+        # Finally, send a POST request to https://login.eveonline.com/v2/oauth/token with your form encoded values and the headers from the last step.
+        try:
+            res = requests.post(
+                'https://login.eveonline.com/v2/oauth/token',
+                headers=headers,
+                data=body
+            )
+        except:
+            pass
 
-        urll = 'https://esi.evetech.net/latest/characters/' + str(ididi) + '/industry/jobs/?datasource=tranquility'
-        print(urll)
+        # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
+        # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
+        try:
+            res_dict = res.json()
+        except:
+            pass
+
+        acc = 'Bearer ' + res_dict['access_token']
+        try:
+            character_res = requests.get(
+                "https://login.eveonline.com/oauth/verify",
+                headers= {'Authorization': acc}
+            )
+        except:
+            pass
+
+        # character_dict = character_res.json()['CharacterID']
+
+        try:
+            character_dict = character_res.json()
+        except:
+            pass
+
+        # urll = 'https://esi.evetech.net/latest/characters/' + str(character_id)+ '/industry/jobs/?datasource=tranquility'
+        esi_request_url = self.url_creater(character_dict['CharacterID'], 'industry_jobs')
+        
         res4 = requests.get(
-             urll,
+             esi_request_url,
              headers= {'Authorization': acc}
         )
 
         dd = res4.json()
         print(dd)
+
+        # create django user and return its token
+
         return Response({"너는": dd})
 
 # drf viewset
