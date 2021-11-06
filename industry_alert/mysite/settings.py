@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'blog', # blog 사용한다고 알려줘야함
+    'account',
     # drf login
     "rest_framework",
     "rest_framework.authtoken",

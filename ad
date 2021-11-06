@@ -1,0 +1,765 @@
+[1mdiff --git a/industry_alert/account/models.py b/industry_alert/account/models.py[m
+[1mindex 71a8362..ec96231 100755[m
+[1m--- a/industry_alert/account/models.py[m
+[1m+++ b/industry_alert/account/models.py[m
+[36m@@ -1,3 +1,65 @@[m
+ from django.db import models[m
+[32m+[m[32mfrom django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser[m
+[32m+[m[32mfrom django.contrib.auth.models import PermissionsMixin[m
+ [m
+[31m-# Create your models here.[m
+[32m+[m
+[32m+[m[32m# https://docs.djangoproject.com/en/3.2/ref/contrib/auth/[m
+[32m+[m[32mclass AccountManager(BaseUserManager):[m
+[32m+[m[32m    def create_user(self, email, password, name):[m
+[32m+[m[32m        if not email:[m
+[32m+[m[32m            raise ValueError('Users must have an email address')[m
+[32m+[m[32m        print('어카운트')[m
+[32m+[m[32m        # 이거 근데 꼭 해야하는건지는 모르겠음[m
+[32m+[m[32m        user = self.model([m
+[32m+[m[32m            # normalize_email()이거는 @domain에서 domain만 소문자로 만듬[m
+[32m+[m[32m            email=self.normalize_email(email),[m
+[32m+[m[32m            name=name[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        # Sets the user’s password to the given raw string,[m
+[32m+[m[32m        # taking care of the password hashing. Doesn’t save the User object.[m
+[32m+[m[32m        user.set_password(password)[m
+[32m+[m[32m        user.save()[m
+[32m+[m[32m        return user[m
+[32m+[m
+[32m+[m[32m    def create_superuser(self, email, password, name):[m
+[32m+[m[32m        user = self.create_user([m
+[32m+[m[32m            email=self.normalize_email(email),[m
+[32m+[m[32m            password=password,[m
+[32m+[m[32m            name=name[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        # https://docs.djangoproject.com/en/3.2/ref/contrib/auth/[m
+[32m+[m[32m        user.is_admin = True[m
+[32m+[m[32m        user.is_active = True[m
+[32m+[m[32m        user.is_superuser = True[m
+[32m+[m[32m        user.save()[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# drf login[m
+[32m+[m[32m# https://medium.com/geekculture/register-login-and-logout-users-in-django-rest-framework-51486390c29[m
+[32m+[m[32m# https://github.com/django/django/blob/910ecd1b8df7678f45c3d507dde6bcb1faafa243/django/contrib/auth/base_user.py#L16 참조하기[m
+[32m+[m[32m# 여기에 이름 생년월일 전화번호 같은 거 더 추가하기[m
+[32m+[m[32mclass User(AbstractBaseUser, PermissionsMixin):[m
+[32m+[m[32m    email = models.EmailField(verbose_name="email", max_length=60, unique=True, default=None)[m
+[32m+[m[32m    password = models.CharField(verbose_name='password', max_length=255)[m
+[32m+[m[32m    # charfield는 null true하는거아님 값이 비어있다를 표시하는게 빈스트링이랑 null 두가지가 다되면서 곱창남[m
+[32m+[m[32m    name = models.CharField(verbose_name='name', max_length=30, default='', blank=True)[m
+[32m+[m[32m    is_admin = models.BooleanField(default=False)[m
+[32m+[m[32m    is_superuser = models.BooleanField(default=False)[m
+[32m+[m
+[32m+[m[32m    # username으로 'email' field 사용함[m
+[32m+[m[32m    USERNAME_FIELD = 'email'[m
+[32m+[m
+[32m+[m[32m    # superuser 생성시 추가로 받을거[m
+[32m+[m[32m    # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/[m
+[32m+[m[32m    REQUIRED_FIELDS = ['name'][m
+[32m+[m
+[32m+[m[32m    objects = AccountManager()[m
+[32m+[m
+[32m+[m[32m    @property[m
+[32m+[m[32m    def is_staff(self):[m
+[32m+[m[32m        return self.is_admin[m
+[32m+[m
+[32m+[m[32m    def __str__(self):[m
+[32m+[m[32m        return str(self.email)[m
+\ No newline at end of file[m
+[1mdiff --git a/industry_alert/account/serializers.py b/industry_alert/account/serializers.py[m
+[1mindex e69de29..2d98842 100644[m
+[1m--- a/industry_alert/account/serializers.py[m
+[1m+++ b/industry_alert/account/serializers.py[m
+[36m@@ -0,0 +1,105 @@[m
+[32m+[m[32mfrom rest_framework import serializers[m
+[32m+[m[32mfrom .models import User[m
+[32m+[m[32mfrom django.contrib.auth import get_user_model[m
+[32m+[m[32mfrom rest_framework.authtoken.models import Token[m
+[32m+[m[32m# get_user_model() : 클래스이다.[m
+[32m+[m[32m# >>> get_user_model()[m
+[32m+[m[32m# <class 'accounts.models.User'>[m
+[32m+[m[32m# settings.AUTH_USER_MODEL : 문자열이다.[m
+[32m+[m[32m# >>> settings.AUTH_USER_MODEL[m
+[32m+[m[32m# >>> settings.AUTH_USER_MODEL[m
+[32m+[m[32m# 'accounts.User'[m
+[32m+[m
+[32m+[m[32m# exceptions[m
+[32m+[m[32mclass InvalidPassword(Exception):[m
+[32m+[m[32m    pass[m
+[32m+[m[32m# drf[m
+[32m+[m[32m# 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성[m
+[32m+[m[32m# 2. 각 serializer는 아래와 같은 field를 가지고 이름에 맞는 동작을 해야함[m
+[32m+[m[32m# https://eunjin3786.tistory.com/253[m
+[32m+[m[32m# LoginSerializer[m
+[32m+[m[32m#     쓰기전용 : username, password[m
+[32m+[m[32m#     읽기전용 : token[m
+[32m+[m[32m#     동작 : username과 password로 user인증을 하고, user의 token이 있으면 그것을, 없으면 새로 발행해서 돌려줌[m
+[32m+[m[32mclass LoginSerializer(serializers.Serializer):[m
+[32m+[m[32m    # write_only는 값을 받아서 create/update같은거만 하는거임[m
+[32m+[m[32m    email = serializers.CharField(write_only=True)[m
+[32m+[m[32m    password = serializers.CharField(write_only=True)[m
+[32m+[m[32m    # 입력받는게 아니라 return으로 돌려주는 값이니까 read_only임[m
+[32m+[m[32m    token = serializers.CharField(read_only=True)[m
+[32m+[m
+[32m+[m[32m    # 로그인 확인[m
+[32m+[m[32m    def create(self, validated_data):[m
+[32m+[m[32m        email = validated_data['email'][m
+[32m+[m[32m        password = validated_data['password'][m
+[32m+[m
+[32m+[m[32m        user = User.objects.get(email=email)[m
+[32m+[m
+[32m+[m[32m        # 비밀번호 일치하면[m
+[32m+[m[32m        if user.check_password(password):[m
+[32m+[m[32m            token, _ = Token.objects.get_or_create(user=user)[m
+[32m+[m[32m            # 이거 그냥 return token 하면 안돼는 이유는[m
+[32m+[m[32m            # 밑의 유저시리얼라이저에서는 user.token에 token.key를 넣어줬는데[m
+[32m+[m[32m            # 이거 리턴되는 object에서 getattr로 리턴 field들이 다 있으면 알아서 만들어주는건데[m
+[32m+[m[32m            # 밑에서는 리턴이 user객체였고 이 객체에는 class Meta에 있는 3개의 field가 다 있어서 문제없이 된거고[m
+[32m+[m[32m            # 지금은 token을 리턴하게 되면 token.token은 없고 token.key에 원하는값이있지[m
+[32m+[m[32m            # 그래서 지금 에러인 {}가 가는거임[m
+[32m+[m[32m            # token을 리턴하면 Token object인데 내가 serializer에 리턴하겠다고 명시한건[m
+[32m+[m[32m            # token이라는 필드고 리턴한걸 serialize했을때 리턴 결과물에 token이라는 attribute가 있어야하는데[m
+[32m+[m[32m            # token.token이 없으니 아무런 결과물이 안나오는거임[m
+[32m+[m[32m            # 이제 {'token': token.key}를 리턴하면 getattr(리턴 결과물, 'token')하면[m
+[32m+[m[32m            # 값이 있으니 결과물이 나오는거임[m
+[32m+[m[32m            # 객체 serialize하면 __str__()로 나오는 결과물이 나옴[m
+[32m+[m[32m            # print(getattr(token, 'key'))[m
+[32m+[m[32m            print(token.key)[m
+[32m+[m[32m            return {'token': token.key}[m
+[32m+[m[32m        # 일치하는 비밀번호가 없으면[m
+[32m+[m[32m        raise InvalidPassword[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# UserSerializer[m
+[32m+[m[32m#     둘 다 : 필요한 모든 유저정보들[m
+[32m+[m[32m#     쓰기전용 : password[m
+[32m+[m[32m#     읽기전용 : token[m
+[32m+[m[32m#     동작 : 받은 user정보를 통해 User를 생성하고, 생성된 user의 token을 새로 발행해서 password를 제외한 나머지 정보와 함께 돌려줌[m
+[32m+[m[32mclass UserSerializer(serializers.ModelSerializer):[m
+[32m+[m[32m    password = serializers.CharField(write_only=True)[m
+[32m+[m[32m    token = serializers.CharField(read_only=True)[m
+[32m+[m
+[32m+[m[32m    class Meta:[m
+[32m+[m[32m        model = get_user_model()[m
+[32m+[m[32m        fields = ['email', 'password', 'name', 'token'][m
+[32m+[m
+[32m+[m[32m    # 이거 근데 user.mode()에서 해주는데 없어야하는거 같음[m
+[32m+[m[32m    # override하는거니까 인자 맞춰줘야함[m
+[32m+[m[32m    def create(self, validated_data):[m
+[32m+[m[32m        print("유저시리얼라이저 - create")[m
+[32m+[m[32m        # 이제 이 validate_data는 validation도 끝났으니 정합한 데이터니 그냥 때려버리면 됨[m
+[32m+[m[32m        # 이거 **은[m
+[32m+[m[32m        # **d means "take all additional named arguments to this function[m
+[32m+[m[32m        # and insert them into this parameter as dictionary entries."[m
+[32m+[m[32m        # 이거 create_user가 인자를 2개 받아야하니 **validated_data[m
+[32m+[m[32m        user = User.objects.create_user(**validated_data)[m
+[32m+[m[32m        # 가져오거나 생성한값이랑[m
+[32m+[m[32m        # 생성됐는지 가져온건지 여부를[m
+[32m+[m[32m        # 튜플로줌[m
+[32m+[m[32m        # 저게 생성으로 가져온 결과물이면 True[m
+[32m+[m[32m        # 있던거 가져온거면 False[m
+[32m+[m[32m        # _는 안쓸값은 _로 저장함[m
+[32m+[m[32m        token, _ = Token.objects.get_or_create(user=user)[m
+[32m+[m[32m        # 이거 가능한 이유는 user는 User의 인스턴스고 파이썬 클래스는 getter setter없이 걍 뭐든 할 수 있어서[m
+[32m+[m[32m        # 이렇게 하면 token이 추가가 가능한거임[m
+[32m+[m[32m        # 추가로 걍 객체를 serialize시키면 아까말한 __str__()값이 들어감[m
+[32m+[m[32m        user.token = token[m
+[32m+[m[32m        return user[m
+[32m+[m
+[32m+[m[32m    def update(self, instance, validated_data):[m
+[32m+[m[32m        # items()은 key, value 튜플쌍을 튜플로 리턴하는 함수임[m
+[32m+[m[32m        print(instance.password)[m
+[32m+[m[32m        for key, value in validated_data.items():[m
+[32m+[m[32m            # 제일 첫번째 인자에 key가 있으면 True 없으면 False 반환하는게 hasattr이고[m
+[32m+[m[32m            if hasattr(instance, key):[m
+[32m+[m[32m                # 값 저장하는게 setattr[m
+[32m+[m[32m                setattr(instance, key, value)[m
+[32m+[m[32m        instance.save()[m
+[32m+[m[32m        return instance[m
+[1mdiff --git a/industry_alert/account/views.py b/industry_alert/account/views.py[m
+[1mindex 91ea44a..37c670b 100755[m
+[1m--- a/industry_alert/account/views.py[m
+[1m+++ b/industry_alert/account/views.py[m
+[36m@@ -1,3 +1,121 @@[m
+[31m-from django.shortcuts import render[m
+[32m+[m[32mfrom rest_framework import viewsets, serializers, status[m
+[32m+[m[32mfrom rest_framework.decorators import action[m
+[32m+[m[32mfrom rest_framework.response import Response[m
+[32m+[m[32mfrom rest_framework.permissions import AllowAny, IsAuthenticated[m
+[32m+[m[32mfrom rest_framework.authtoken.models import Token[m
+[32m+[m[32mfrom .models import User[m
+[32m+[m[32mfrom .serializers import LoginSerializer, UserSerializer, InvalidPassword[m
+ [m
+[31m-# Create your views here.[m
+[32m+[m[32m# drf login[m
+[32m+[m[32m# https://stackoverflow.com/questions/26906630/django-rest-framework-authentication-credentials-were-not-provided 이거 지금 해결안되고있음[m
+[32m+[m[32mclass AccountViewSet(viewsets.GenericViewSet):[m
+[32m+[m[32m    # permission_classes = [AllowAny][m
+[32m+[m[32m    queryset = User.objects.all()[m
+[32m+[m[32m    serializer_class = UserSerializer[m
+[32m+[m
+[32m+[m[32m    # @action은[m
+[32m+[m[32m    # This decorator can be used to add any custom endpoints that don't fit into the standard create/update/delete style.[m
+[32m+[m[32m    # @action decorator will respond to GET requests by default.[m
+[32m+[m[32m    # We can use the methods argument if we wanted an action that responded to POST requests.[m
+[32m+[m[32m    # /.../foo/bar나[m
+[32m+[m[32m    # /.../foo/{pk}/bar[m
+[32m+[m[32m    # 이런 api를 추가하고싶을때쓰는거임[m
+[32m+[m[32m    # detail=False면 위 detail=True면 아래[m
+[32m+[m
+[32m+[m[32m    # @action(detail=True, methods=['get'])[m
+[32m+[m[32m    # def asd(self, request, pk):[m
+[32m+[m[32m    # 이거면 http://localhost:8000/test/login/[pk]/asd 여기로 등록됨[m
+[32m+[m[32m    # detail=False여야지만 http://localhost:8000/test/login/asd/로 감[m
+[32m+[m[32m    # http GET http://127.0.0.1:8000/api/v1/user/asd[m
+[32m+[m[32m    @action(methods=['get'], detail=False, permission_classes=[AllowAny])[m
+[32m+[m[32m    def asd(self, request):[m
+[32m+[m[32m        serializer = self.serializer_class(self.queryset, many=True)[m
+[32m+[m[32m        return Response(serializer.data)[m
+[32m+[m
+[32m+[m[32m    # /api/v1/user 로 GET요청 받을 user list api (UserSerializer 사용)[m
+[32m+[m[32m    # http GET http://127.0.0.1:8000/api/v1/user "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[32m+[m[32m    def list(self, request):[m
+[32m+[m[32m        # self.get_queryset() 이거로 queryset = User.objects.all() 이거 가져오는거임[m
+[32m+[m[32m        queryset = self.get_queryset()[m
+[32m+[m[32m        serializer = self.get_serializer(queryset, many=True)[m
+[32m+[m[32m        return Response(serializer.data)[m
+[32m+[m
+[32m+[m[32m    # /api/v1/user/pk 로 GET요청 받을 user retrieve api (UserSerializer사용)[m
+[32m+[m[32m    # http GET http://127.0.0.1:8000/api/v1/user/48 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[32m+[m[32m    def retrieve(self, request, pk):[m
+[32m+[m[32m        # queryset과 pk값을 인자로 받아서,[m
+[32m+[m[32m        # queryset.filter(pk=pk)로 queryset을 뽑고,[m
+[32m+[m[32m        # instance = queryset.get()으로 객체만 뽑아서 리턴해 주는 메소드임[m
+[32m+[m[32m        # => 결국, 위 코드는 Customer.objects.get(pk=pk) 리턴함[m
+[32m+[m[32m        # https://velog.io/@jcinsh/RetrieveUpdateDestroyView-%EC%9D%B4%ED%95%B4 참조[m
+[32m+[m[32m        # queryset = User.objects.all() 이거를 기반으로 하는거임[m
+[32m+[m[32m        instance = self.get_object()[m
+[32m+[m[32m        serializer = self.get_serializer(instance)[m
+[32m+[m[32m        return Response(serializer.data)[m
+[32m+[m
+[32m+[m[32m    # /api/v1/user/pk 로 PATCH 요청 받을 user update ap[m
+[32m+[m[32m    # http PUT http://127.0.0.1:8000/api/v1/user/50 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[32m+[m[32m    # 이거 비밀번호를 바꾸려면 userserilaier에서 비밀번호가 readonly여서 안보이니 비밀번호를 바꾸려면 serializer를 새로 만들어야함[m
+[32m+[m[32m    def update(self, request, pk):[m
+[32m+[m[32m        instance = self.get_object()[m
+[32m+[m[32m        # data앞에 뭐가 있으니 업데이트함[m
+[32m+[m[32m        serializer = self.get_serializer(instance, data=request.data, partial=True)[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            serializer.is_valid(raise_exception=True)[m
+[32m+[m[32m            serializer.save()[m
+[32m+[m[32m            return Response(serializer.data)[m
+[32m+[m[32m        except serializers.ValidationError:[m
+[32m+[m[32m            return Response({"status": "failed", "errors": serializer.errors})[m
+[32m+[m
+[32m+[m[32m    # /api/v1/user/pk 로 DELETE 요청 받을 user delete api (Serializer 사용 x)[m
+[32m+[m[32m    # http DELETE http://127.0.0.1:8000/api/v1/user/2000 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[32m+[m[32m    def delete(self, request, pk):[m
+[32m+[m[32m        print("in delete")[m
+[32m+[m[32m        instance = self.get_object()[m
+[32m+[m[32m        instance.delete()[m
+[32m+[m[32m        return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)[m
+[32m+[m
+[32m+[m[32m    # /api/v1/user 로 POST요청을 받을 registration api (UserSerializer 사용)[m
+[32m+[m[32m    # http POST http://127.0.0.1:8000/api/v1/user/register email="id@gmail.com" password="pw"[m
+[32m+[m[32m    @action(detail=False, methods=['post'], permission_classes=[AllowAny])[m
+[32m+[m[32m    def register(self, request):[m
+[32m+[m[32m        serializer = self.get_serializer(data=request.data)[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            serializer.is_valid(raise_exception=True)[m
+[32m+[m[32m            # 이거 save()했을때 불려오는 method는[m
+[32m+[m[32m            # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면[m
+[32m+[m[32m            # UserSerializer.create()를 불러오는거임[m
+[32m+[m[32m            serializer.save()[m
+[32m+[m[32m            # 이거 pw는 write_only라서 안보임[m
+[32m+[m[32m            print(serializer.data)[m
+[32m+[m[32m            return Response(serializer.data)[m
+[32m+[m[32m        except serializers.ValidationError:[m
+[32m+[m[32m            return Response({"status": "failed", "errors": serializer.errors})[m
+[32m+[m
+[32m+[m[32m    # /api/v1/user/login 으로 POST요청을 받을 login api (LoginSerializer 사용)[m
+[32m+[m[32m    # http POST http://127.0.0.1:8000/api/v1/user/login email="id@gmail.com" password="pw"[m
+[32m+[m[32m    # 로그아웃 안하고 서버가 그냥 닫아지면 토큰 값이 유지되는거 같음 어떻게 해결해야함?[m
+[32m+[m[32m    # 이거 get_or_create로 하기때문에 같은거임 안그러면 서버껐다켰는데 애들다 토큰 날아가서 다 에러나거나 로그인페이지로 날아감[m
+[32m+[m[32m    # 해결하기 위해서는 토큰에 만료기한을 두고 토큰유출대도 credential이 없으면 만료시점이후에는 무효처리되도록 다시로그인시켜보는거지[m
+[32m+[m[32m    @action(detail=False, methods=['post'], permission_classes=[AllowAny])[m
+[32m+[m[32m    def login(self, request):[m
+[32m+[m[32m        serializer = LoginSerializer(data=request.data)[m
+[32m+[m[32m        try:[m
+[32m+[m[32m            serializer.is_valid(raise_exception=True)[m
+[32m+[m[32m            serializer.save()[m
+[32m+[m[32m            return Response(serializer.data)[m
+[32m+[m[32m        except InvalidPassword:[m
+[32m+[m[32m            return Response({'success': False, 'error': '패스워드가 일치하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)[m
+[32m+[m[32m        # 이거는 user = User.objects.get(email=email)에서 없으면 자동으로 raise됨[m
+[32m+[m[32m        except User.DoesNotExist:[m
+[32m+[m[32m            return Response({'success': False, 'error': '유저가 존재하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)[m
+[32m+[m
+[32m+[m[32m    # /api/v1/user/logout 으로 DELETE 요청을 받을 logout api(Serializer 사용 x)[m
+[32m+[m[32m    # http POST http://127.0.0.1:8000/api/v1/user/logout "Authorization: Token f44c39fec18227d5aa555dcbd20aa7d56d0f55ef"[m
+[32m+[m[32m    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])[m
+[32m+[m[32m    def logout(self, request):[m
+[32m+[m[32m        request.user.auth_token.delete()[m
+[32m+[m
+[32m+[m[32m        return Response({'success': "로그아웃 성공"}, status=status.HTTP_200_OK)[m
+[32m+[m
+[32m+[m[32m    # 특정 유저가 publish 한 post 보기[m
+\ No newline at end of file[m
+[1mdiff --git a/industry_alert/blog/models.py b/industry_alert/blog/models.py[m
+[1mindex d486f8e..c380231 100644[m
+[1m--- a/industry_alert/blog/models.py[m
+[1m+++ b/industry_alert/blog/models.py[m
+[36m@@ -2,16 +2,10 @@[m [mfrom django.conf import settings[m
+ from django.db import models[m
+ from django.utils import timezone[m
+ [m
+[31m-# drf login[m
+[31m-from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser[m
+[31m-from django.contrib.auth.models import PermissionsMixin[m
+[31m-[m
+ # image[m
+ from django.contrib.contenttypes.fields import GenericForeignKey[m
+ from django.contrib.contenttypes.models import ContentType[m
+ from django.contrib.contenttypes.fields import GenericRelation[m
+[31m-# uuid[m
+[31m-from uuid import uuid4[m
+ [m
+ class EntryImage(models.Model):[m
+     def productFile(instance, filename):[m
+[36m@@ -83,66 +77,4 @@[m [mclass Comment(models.Model):[m
+         self.save()[m
+ [m
+     def __str__(self):[m
+[31m-        return self.text[m
+[31m-[m
+[31m-[m
+[31m-# https://docs.djangoproject.com/en/3.2/ref/contrib/auth/[m
+[31m-class AccountManager(BaseUserManager):[m
+[31m-    def create_user(self, email, password, name):[m
+[31m-        if not email:[m
+[31m-            raise ValueError('Users must have an email address')[m
+[31m-        print('어카운트')[m
+[31m-        # 이거 근데 꼭 해야하는건지는 모르겠음[m
+[31m-        user = self.model([m
+[31m-            # normalize_email()이거는 @domain에서 domain만 소문자로 만듬[m
+[31m-            email=self.normalize_email(email),[m
+[31m-            name=name[m
+[31m-        )[m
+[31m-[m
+[31m-        # Sets the user’s password to the given raw string,[m
+[31m-        # taking care of the password hashing. Doesn’t save the User object.[m
+[31m-        user.set_password(password)[m
+[31m-        user.save()[m
+[31m-        return user[m
+[31m-[m
+[31m-    def create_superuser(self, email, password, name):[m
+[31m-        user = self.create_user([m
+[31m-            email=self.normalize_email(email),[m
+[31m-            password=password,[m
+[31m-            name=name[m
+[31m-        )[m
+[31m-[m
+[31m-        # https://docs.djangoproject.com/en/3.2/ref/contrib/auth/[m
+[31m-        user.is_admin = True[m
+[31m-        user.is_active=True[m
+[31m-        user.is_superuser = True[m
+[31m-        user.save()[m
+[31m-[m
+[31m-[m
+[31m-# drf login[m
+[31m-# https://medium.com/geekculture/register-login-and-logout-users-in-django-rest-framework-51486390c29[m
+[31m-# https://github.com/django/django/blob/910ecd1b8df7678f45c3d507dde6bcb1faafa243/django/contrib/auth/base_user.py#L16 참조하기[m
+[31m-# 여기에 이름 생년월일 전화번호 같은 거 더 추가하기[m
+[31m-class User(AbstractBaseUser, PermissionsMixin):[m
+[31m-    email = models.EmailField(verbose_name="email", max_length=60, unique=True, default=None)[m
+[31m-    password = models.CharField(verbose_name='password',max_length=255)[m
+[31m-    # charfield는 null true하는거아님 값이 비어있다를 표시하는게 빈스트링이랑 null 두가지가 다되면서 곱창남[m
+[31m-    name = models.CharField(verbose_name='name', max_length=30, default='', blank=True)[m
+[31m-    is_admin = models.BooleanField(default=False)[m
+[31m-    is_superuser = models.BooleanField(default=False)[m
+[31m-[m
+[31m-    # username으로 'email' field 사용함[m
+[31m-    USERNAME_FIELD = 'email'[m
+[31m-[m
+[31m-    # superuser 생성시 추가로 받을거[m
+[31m-    # https://docs.djangoproject.com/en/3.2/topics/auth/customizing/[m
+[31m-    REQUIRED_FIELDS = ['name'][m
+[31m-    [m
+[31m-    objects = AccountManager()[m
+[31m-[m
+[31m-    @property[m
+[31m-    def is_staff(self):[m
+[31m-        return self.is_admin[m
+[31m-[m
+[31m-    def __str__(self):[m
+[31m-        return str(self.email)[m
+[32m+[m[32m        return self.text[m
+\ No newline at end of file[m
+[1mdiff --git a/industry_alert/blog/serializers.py b/industry_alert/blog/serializers.py[m
+[1mindex e4fda24..6a54560 100644[m
+[1m--- a/industry_alert/blog/serializers.py[m
+[1m+++ b/industry_alert/blog/serializers.py[m
+[36m@@ -1,9 +1,10 @@[m
+[31m-from rest_framework import serializers[m
+[31m-from .models import Post, Comment, User, EntryImage[m
+[32m+[m[32mfrom django.contrib.auth import get_user_model[m
+[32m+[m[32mfrom .models import Post, Comment, EntryImage[m
+ [m
+ # drf[m
+[31m-from django.contrib.auth import get_user_model[m
+[32m+[m[32mfrom rest_framework import serializers[m
+ from rest_framework.authtoken.models import Token[m
+[32m+[m[32mfrom rest_framework.exceptions import ValidationError[m
+ # get_user_model() : 클래스이다.[m
+ # >>> get_user_model()[m
+ # <class 'accounts.models.User'>[m
+[36m@@ -23,11 +24,6 @@[m [mclass ImageSerializer(serializers.ModelSerializer):[m
+         # 'content_object' 이거는 db에 실제로 써지는게 아니라서 없어도 됨[m
+         fields = ['id', 'image', 'content_type', 'object_id'][m
+ [m
+[31m-# 이거 따로 .py파서 옮기기[m
+[31m-class InvalidPassword(Exception):[m
+[31m-    pass[m
+[31m-[m
+[31m-[m
+ class PostSerializer(serializers.ModelSerializer):[m
+     # https://github.com/encode/django-rest-framework/blob/fdb49314754ff13d91c6eec7ccdb8ece52bea9eb/rest_framework/fields.py#L286[m
+     author = serializers.HiddenField(default=serializers.CurrentUserDefault())[m
+[36m@@ -101,96 +97,4 @@[m [mclass CommentSerializer(serializers.ModelSerializer):[m
+     def validate_text(self, value):[m
+         if '시벌' in value:[m
+             raise ValidationError('욕하지마라')[m
+[31m-        return value[m
+[31m-[m
+[31m-[m
+[31m-# drf[m
+[31m-# 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성[m
+[31m-# 2. 각 serializer는 아래와 같은 field를 가지고 이름에 맞는 동작을 해야함[m
+[31m-# https://eunjin3786.tistory.com/253[m
+[31m-# LoginSerializer[m
+[31m-#     쓰기전용 : username, password[m
+[31m-#     읽기전용 : token[m
+[31m-#     동작 : username과 password로 user인증을 하고, user의 token이 있으면 그것을, 없으면 새로 발행해서 돌려줌[m
+[31m-class LoginSerializer(serializers.Serializer):[m
+[31m-    # write_only는 값을 받아서 create/update같은거만 하는거임[m
+[31m-    email = serializers.CharField(write_only=True)[m
+[31m-    password = serializers.CharField(write_only=True)[m
+[31m-    # 입력받는게 아니라 return으로 돌려주는 값이니까 read_only임[m
+[31m-    token = serializers.CharField(read_only=True)[m
+[31m-[m
+[31m-    # 로그인 확인[m
+[31m-    def create(self, validated_data):[m
+[31m-        email = validated_data['email'][m
+[31m-        password = validated_data['password'][m
+[31m-[m
+[31m-        user = User.objects.get(email=email)[m
+[31m-[m
+[31m-        # 비밀번호 일치하면[m
+[31m-        if user.check_password(password):[m
+[31m-            token, _ = Token.objects.get_or_create(user=user)[m
+[31m-            # 이거 그냥 return token 하면 안돼는 이유는[m
+[31m-            # 밑의 유저시리얼라이저에서는 user.token에 token.key를 넣어줬는데[m
+[31m-            # 이거 리턴되는 object에서 getattr로 리턴 field들이 다 있으면 알아서 만들어주는건데[m
+[31m-            # 밑에서는 리턴이 user객체였고 이 객체에는 class Meta에 있는 3개의 field가 다 있어서 문제없이 된거고[m
+[31m-            # 지금은 token을 리턴하게 되면 token.token은 없고 token.key에 원하는값이있지[m
+[31m-            # 그래서 지금 에러인 {}가 가는거임[m
+[31m-            # token을 리턴하면 Token object인데 내가 serializer에 리턴하겠다고 명시한건[m
+[31m-            # token이라는 필드고 리턴한걸 serialize했을때 리턴 결과물에 token이라는 attribute가 있어야하는데[m
+[31m-            # token.token이 없으니 아무런 결과물이 안나오는거임[m
+[31m-            # 이제 {'token': token.key}를 리턴하면 getattr(리턴 결과물, 'token')하면[m
+[31m-            # 값이 있으니 결과물이 나오는거임[m
+[31m-            # 객체 serialize하면 __str__()로 나오는 결과물이 나옴[m
+[31m-            # print(getattr(token, 'key'))[m
+[31m-            print(token.key)[m
+[31m-            return {'token': token.key}[m
+[31m-        # 일치하는 비밀번호가 없으면[m
+[31m-        raise InvalidPassword[m
+[31m-[m
+[31m-[m
+[31m-# UserSerializer[m
+[31m-#     둘 다 : 필요한 모든 유저정보들[m
+[31m-#     쓰기전용 : password[m
+[31m-#     읽기전용 : token[m
+[31m-#     동작 : 받은 user정보를 통해 User를 생성하고, 생성된 user의 token을 새로 발행해서 password를 제외한 나머지 정보와 함께 돌려줌[m
+[31m-class UserSerializer(serializers.ModelSerializer):[m
+[31m-    password = serializers.CharField(write_only=True)[m
+[31m-    token = serializers.CharField(read_only=True)[m
+[31m-[m
+[31m-    class Meta:[m
+[31m-        model = get_user_model()[m
+[31m-        fields = ['email', 'password', 'name', 'token'][m
+[31m-[m
+[31m-    # 이거 근데 user.mode()에서 해주는데 없어야하는거 같음[m
+[31m-    # override하는거니까 인자 맞춰줘야함[m
+[31m-    def create(self, validated_data):[m
+[31m-        print("유저시리얼라이저 - create")[m
+[31m-        # 이제 이 validate_data는 validation도 끝났으니 정합한 데이터니 그냥 때려버리면 됨[m
+[31m-        # 이거 **은[m
+[31m-        # **d means "take all additional named arguments to this function[m
+[31m-        # and insert them into this parameter as dictionary entries."[m
+[31m-        # 이거 create_user가 인자를 2개 받아야하니 **validated_data[m
+[31m-        user = User.objects.create_user(**validated_data)[m
+[31m-        # 가져오거나 생성한값이랑[m
+[31m-        # 생성됐는지 가져온건지 여부를[m
+[31m-        # 튜플로줌[m
+[31m-        # 저게 생성으로 가져온 결과물이면 True[m
+[31m-        # 있던거 가져온거면 False[m
+[31m-        # _는 안쓸값은 _로 저장함[m
+[31m-        token, _ = Token.objects.get_or_create(user=user)[m
+[31m-        # 이거 가능한 이유는 user는 User의 인스턴스고 파이썬 클래스는 getter setter없이 걍 뭐든 할 수 있어서[m
+[31m-        # 이렇게 하면 token이 추가가 가능한거임[m
+[31m-        # 추가로 걍 객체를 serialize시키면 아까말한 __str__()값이 들어감[m
+[31m-        user.token = token[m
+[31m-        return user[m
+[31m-[m
+[31m-    def update(self, instance, validated_data):[m
+[31m-        # items()은 key, value 튜플쌍을 튜플로 리턴하는 함수임[m
+[31m-        print(instance.password)[m
+[31m-        for key, value in validated_data.items():[m
+[31m-            # 제일 첫번째 인자에 key가 있으면 True 없으면 False 반환하는게 hasattr이고[m
+[31m-            if hasattr(instance, key):[m
+[31m-                # 값 저장하는게 setattr[m
+[31m-                setattr(instance, key, value)[m
+[31m-        instance.save()[m
+[31m-        return instance[m
+[32m+[m[32m        return value[m
+\ No newline at end of file[m
+[1mdiff --git a/industry_alert/blog/views.py b/industry_alert/blog/views.py[m
+[1mindex f27e65c..5397489 100644[m
+[1m--- a/industry_alert/blog/views.py[m
+[1m+++ b/industry_alert/blog/views.py[m
+[36m@@ -3,6 +3,7 @@[m [mfrom django.utils import timezone # timezone.now() 사용하기 위함임[m
+ from rest_framework.exceptions import ParseError[m
+ [m
+ from .models import Post, Comment # Post모델, Comment모델을 불러오기 위함임[m
+[32m+[m[32mfrom .serializers import PostSerializer, CommentSerializer[m
+ from .forms import PostForm, CommentForm[m
+ from django.shortcuts import redirect[m
+ from django.contrib.auth.decorators import login_required[m
+[36m@@ -11,8 +12,6 @@[m [mfrom django.contrib.auth.decorators import login_required[m
+ from rest_framework import viewsets[m
+ from rest_framework.decorators import action[m
+ from rest_framework.response import Response[m
+[31m-from blog.models import Post, Comment, User[m
+[31m-from blog.serializers import PostSerializer, CommentSerializer, LoginSerializer, UserSerializer, InvalidPassword[m
+ from rest_framework.permissions import AllowAny, IsAuthenticated[m
+ from rest_framework import serializers[m
+ from rest_framework import status[m
+[36m@@ -112,55 +111,31 @@[m [mclass EveLoginViewSet(viewsets.GenericViewSet):[m
+                 headers=headers,[m
+                 data=body[m
+             )[m
+[31m-            res.raise_for_status()[m
+             res_dict = res.json()[m
+[31m-        except requests.exceptions.ConnectionError as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        except requests.exceptions.Timeout as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        except requests.exceptions.TooManyRedirects as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        # raise_for_status()[m
+[31m-        except requests.exceptions.HTTPError as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        # res.json()[m
+[31m-        except requests.exceptions.JSONDecodeError as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        # 위에서 걸리지 않은 다른 모든 exceptions[m
+[31m-        except requests.exceptions.RequestException as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        [m
+[31m-        if 'error' in res_dict:[m
+[31m-            return Response({"status": "failed", "errors": "something went wrong"})[m
+[32m+[m[32m            access_token = res_dict.get('access_token')[m
+[32m+[m[32m            # 이거 어차피 여기서 access_token이 안온거면 연결이  실패한거임[m
+[32m+[m[32m            # 그러니까 예외는 여기서 keyError하나만 잡고 나머지 다른 에러는[m
+[32m+[m[32m            # django에서 500에러 주니 이거 logging 해서 잡아내면됨[m
+[32m+[m[32m            # 클라이언트는 잡다한 예외 상황 알 필요없고 여기 기준으로는 이브와의 서버 통신을 실패한거만 알면 되기 떄문에[m
+[32m+[m[32m            # 그냥 access_token 없으면 이브 서버와의 통신이 실패한거니 실패했다고 알려주면됨.[m
+[32m+[m[32m        except KeyError:[m
+[32m+[m[32m            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})[m
+[32m+[m
+         # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) [m
+         # and a refresh token that looks like this (Anything wrapped by <> will look different for you):[m
+[31m-        # 이게 res에 저장됨[m
+[31m-        acc = 'Bearer ' + res_dict['access_token'][m
+[32m+[m[32m        # 여기서 말하는 JSON payload가 위의 res에 저장됨[m
+[32m+[m[32m        acc = 'Bearer ' + access_token[m
+         try:[m
+             character_res = requests.get([m
+                 "https://login.eveonline.com/oauth/verify",[m
+[31m-                headers= {'Authorization': acc}[m
+[32m+[m[32m                headers={"Authorization": acc}[m
+             )[m
+[31m-            character_res.raise_for_status()[m
+             character_dict = character_res.json()[m
+[31m-        except requests.exceptions.ConnectionError as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        except requests.exceptions.Timeout as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        except requests.exceptions.TooManyRedirects as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        # raise_for_status()[m
+[31m-        except requests.exceptions.HTTPError as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        # res.json()[m
+[31m-        except requests.exceptions.JSONDecodeError as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-        # 위에서 걸리지 않은 다른 모든 exceptions[m
+[31m-        except requests.exceptions.RequestException as e:[m
+[31m-            return Response({"status": "failed", "errors": str(e)})[m
+[31m-[m
+[31m-        # urll = 'https://esi.evetech.net/latest/characters/' + str(character_id)+ '/industry/jobs/?datasource=tranquility'[m
+[31m-        esi_request_url = self.url_creater(character_dict['CharacterID'], 'industry_jobs')[m
+[32m+[m[32m            character_id = character_dict['CharacterID'][m
+[32m+[m[32m        except KeyError:[m
+[32m+[m[32m            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})[m
+[32m+[m
+[32m+[m[32m        esi_request_url = self.url_creater(character_id, 'industry_jobs')[m
+         [m
+         res4 = requests.get([m
+              esi_request_url,[m
+[36m@@ -404,120 +379,6 @@[m [mclass CommentViewSet(viewsets.GenericViewSet):[m
+         except serializers.ValidationError:[m
+             return Response({"status": "failed", "errors": serializer.errors})[m
+ [m
+[31m-# drf login[m
+[31m-# https://stackoverflow.com/questions/26906630/django-rest-framework-authentication-credentials-were-not-provided 이거 지금 해결안되고있음[m
+[31m-class AccountViewSet(viewsets.GenericViewSet):[m
+[31m-    # permission_classes = [AllowAny][m
+[31m-    queryset = User.objects.all()[m
+[31m-    serializer_class = UserSerializer[m
+[31m-[m
+[31m-    # @action은 [m
+[31m-    # This decorator can be used to add any custom endpoints that don't fit into the standard create/update/delete style.[m
+[31m-    # @action decorator will respond to GET requests by default. [m
+[31m-    # We can use the methods argument if we wanted an action that responded to POST requests.[m
+[31m-    # /.../foo/bar나[m
+[31m-    # /.../foo/{pk}/bar[m
+[31m-    # 이런 api를 추가하고싶을때쓰는거임[m
+[31m-    # detail=False면 위 detail=True면 아래[m
+[31m-[m
+[31m-    # @action(detail=True, methods=['get'])[m
+[31m-    # def asd(self, request, pk):[m
+[31m-    # 이거면 http://localhost:8000/test/login/[pk]/asd 여기로 등록됨[m
+[31m-    # detail=False여야지만 http://localhost:8000/test/login/asd/로 감[m
+[31m-    # http GET http://127.0.0.1:8000/api/v1/user/asd[m
+[31m-    @action(methods=['get'], detail=False, permission_classes=[AllowAny])[m
+[31m-    def asd(self, request):[m
+[31m-        serializer = self.serializer_class(self.queryset, many=True)[m
+[31m-        return Response(serializer.data)[m
+[31m-[m
+[31m-    # /api/v1/user 로 GET요청 받을 user list api (UserSerializer 사용)[m
+[31m-    # http GET http://127.0.0.1:8000/api/v1/user "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[31m-    def list(self, request):[m
+[31m-        # self.get_queryset() 이거로 queryset = User.objects.all() 이거 가져오는거임[m
+[31m-        queryset = self.get_queryset()[m
+[31m-        serializer = self.get_serializer(queryset, many=True)[m
+[31m-        return Response(serializer.data)[m
+[31m-[m
+[31m-    # /api/v1/user/pk 로 GET요청 받을 user retrieve api (UserSerializer사용)[m
+[31m-    # http GET http://127.0.0.1:8000/api/v1/user/48 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[31m-    def retrieve(self, request, pk):[m
+[31m-        # queryset과 pk값을 인자로 받아서,[m
+[31m-        # queryset.filter(pk=pk)로 queryset을 뽑고,[m
+[31m-        # instance = queryset.get()으로 객체만 뽑아서 리턴해 주는 메소드임[m
+[31m-        # => 결국, 위 코드는 Customer.objects.get(pk=pk) 리턴함[m
+[31m-        # https://velog.io/@jcinsh/RetrieveUpdateDestroyView-%EC%9D%B4%ED%95%B4 참조[m
+[31m-        # queryset = User.objects.all() 이거를 기반으로 하는거임[m
+[31m-        instance = self.get_object()[m
+[31m-        serializer = self.get_serializer(instance)[m
+[31m-        return Response(serializer.data)[m
+[31m-[m
+[31m-    # /api/v1/user/pk 로 PATCH 요청 받을 user update ap[m
+[31m-    # http PUT http://127.0.0.1:8000/api/v1/user/50 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[31m-    # 이거 비밀번호를 바꾸려면 userserilaier에서 비밀번호가 readonly여서 안보이니 비밀번호를 바꾸려면 serializer를 새로 만들어야함[m
+[31m-    def update(self, request, pk):[m
+[31m-        instance = self.get_object()[m
+[31m-        # data앞에 뭐가 있으니 업데이트함[m
+[31m-        serializer = self.get_serializer(instance, data=request.data, partial=True)[m
+[31m-        try:[m
+[31m-            serializer.is_valid(raise_exception=True)[m
+[31m-            serializer.save()[m
+[31m-            return Response(serializer.data)[m
+[31m-        except serializers.ValidationError:[m
+[31m-            return Response({"status": "failed", "errors": serializer.errors})[m
+[31m-[m
+[31m-    # /api/v1/user/pk 로 DELETE 요청 받을 user delete api (Serializer 사용 x)[m
+[31m-    # http DELETE http://127.0.0.1:8000/api/v1/user/2000 "Authorization: Token 01ecad58c74bb6a6c52ab3f8cb6946cb7312e0d6"[m
+[31m-    def delete(self, request, pk):[m
+[31m-        print("in delete")[m
+[31m-        instance = self.get_object()[m
+[31m-        instance.delete()[m
+[31m-        return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)[m
+[31m-[m
+[31m-    # /api/v1/user 로 POST요청을 받을 registration api (UserSerializer 사용)[m
+[31m-    # http POST http://127.0.0.1:8000/api/v1/user/register email="id@gmail.com" password="pw"[m
+[31m-    @action(detail=False, methods=['post'], permission_classes=[AllowAny])[m
+[31m-    def register(self, request):[m
+[31m-        serializer = self.get_serializer(data=request.data)[m
+[31m-        try:[m
+[31m-            serializer.is_valid(raise_exception=True)[m
+[31m-            # 이거 save()했을때 불려오는 method는[m
+[31m-            # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면[m
+[31m-            # UserSerializer.create()를 불러오는거임[m
+[31m-            serializer.save()[m
+[31m-            # 이거 pw는 write_only라서 안보임[m
+[31m-            print(serializer.data)[m
+[31m-            return Response(serializer.data)[m
+[31m-        except serializers.ValidationError:[m
+[31m-            return Response({"status": "failed", "errors": serializer.errors})[m
+[31m-[m
+[31m-    # /api/v1/user/login 으로 POST요청을 받을 login api (LoginSerializer 사용)[m
+[31m-    # http POST http://127.0.0.1:8000/api/v1/user/login email="id@gmail.com" password="pw"[m
+[31m-    # 로그아웃 안하고 서버가 그냥 닫아지면 토큰 값이 유지되는거 같음 어떻게 해결해야함?[m
+[31m-    # 이거 get_or_create로 하기때문에 같은거임 안그러면 서버껐다켰는데 애들다 토큰 날아가서 다 에러나거나 로그인페이지로 날아감[m
+[31m-    # 해결하기 위해서는 토큰에 만료기한을 두고 토큰유출대도 credential이 없으면 만료시점이후에는 무효처리되도록 다시로그인시켜보는거지[m
+[31m-    @action(detail=False, methods=['post'], permission_classes=[AllowAny])[m
+[31m-    def login(self, request):[m
+[31m-        serializer = LoginSerializer(data=request.data)[m
+[31m-        try:[m
+[31m-            serializer.is_valid(raise_exception=True)[m
+[31m-            serializer.save()[m
+[31m-            return Response(serializer.data)[m
+[31m-        except InvalidPassword:[m
+[31m-            return Response({'success': False, 'error': '패스워드가 일치하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)[m
+[31m-        # 이거는 user = User.objects.get(email=email)에서 없으면 자동으로 raise됨[m
+[31m-        except User.DoesNotExist:[m
+[31m-            return Response({'success': False, 'error': '유저가 존재하지 않습니다'}, status=status.HTTP_400_BAD_REQUEST)[m
+[31m-[m
+[31m-    # /api/v1/user/logout 으로 DELETE 요청을 받을 logout api(Serializer 사용 x)[m
+[31m-    # http POST http://127.0.0.1:8000/api/v1/user/logout "Authorization: Token f44c39fec18227d5aa555dcbd20aa7d56d0f55ef"[m
+[31m-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])[m
+[31m-    def logout(self, request):[m
+[31m-        request.user.auth_token.delete()[m
+[31m-[m
+[31m-        return Response({'success': "로그아웃 성공"}, status=status.HTTP_200_OK)[m
+[31m-    [m
+[31m-    # 특정 유저가 publish 한 post 보기[m
+[31m-[m
+ def post_list(request):[m
+     # 쿼리를 만들어서 html로 보냄[m
+     posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')[m
+[1mdiff --git a/industry_alert/db.sqlite3 b/industry_alert/db.sqlite3[m
+[1mdeleted file mode 100644[m
+[1mindex 501f3c2..0000000[m
+Binary files a/industry_alert/db.sqlite3 and /dev/null differ
+[1mdiff --git a/industry_alert/mysite/settings.py b/industry_alert/mysite/settings.py[m
+[1mindex ff4f7da..b40da6c 100644[m
+[1m--- a/industry_alert/mysite/settings.py[m
+[1m+++ b/industry_alert/mysite/settings.py[m
+[36m@@ -55,6 +55,7 @@[m [mINSTALLED_APPS = [[m
+     'django.contrib.messages',[m
+     'django.contrib.staticfiles',[m
+     'blog', # blog 사용한다고 알려줘야함[m
+[32m+[m[32m    'account',[m
+     # drf login[m
+     "rest_framework",[m
+     "rest_framework.authtoken",[m
+[1mdiff --git a/industry_alert/sqlite3.exe b/industry_alert/sqlite3.exe[m
+[1mdeleted file mode 100644[m
+[1mindex 4ad1ad4..0000000[m
+Binary files a/industry_alert/sqlite3.exe and /dev/null differ
