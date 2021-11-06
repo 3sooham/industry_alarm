@@ -16,6 +16,7 @@ import os
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
 
+    serializer_class = UserSerializer
     # create url for esi request
     def url_creater(self, character_id, scopes):
         base_url = 'https://esi.evetech.net/latest/characters/'
@@ -123,13 +124,15 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # dd = res4.json()
 
         # create django user and return its token
+        # 이거 지금 3sooham이런게아니라 숫자 아이디인데 이거 나중에 3sooham이 들어가도록 바꾸기
         eve_user = {}
-        eve_user['email'] = character_id + '@eveonline.com'
-        eve_user['password'] = character_id
-        login_token = AccountViewSet.register(request, eve_user)
+        eve_user['email'] = str(character_id) + '@eveonline.com'
+        eve_user['password'] = str(character_id)
+        eve_user['name'] = str(character_id)
+        login_token = AccountViewSet.register(self, request, eve_user)
         print(login_token)
 
-        return Response({"너는": 'dd'})
+        return Response({"token": login_token['token']})
 
 
 # drf login
@@ -205,6 +208,8 @@ class AccountViewSet(viewsets.GenericViewSet):
     # http POST http://127.0.0.1:8000/api/v1/user/register email="id@gmail.com" password="pw"
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request, eve_user=None):
+        print("in register")
+        print(eve_user)
         if eve_user:
             serializer = self.get_serializer(data=eve_user)
             try:
@@ -214,8 +219,9 @@ class AccountViewSet(viewsets.GenericViewSet):
                 # UserSerializer.create()를 불러오는거임
                 serializer.save()
                 # 이거 pw는 write_only라서 안보임
+                print("in register2")
                 print(serializer.data)
-                return Response(serializer.data)
+                return serializer.data
             except serializers.ValidationError:
                 return Response({"status": "failed", "errors": serializer.errors})
         else: 

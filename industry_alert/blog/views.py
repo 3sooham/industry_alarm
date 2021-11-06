@@ -96,7 +96,7 @@ class PostViewSet2(viewsets.GenericViewSet):
     def add_image(self, instance, request):
         try:
             #  fields = ['id', 'image', 'content_type', 'object_id']
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             # verbose_name 옵션을 지정하지 않으면 CamelCase 클래스 이름을 기준으로 camel case 이와 같이 모두 소문자로 변경한다.
             # https://wikidocs.net/6667#verbose_name
             # user_type = ContentType.objects.get(app_label='blog', model='post')
