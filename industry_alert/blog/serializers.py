@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from .models import Post, Comment, EntryImage
+from account.models import User
 
 # drf
 from rest_framework import serializers
