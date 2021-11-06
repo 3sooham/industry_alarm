@@ -204,4 +204,4 @@ SPECTACULAR_SETTINGS = {
 # from django.contrib.auth import get_user_model
 # get_user_model() 하면 내가 정의한 Users로 User모델이 바뀐게 보일거임
 # https://han-py.tistory.com/353
-AUTH_USER_MODEL='blog.User'
+AUTH_USER_MODEL='account.User'
