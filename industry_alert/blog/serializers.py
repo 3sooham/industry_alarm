@@ -67,7 +67,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'post_id', 'author', 'text', 'created_date', 'approved_comment']
 
-    #  is_valid가 3가지 검사를 함
+    # is_valid가 3가지 검사를 함
     # model에 정의된거랑 타입이 맞는지 필드별로 검사 한 번 다 하고
     # serializer에 validate_필드이름 이렇게 정의한 함스들 코드에서 파싱해서 저 함수들 한번씩 다 돌려주고
     # 각 필드에 대한 추가적인 validation임

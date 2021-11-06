@@ -6,6 +6,132 @@ from rest_framework.authtoken.models import Token
 from .models import User
 from .serializers import LoginSerializer, UserSerializer, InvalidPassword
 
+# eve login
+import requests
+import base64
+from dotenv import load_dotenv
+import os
+
+# 이브 로그인 관련
+class EveLoginViewSet(viewsets.GenericViewSet):
+    permission_classes = [AllowAny]
+
+    # create url for esi request
+    def url_creater(self, character_id, scopes):
+        base_url = 'https://esi.evetech.net/latest/characters/'
+
+        # 이거 뒤에 query string 떼내야함
+        esi_scopes = {'industry_jobs': '/industry/jobs/?datasource=tranquility'}
+
+        return base_url + str(character_id) + esi_scopes[scopes]
+
+    @action(methods=['get'], detail=False, url_path='redirect')
+    def get_users_published_posts(self, request):
+        print(count_widgets.delay())
+        # 이거 state는 원래 random한  스트링 넣어야하는데 지금은 그냥 걍함
+        return redirect('https://login.eveonline.com/v2/oauth/authorize/? \
+                         response_type=code \
+                         & \
+                         redirect_uri=http%3A%2F%2F13.124.169.90%3A8000%2Fapi%2Fv1%2Fevelogin%2Fcallback \
+                         & \
+                         client_id=8e86edc0f4ee45b6a5f70cdba2f01ea7 \
+                         & \
+                         scope=esi-industry.read_character_jobs.v1 \
+                         & \
+                         state=3sooham')
+
+    @action(methods=['get'], detail=False)
+    def callback(self, request):
+        # get()
+        # Returns the value for key in the dictionary; if not found returns a default value.
+        # Optional. 
+        # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
+        
+        # 저쪽에서 이쪽으로 request 보낸거는 정상으로 간주하고 해야함
+        auth_code = request.GET.get('code')
+        state = request.GET.get('state')
+
+        # Now that your application has the authorization code, 
+        # it needs to send a POST request to
+        # https://login.eveonline.com/v2/oauth/token
+        # where your application’s client ID will be the user
+        #  your secret key will be the password
+        load_dotenv()
+        client_id = os.getenv('ID')
+        secret_key = os.getenv('KEY')
+
+        # You will need to send the following HTTP headers (replace anything between <>, including <>)
+        # Authorization: Basic <URL safe Base64 encoded credentials>
+        # Content-Type: application/x-www-form-urlencoded
+        # Host: login.eveonline.com
+        user_pass = f'{client_id}:{secret_key}'
+        basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
+        auth_header = f'Basic {basic_auth}'
+
+        headers = {
+            "Authorization": auth_header,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Host": "login.eveonline.com",
+        }
+        body = {
+            'grant_type': 'authorization_code',
+            'code': auth_code
+        }
+
+        # Finally, send a POST request to https://login.eveonline.com/v2/oauth/token with your form encoded values and the headers from the last step.
+        try:
+            res = requests.post(
+                'https://login.eveonline.com/v2/oauth/token',
+                headers=headers,
+                data=body
+            )
+            res_dict = res.json()
+            access_token = res_dict.get('access_token')
+            # 이거 어차피 여기서 access_token이 안온거면 연결이  실패한거임
+            # 그러니까 예외는 여기서 keyError하나만 잡고 나머지 다른 에러는
+            # django에서 500에러 주니 이거 logging 해서 잡아내면됨
+            # 클라이언트는 잡다한 예외 상황 알 필요없고 여기 기준으로는 이브와의 서버 통신을 실패한거만 알면 되기 떄문에
+            # 그냥 access_token 없으면 이브 서버와의 통신이 실패한거니 실패했다고 알려주면됨.
+        except KeyError:
+            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})
+
+        # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
+        # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
+        # 여기서 말하는 JSON payload가 위의 res에 저장됨
+        acc = 'Bearer ' + access_token
+        try:
+            character_res = requests.get(
+                "https://login.eveonline.com/oauth/verify",
+                headers={"Authorization": acc}
+            )
+            character_dict = character_res.json()
+            character_id = character_dict['CharacterID']
+        except KeyError:
+            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})
+
+        # 지금 해야할거는 일단 characterid 기반으로 User 하나 생성하고
+        # token return 해주기
+        # 그 다음으로는 access_token, refresh_token, character_id 저장한 모델 하나만들어서
+        # esi 콜에 그거 불러서 사용해야함
+
+        
+        # esi_request_url = self.url_creater(character_id, 'industry_jobs')
+        # res4 = requests.get(
+        #      esi_request_url,
+        #      headers= {'Authorization': acc}
+        # )
+        # dd = res4.json()
+
+        # create django user and return its token
+        eve_user = {}
+        eve_user['email'] = character_id + '@eveonline.com'
+        eve_user['password'] = character_id
+        login_token = AccountViewSet.register(request, eve_user)
+        print(login_token)
+
+        return Response({"너는": 'dd'})
+
+
 # drf login
 # https://stackoverflow.com/questions/26906630/django-rest-framework-authentication-credentials-were-not-provided 이거 지금 해결안되고있음
 class AccountViewSet(viewsets.GenericViewSet):
@@ -78,19 +204,33 @@ class AccountViewSet(viewsets.GenericViewSet):
     # /api/v1/user 로 POST요청을 받을 registration api (UserSerializer 사용)
     # http POST http://127.0.0.1:8000/api/v1/user/register email="id@gmail.com" password="pw"
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
-    def register(self, request):
-        serializer = self.get_serializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-            # 이거 save()했을때 불려오는 method는
-            # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
-            # UserSerializer.create()를 불러오는거임
-            serializer.save()
-            # 이거 pw는 write_only라서 안보임
-            print(serializer.data)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            return Response({"status": "failed", "errors": serializer.errors})
+    def register(self, request, eve_user=None):
+        if eve_user:
+            serializer = self.get_serializer(data=eve_user)
+            try:
+                serializer.is_valid(raise_exception=True)
+                # 이거 save()했을때 불려오는 method는
+                # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
+                # UserSerializer.create()를 불러오는거임
+                serializer.save()
+                # 이거 pw는 write_only라서 안보임
+                print(serializer.data)
+                return Response(serializer.data)
+            except serializers.ValidationError:
+                return Response({"status": "failed", "errors": serializer.errors})
+        else: 
+            serializer = self.get_serializer(data=request.data)
+            try:
+                serializer.is_valid(raise_exception=True)
+                # 이거 save()했을때 불려오는 method는
+                # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
+                # UserSerializer.create()를 불러오는거임
+                serializer.save()
+                # 이거 pw는 write_only라서 안보임
+                print(serializer.data)
+                return Response(serializer.data)
+            except serializers.ValidationError:
+                return Response({"status": "failed", "errors": serializer.errors})
 
     # /api/v1/user/login 으로 POST요청을 받을 login api (LoginSerializer 사용)
     # http POST http://127.0.0.1:8000/api/v1/user/login email="id@gmail.com" password="pw"
