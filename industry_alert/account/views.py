@@ -124,7 +124,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user['name'] = character_dict['CharacterName']
 
         queryset = self.get_queryset().filter(email=eve_user_email)
-        if not queryset:
+        if not queryset.exists():
             serializer = self.get_serializer(data=eve_user)
             try:
                 serializer.is_valid(raise_exception=True)

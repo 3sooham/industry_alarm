@@ -45,7 +45,7 @@ class EveUserSerializer(serializers.ModelSerializer):
 
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
-        return user
+        return {"token": token.key}
 
 
 # drf
