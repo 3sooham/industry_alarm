@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .models import User
-from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, EveUserSerializer, InvalidPassword
+from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, InvalidPassword
 
 # eve login
 import requests
@@ -16,7 +16,7 @@ import os
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
     queryset = User.objects
-    serializer_class = EveUserSerializer
+    serializer_class = UserSerializer
 
     # create url for esi request
     def url_creator(self, character_id, scopes):
