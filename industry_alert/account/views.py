@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .models import User
-from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, InvalidPassword
+from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, EveUserSerializer, InvalidPassword
 
 # eve login
 import requests
@@ -16,7 +16,7 @@ import os
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
     queryset = User.objects
-    serializer_class = UserSerializer
+    serializer_class = EveUserSerializer
 
     # create url for esi request
     def url_creator(self, character_id, scopes):
@@ -32,7 +32,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         cut = character_name.split(' ')
         try:
             cut[1]
-            return cut[0] + cut[1] + base
+            return cut[0] + '!' + cut[1] + domain
         except:
             return cut[0] + domain
 
@@ -139,8 +139,6 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user_email = self.email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
-        eve_user['password'] = None
-        print(eve_user)
 
         queryset = self.get_queryset().filter(email=eve_user_email)
         if not queryset:

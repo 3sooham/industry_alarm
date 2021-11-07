@@ -29,6 +29,35 @@ class EveLoginSerializer(serializers.Serializer):
 
         return {'token': token.key}
 
+class EveUserSerializer(serializers.ModelSerializer):
+    token = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'name', 'token']
+
+    # 이거 근데 user.mode()에서 해주는데 없어야하는거 같음
+    # override하는거니까 인자 맞춰줘야함
+    def create(self, validated_data):
+        # 이제 이 validate_data는 validation도 끝났으니 정합한 데이터니 그냥 때려버리면 됨
+        # 이거 **은
+        # **d means "take all additional named arguments to this function
+        # and insert them into this parameter as dictionary entries."
+        # 이거 create_user가 인자를 2개 받아야하니 **validated_data
+        user = User.objects.create_user(**validated_data)
+        # 가져오거나 생성한값이랑
+        # 생성됐는지 가져온건지 여부를
+        # 튜플로줌
+        # 저게 생성으로 가져온 결과물이면 True
+        # 있던거 가져온거면 False
+        # _는 안쓸값은 _로 저장함
+        token, _ = Token.objects.get_or_create(user=user)
+        # 이거 가능한 이유는 user는 User의 인스턴스고 파이썬 클래스는 getter setter없이 걍 뭐든 할 수 있어서
+        # 이렇게 하면 token이 추가가 가능한거임
+        # 추가로 걍 객체를 serialize시키면 아까말한 __str__()값이 들어감
+        user.token = token
+        return user
+
 # drf
 # 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성
 # 2. 각 serializer는 아래와 같은 field를 가지고 이름에 맞는 동작을 해야함
