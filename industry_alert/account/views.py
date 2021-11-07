@@ -15,7 +15,7 @@ import os
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
-    queryset = User.objects.all()
+    queryset = User.objects
     serializer_class = UserSerializer
 
     # create url for esi request
@@ -131,10 +131,21 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user['name'] = character_dict['CharacterName']
 
         queryset = self.get_queryset().filter(name=eve_user['name'])
-        if queryset == None:
-            print("쿼리없음!!")
-        print(queryset)
-        serializer = self.get_serializer(data=eve_user)
+        if not queryset:
+            serializer = self.get_serializer(data=eve_user)
+            try:
+                serializer.is_valid(raise_exception=True)
+                # 이거 save()했을때 불려오는 method는
+                # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
+                # UserSerializer.create()를 불러오는거임
+                serializer.save()
+                # 이거 pw는 write_only라서 안보임
+                return serializer.data
+            except serializers.ValidationError:
+                return Response({"status": "failed", "errors": serializer.errors})
+
+        # login user and return token
+        serializer = LoginSerializer(data=eve_user)
         try:
             serializer.is_valid(raise_exception=True)
             # 이거 save()했을때 불려오는 method는
