@@ -39,6 +39,7 @@ class EveUserSerializer(serializers.ModelSerializer):
         fields = ['email', 'name', 'token']
 
     def create(self, validated_data):
+        # create random password for eve user
         validated_data['password'] = create_random_string()
         user = User.objects.create_user(**validated_data)
 
@@ -127,7 +128,8 @@ class UserSerializer(serializers.ModelSerializer):
         # 이렇게 하면 token이 추가가 가능한거임
         # 추가로 걍 객체를 serialize시키면 아까말한 __str__()값이 들어감
         user.token = token
-        return user
+        # token object의 key가 사용하는 token임
+        return {"token": token.key}
 
     def update(self, instance, validated_data):
         # items()은 key, value 튜플쌍을 튜플로 리턴하는 함수임

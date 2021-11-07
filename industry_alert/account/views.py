@@ -128,12 +128,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer = self.get_serializer(data=eve_user)
             try:
                 serializer.is_valid(raise_exception=True)
-                # 이거 save()했을때 불려오는 method는
-                # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
-                # UserSerializer.create()를 불러오는거임
                 serializer.save()
-                # 이거 pw는 write_only라서 안보임
-                return serializer.data
+                # 생성 했으면 status code 201 보내줘야함
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             except serializers.ValidationError:
                 return Response({"status": "failed register user via eve account", "errors": serializer.errors})
 
@@ -147,7 +144,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
             # 이거 pw는 write_only라서 안보임
             # print(serializer.data)
-            return serializer.data
+            return Response(serializer.data)
         except serializers.ValidationError:
             return Response({"status": "failed login via eve account", "errors": serializer.errors})
 
