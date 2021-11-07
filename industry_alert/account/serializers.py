@@ -63,7 +63,7 @@ class LoginSerializer(serializers.Serializer):
 #     읽기전용 : token
 #     동작 : 받은 user정보를 통해 User를 생성하고, 생성된 user의 token을 새로 발행해서 password를 제외한 나머지 정보와 함께 돌려줌
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, allow_null=True)
     token = serializers.CharField(read_only=True)
 
     class Meta:

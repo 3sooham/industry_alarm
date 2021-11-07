@@ -15,8 +15,9 @@ import os
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
-
+    queryset = User.objects.all()
     serializer_class = UserSerializer
+
     # create url for esi request
     def url_creater(self, character_id, scopes):
         base_url = 'https://esi.evetech.net/latest/characters/'
@@ -125,14 +126,26 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
         # create django user and return its token
         # 이거 지금 3sooham이런게아니라 숫자 아이디인데 이거 나중에 3sooham이 들어가도록 바꾸기
-        eve_user = {}
-        eve_user['email'] = str(character_id) + '@eveonline.com'
-        eve_user['password'] = str(character_id)
-        eve_user['name'] = str(character_id)
-        login_token = AccountViewSet.register(self, request, eve_user)
-        print(login_token)
+        eve_user = dict()
+        eve_user['email'] = character_dict['CharacterName'] + '@eveonline.com'
+        eve_user['name'] = character_dict['CharacterName']
 
-        return Response({"token": login_token['token']})
+        queryset = self.get_queryset().filter(name=eve_user['name'])
+        if queryset == None:
+            print("쿼리없음!!")
+        print(queryset)
+        serializer = self.get_serializer(data=eve_user)
+        try:
+            serializer.is_valid(raise_exception=True)
+            # 이거 save()했을때 불려오는 method는
+            # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
+            # UserSerializer.create()를 불러오는거임
+            serializer.save()
+            # 이거 pw는 write_only라서 안보임
+            # print(serializer.data)
+            return serializer.data
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
 
 
 # drf login
