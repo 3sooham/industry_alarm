@@ -4,37 +4,20 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .models import User
-from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, InvalidPassword
+from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, EveUserSerializer, InvalidPassword
 
 # eve login
 import requests
 import base64
 from dotenv import load_dotenv
 import os
+from .utils import url_creator, email_creator
 
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
     queryset = User.objects
-    serializer_class = UserSerializer
-
-    # create url for esi request
-    def url_creator(self, character_id, scopes):
-        base_url = 'https://esi.evetech.net/latest/characters/'
-
-        # 이거 뒤에 query string 떼내야함
-        esi_scopes = {'industry_jobs': '/industry/jobs/?datasource=tranquility'}
-
-        return base_url + str(character_id) + esi_scopes[scopes]
-    
-    def email_creator(self, character_name):
-        domain = '@eveoline.com'
-        cut = character_name.split(' ')
-        try:
-            cut[1]
-            return cut[0] + '!' + cut[1] + domain
-        except:
-            return cut[0] + domain
+    serializer_class = EveUserSerializer
 
     @action(methods=['get'], detail=False, url_path='redirect')
     def get_users_published_posts(self, request):
@@ -126,7 +109,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # esi 콜에 그거 불러서 사용해야함
 
         
-        # esi_request_url = self.url_creator(character_id, 'industry_jobs')
+        # esi_request_url = url_creator(character_id, 'industry_jobs')
         # res4 = requests.get(
         #      esi_request_url,
         #      headers= {'Authorization': acc}
@@ -136,7 +119,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # create django user and return its token
         # 이거 지금 3sooham이런게아니라 숫자 아이디인데 이거 나중에 3sooham이 들어가도록 바꾸기
         eve_user = dict()
-        eve_user_email = self.email_creator(character_dict['CharacterName'])
+        eve_user_email = email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
 

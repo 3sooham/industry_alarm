@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import User
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
+from .utils import create_random_string
 # get_user_model() : 클래스이다.
 # >>> get_user_model()
 # <class 'accounts.models.User'>
@@ -28,7 +29,23 @@ class EveLoginSerializer(serializers.Serializer):
         token, _ = Token.objects.get_or_create(user=user)
 
         return {'token': token.key}
-        
+
+
+class EveUserSerializer(serializers.ModelSerializer):
+    token = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'name', 'token']
+
+    def create(self, validated_data):
+        validated_data['password'] = create_random_string()
+        user = User.objects.create_user(**validated_data)
+
+        token, _ = Token.objects.get_or_create(user=user)
+        user.token = token
+        return user
+
 
 # drf
 # 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성
