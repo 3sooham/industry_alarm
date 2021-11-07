@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .models import User
-from .serializers import LoginSerializer, UserSerializer, InvalidPassword
+from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, InvalidPassword
 
 # eve login
 import requests
@@ -142,7 +142,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user['password'] = None
         print(eve_user)
 
-        queryset = self.get_queryset().filter(name=eve_user['name'])
+        queryset = self.get_queryset().filter(email=eve_user_email)
         if not queryset:
             serializer = self.get_serializer(data=eve_user)
             try:
@@ -157,7 +157,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 return Response({"status": "failed register user via eve account", "errors": serializer.errors})
 
         # login user and return token
-        serializer = LoginSerializer(data=eve_user)
+        serializer = EveLoginSerializer(data=eve_user)
         try:
             serializer.is_valid(raise_exception=True)
             # 이거 save()했을때 불려오는 method는

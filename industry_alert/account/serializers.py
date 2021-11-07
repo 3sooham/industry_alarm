@@ -13,6 +13,22 @@ from rest_framework.authtoken.models import Token
 # exceptions
 class InvalidPassword(Exception):
     pass
+
+
+class EveLoginSerializer(serializers.Serializer):
+    email = serializers.CharField(write_only=True)
+    token = serializers.CharField(read_only=True)
+
+    def create(self, validated_data):
+        email = validated_data['email']
+
+        user = User.objects.get(email=email)
+
+        # 위에서 get안되면 exception 뱉어서 여기 안탐
+        token, _ = Token.objects.get_or_create(user=user)
+
+        return {'token': token.key}
+
 # drf
 # 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성
 # 2. 각 serializer는 아래와 같은 field를 가지고 이름에 맞는 동작을 해야함
@@ -64,7 +80,7 @@ class LoginSerializer(serializers.Serializer):
 #     읽기전용 : token
 #     동작 : 받은 user정보를 통해 User를 생성하고, 생성된 user의 token을 새로 발행해서 password를 제외한 나머지 정보와 함께 돌려줌
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=False)
     token = serializers.CharField(read_only=True)
 
     class Meta:
