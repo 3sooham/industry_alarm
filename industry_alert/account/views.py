@@ -19,13 +19,22 @@ class EveLoginViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
     # create url for esi request
-    def url_creater(self, character_id, scopes):
+    def url_creator(self, character_id, scopes):
         base_url = 'https://esi.evetech.net/latest/characters/'
 
         # 이거 뒤에 query string 떼내야함
         esi_scopes = {'industry_jobs': '/industry/jobs/?datasource=tranquility'}
 
         return base_url + str(character_id) + esi_scopes[scopes]
+    
+    def email_creator(self, character_name):
+        domain = '@eveoline.com'
+        cut = character_name.split(' ')
+        try:
+            cut[1]
+            return cut[0] + cut[1] + base
+        except:
+            return cut[0] + domain
 
     @action(methods=['get'], detail=False, url_path='redirect')
     def get_users_published_posts(self, request):
@@ -117,7 +126,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # esi 콜에 그거 불러서 사용해야함
 
         
-        # esi_request_url = self.url_creater(character_id, 'industry_jobs')
+        # esi_request_url = self.url_creator(character_id, 'industry_jobs')
         # res4 = requests.get(
         #      esi_request_url,
         #      headers= {'Authorization': acc}
@@ -127,8 +136,11 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # create django user and return its token
         # 이거 지금 3sooham이런게아니라 숫자 아이디인데 이거 나중에 3sooham이 들어가도록 바꾸기
         eve_user = dict()
-        eve_user['email'] = character_dict['CharacterName'] + '@eveonline.com'
+        eve_user_email = self.email_creator(character_dict['CharacterName'])
+        eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
+        eve_user['password'] = None
+        print(eve_user)
 
         queryset = self.get_queryset().filter(name=eve_user['name'])
         if not queryset:
@@ -142,7 +154,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 # 이거 pw는 write_only라서 안보임
                 return serializer.data
             except serializers.ValidationError:
-                return Response({"status": "failed", "errors": serializer.errors})
+                return Response({"status": "failed register user via eve account", "errors": serializer.errors})
 
         # login user and return token
         serializer = LoginSerializer(data=eve_user)
@@ -156,7 +168,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             # print(serializer.data)
             return serializer.data
         except serializers.ValidationError:
-            return Response({"status": "failed", "errors": serializer.errors})
+            return Response({"status": "failed login via eve account", "errors": serializer.errors})
 
 
 # drf login

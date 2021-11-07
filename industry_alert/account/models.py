@@ -19,7 +19,7 @@ class AccountManager(BaseUserManager):
 
         # Sets the user’s password to the given raw string,
         # taking care of the password hashing. Doesn’t save the User object.
-        user.set_password()
+        user.set_password(password)
         user.save()
         return user
 

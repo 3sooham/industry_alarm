@@ -24,6 +24,7 @@ class InvalidPassword(Exception):
 class LoginSerializer(serializers.Serializer):
     # write_only는 값을 받아서 create/update같은거만 하는거임
     email = serializers.CharField(write_only=True)
+    # required=False
     password = serializers.CharField(write_only=True)
     # 입력받는게 아니라 return으로 돌려주는 값이니까 read_only임
     token = serializers.CharField(read_only=True)
@@ -63,7 +64,7 @@ class LoginSerializer(serializers.Serializer):
 #     읽기전용 : token
 #     동작 : 받은 user정보를 통해 User를 생성하고, 생성된 user의 token을 새로 발행해서 password를 제외한 나머지 정보와 함께 돌려줌
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, allow_null=True)
+    password = serializers.CharField(write_only=True)
     token = serializers.CharField(read_only=True)
 
     class Meta:
@@ -79,6 +80,7 @@ class UserSerializer(serializers.ModelSerializer):
         # **d means "take all additional named arguments to this function
         # and insert them into this parameter as dictionary entries."
         # 이거 create_user가 인자를 2개 받아야하니 **validated_data
+        print(validated_data)
         user = User.objects.create_user(**validated_data)
         # 가져오거나 생성한값이랑
         # 생성됐는지 가져온건지 여부를
