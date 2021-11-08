@@ -119,10 +119,16 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            # 이브 계정으로 유저 생성할 경우
             # 생성 했으면 status code 201 보내줘야함
+            serializer_data = serializer.data
             if serializer.data['status'] == 201:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.data)
+                del serializer_data['status']
+                return Response(serializer_data, status=status.HTTP_201_CREATED)
+           
+            # 이브 계정으로 user 로그인할경우
+            del serializer_data["status"]
+            return Response(serializer_data)
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
 

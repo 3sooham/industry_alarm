@@ -35,22 +35,19 @@ class InvalidPassword(Exception):
 class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
     token = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = get_user_model()
-        fields = ['email', 'name']
+    status = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(write_only=True)
 
     def create(self, validated_data):
-        print(validated_data) 
         # 유저가 존재할 경우에
-        if User.objects.all().filter(email=validated_data['email']).exisits():
+        if User.objects.all().filter(email=validated_data['email']).exists():
             email = validated_data['email']
             user = User.objects.get(email=email)
-
+            print(user.name)
             # 위에서 get안되면 exception 뱉어서 여기 안탐
             token, _ = Token.objects.get_or_create(user=user)
 
-            return {'token': token.key, 'status': 201}
+            return {'token': token.key, 'status': 200}
 
         # 유저가 존재하지 않으면 회원가입
         validated_data['password'] = create_random_string()
@@ -58,7 +55,7 @@ class EveUserSerializer(serializers.Serializer):
 
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
-        return {"token": token.key}
+        return {"token": token.key, 'status': 201}
 
 # class EveUserSerializer(serializers.ModelSerializer):
 #     token = serializers.CharField(read_only=True)
