@@ -1,3 +1,4 @@
+from requests.api import get
 from rest_framework import serializers
 from .models import User
 from django.contrib.auth import get_user_model
@@ -16,36 +17,64 @@ class InvalidPassword(Exception):
     pass
 
 
-class EveLoginSerializer(serializers.Serializer):
+# class EveLoginSerializer(serializers.Serializer):
+#     email = serializers.CharField(write_only=True)
+#     token = serializers.CharField(read_only=True)
+
+#     def create(self, validated_data):
+#         email = validated_data['email']
+
+#         user = User.objects.get(email=email)
+
+#         # 위에서 get안되면 exception 뱉어서 여기 안탐
+#         token, _ = Token.objects.get_or_create(user=user)
+
+#         return {'token': token.key}
+
+
+class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
-    token = serializers.CharField(read_only=True)
-
-    def create(self, validated_data):
-        email = validated_data['email']
-
-        user = User.objects.get(email=email)
-
-        # 위에서 get안되면 exception 뱉어서 여기 안탐
-        token, _ = Token.objects.get_or_create(user=user)
-
-        return {'token': token.key}
-
-
-class EveUserSerializer(serializers.ModelSerializer):
     token = serializers.CharField(read_only=True)
 
     class Meta:
         model = get_user_model()
-        fields = ['email', 'name', 'token']
-
+        fields = ['email', 'name']
+        
     def create(self, validated_data):
-        # create random password for eve user
+        print(validated_data) 
+        # 유저가 존재할 경우에
+        if User.objects.all().filter(email=validated_data['email']).exisits():
+            email = validated_data['email']
+            user = User.objects.get(email=email)
+
+            # 위에서 get안되면 exception 뱉어서 여기 안탐
+            token, _ = Token.objects.get_or_create(user=user)
+
+            return {'token': token.key}
+
+        # 유저가 존재하지 않으면 회원가입
         validated_data['password'] = create_random_string()
         user = User.objects.create_user(**validated_data)
 
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
         return {"token": token.key}
+
+# class EveUserSerializer(serializers.ModelSerializer):
+#     token = serializers.CharField(read_only=True)
+
+#     class Meta:
+#         model = get_user_model()
+#         fields = ['email', 'name', 'token']
+
+#     def create(self, validated_data):
+#         # create random password for eve user
+#         validated_data['password'] = create_random_string()
+#         user = User.objects.create_user(**validated_data)
+
+#         token, _ = Token.objects.get_or_create(user=user)
+#         user.token = token
+#         return {"token": token.key}
 
 
 # drf
