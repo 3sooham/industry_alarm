@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .models import User
-from .serializers import LoginSerializer, UserSerializer, EveLoginSerializer, EveUserSerializer, InvalidPassword
+from .serializers import LoginSerializer, UserSerializer, EveUserSerializer, InvalidPassword
 
 # eve login
 import requests
@@ -106,15 +106,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # 지금 해야할거는 일단 characterid 기반으로 User 하나 생성하고
         # token return 해주기
         # 그 다음으로는 access_token, refresh_token, character_id 저장한 모델 하나만들어서
-        # esi 콜에 그거 불러서 사용해야함
-
-        
-        # esi_request_url = url_creator(character_id, 'industry_jobs')
-        # res4 = requests.get(
-        #      esi_request_url,
-        #      headers= {'Authorization': acc}
-        # )
-        # dd = res4.json()
+        # esi request에 그거 불러서 사용해야함
 
         # create django user and return its token
         # 이거 지금 3sooham이런게아니라 숫자 아이디인데 이거 나중에 3sooham이 들어가도록 바꾸기
@@ -123,30 +115,40 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
 
-        queryset = self.get_queryset().filter(email=eve_user_email)
-        if not queryset.exists():
-            serializer = self.get_serializer(data=eve_user)
-            try:
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                # 생성 했으면 status code 201 보내줘야함
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            except serializers.ValidationError:
-                return Response({"status": "failed register user via eve account", "errors": serializer.errors})
-
-        # login user and return token
-        serializer = EveLoginSerializer(data=eve_user)
+        serializer = self.get_serializer(data=eve_user)
         try:
             serializer.is_valid(raise_exception=True)
-            # 이거 save()했을때 불려오는 method는
-            # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
-            # UserSerializer.create()를 불러오는거임
             serializer.save()
-            # 이거 pw는 write_only라서 안보임
-            # print(serializer.data)
+            # 생성 했으면 status code 201 보내줘야함
+            if serializer.data['status'] == 201:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.data)
         except serializers.ValidationError:
-            return Response({"status": "failed login via eve account", "errors": serializer.errors})
+            return Response({"status": "failed login user via eve account", "errors": serializer.errors})
+
+        # if not queryset.exists():
+        #     serializer = self.get_serializer(data=eve_user)
+        #     try:
+        #         serializer.is_valid(raise_exception=True)
+        #         serializer.save()
+        #         # 생성 했으면 status code 201 보내줘야함
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #     except serializers.ValidationError:
+        #         return Response({"status": "failed register user via eve account", "errors": serializer.errors})
+
+        # # login user and return token
+        # serializer = EveLoginSerializer(data=eve_user)
+        # try:
+        #     serializer.is_valid(raise_exception=True)
+        #     # 이거 save()했을때 불려오는 method는
+        #     # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
+        #     # UserSerializer.create()를 불러오는거임
+        #     serializer.save()
+        #     # 이거 pw는 write_only라서 안보임
+        #     # print(serializer.data)
+        #     return Response(serializer.data)
+        # except serializers.ValidationError:
+        #     return Response({"status": "failed login via eve account", "errors": serializer.errors})
 
 
 # drf login

@@ -39,7 +39,7 @@ class EveUserSerializer(serializers.Serializer):
     class Meta:
         model = get_user_model()
         fields = ['email', 'name']
-        
+
     def create(self, validated_data):
         print(validated_data) 
         # 유저가 존재할 경우에
@@ -50,7 +50,7 @@ class EveUserSerializer(serializers.Serializer):
             # 위에서 get안되면 exception 뱉어서 여기 안탐
             token, _ = Token.objects.get_or_create(user=user)
 
-            return {'token': token.key}
+            return {'token': token.key, 'status': 201}
 
         # 유저가 존재하지 않으면 회원가입
         validated_data['password'] = create_random_string()
