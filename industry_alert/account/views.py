@@ -37,17 +37,17 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                          & \
                          state=3sooham')
 
-    def eve_token(self, res_dict):
+    def save_eve_access_token(self, res_dict):
         # 이브 토큰 db에 저장하는데 user랑 onetoone이기 때문에 user를 먼저 생성하고 이거를 생성해야함
         # res_dict의 expires_in 이거를python datetime format으로 바꿔서 넣어줘야함
-        # serializer = EveTokenSerializer(data=res_dict)
-        # try:
-        #     serializer.is_valid(raise_exception=True)
-        #     serializer.save()
-        #     print(serializer.data)
-        # except serializers.ValidationError:
-        print(res_dict) 
-        return Response({"status": "failed to save Eve Access Token"})
+        serializer = EveTokenSerializer(data=res_dict)
+        try:
+            print("in func eve_access_token", res_dict)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            print("in func eve__access_token", serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
 
     @action(methods=['get'], detail=False)
     def callback(self, request):
@@ -94,9 +94,11 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 headers=headers,
                 data=body
             )
+            # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
+            # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
             res_dict = res.json()
             # access_token = res_dict.get('access_token')
-            # get()은 default를 return 하니때문에 keyerror생성안하니 사용안해야함
+            # get()은 default를 return 하니때문에 keyerror생성안하니 get()이거 쓰면 안됨
             access_token = res_dict['access_token']
             res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=11, seconds=59)
             # 이거 어차피 여기서 access_token이 안온거면 연결이  실패한거임
@@ -107,8 +109,6 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         except KeyError:
             return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})
 
-        # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
-        # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
         # 여기서 말하는 JSON payload가 위의 res에 저장됨
 
         # access_token으로 eve character name 가져옴
@@ -133,6 +133,13 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
+            # 유저 생성했으니까 이제 유저랑 one to one인 eve_access_token obejct 생성
+            res_save_eve_token = self.save_eve_token(res_dict)
+            # save_eve_token에서 validation error 생기면
+            if res_save_eve_token:
+                return res_save_eve_token
+
             # 이브 계정으로 유저 생성할 경우
             # 생성 했으면 status code 201 보내줘야함
             serializer_data = serializer.data
@@ -143,46 +150,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
            
             # 이브 계정으로 user 로그인할경우
             del serializer_data["status"]
-            aaa = self.eve_token(res_dict)
-            return aaa
             return Response(serializer_data)
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
-
-
-        # 이브 토큰 db에 저장하는데 user랑 onetoone이기 때문에 user를 먼저 생성하고 이거를 생성해야함
-        # res_dict의 expires_in 이거를python datetime format으로 바꿔서 넣어줘야함
-        serializer = EveTokenSerializer(data=res_dict)
-        try:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            print(serializer.data)
-        except serializers.ValidationError:
-            return Response({"status": "failed to save Eve Access Token", "errors": serializer.errors})
-
-        # if not queryset.exists():
-        #     serializer = self.get_serializer(data=eve_user)
-        #     try:
-        #         serializer.is_valid(raise_exception=True)
-        #         serializer.save()
-        #         # 생성 했으면 status code 201 보내줘야함
-        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-        #     except serializers.ValidationError:
-        #         return Response({"status": "failed register user via eve account", "errors": serializer.errors})
-
-        # # login user and return token
-        # serializer = EveLoginSerializer(data=eve_user)
-        # try:
-        #     serializer.is_valid(raise_exception=True)
-        #     # 이거 save()했을때 불려오는 method는
-        #     # serializer = UserSerializer(data=request.data)에서 data앞에 뭐가 없으면
-        #     # UserSerializer.create()를 불러오는거임
-        #     serializer.save()
-        #     # 이거 pw는 write_only라서 안보임
-        #     # print(serializer.data)
-        #     return Response(serializer.data)
-        # except serializers.ValidationError:
-        #     return Response({"status": "failed login via eve account", "errors": serializer.errors})
 
 
 # drf login
