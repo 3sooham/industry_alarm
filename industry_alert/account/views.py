@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
-from .models import User
+from .models import EveAccessToken, User
 from .serializers import LoginSerializer, UserSerializer, EveUserSerializer, InvalidPassword
 
 # eve login
@@ -108,8 +108,16 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # 그 다음으로는 access_token, refresh_token, character_id 저장한 모델 하나만들어서
         # esi request에 그거 불러서 사용해야함
 
+        # 데이터 저장
+        serializer = EveAccessToken(data=character_dict)
+        try:
+            serializers.is_valid(raise_exception=True)
+            serializer.save()
+            print(serializer.data)
+        except serializers.ValidationError:
+            return Response({"status": "failed to save Eve Access Token", "errors": serializer.errors})
+
         # create django user and return its token
-        # 이거 지금 3sooham이런게아니라 숫자 아이디인데 이거 나중에 3sooham이 들어가도록 바꾸기
         eve_user = dict()
         eve_user_email = email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
