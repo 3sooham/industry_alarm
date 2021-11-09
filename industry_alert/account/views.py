@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .models import EveAccessToken, User
-from .serializers import LoginSerializer, UserSerializer, EveUserSerializer, InvalidPassword
+from .serializers import LoginSerializer, UserSerializer, EveUserSerializer, EveTokenSerializer, InvalidPassword
 
 # eve login
 import requests
@@ -12,6 +12,9 @@ import base64
 from dotenv import load_dotenv
 import os
 from .utils import url_creator, email_creator
+
+# eve token
+import datetime
 
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
@@ -80,7 +83,10 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 data=body
             )
             res_dict = res.json()
-            access_token = res_dict.get('access_token')
+            # access_token = res_dict.get('access_token')
+            # get()은 default를 return 하니때문에 keyerror생성안하니 사용안해야함
+            access_token = res_dict['access_token']
+            res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=11, seconds=59)
             # 이거 어차피 여기서 access_token이 안온거면 연결이  실패한거임
             # 그러니까 예외는 여기서 keyError하나만 잡고 나머지 다른 에러는
             # django에서 500에러 주니 이거 logging 해서 잡아내면됨
@@ -92,6 +98,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
         # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
         # 여기서 말하는 JSON payload가 위의 res에 저장됨
+
+        # access_token으로 eve character name 가져옴
         acc = 'Bearer ' + access_token
         try:
             character_res = requests.get(
@@ -103,15 +111,11 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         except KeyError:
             return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})
 
-        # 지금 해야할거는 일단 characterid 기반으로 User 하나 생성하고
-        # token return 해주기
-        # 그 다음으로는 access_token, refresh_token, character_id 저장한 모델 하나만들어서
-        # esi request에 그거 불러서 사용해야함
-
-        # 데이터 저장
-        serializer = EveAccessToken(data=character_dict)
+        # 이브 토큰 db에  저장
+        # res_dict의 expires_in 이거를python datetime format으로 바꿔서 넣어줘야함
+        serializer = EveTokenSerializer(data=res_dict)
         try:
-            serializers.is_valid(raise_exception=True)
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             print(serializer.data)
         except serializers.ValidationError:
