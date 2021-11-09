@@ -135,10 +135,11 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
 
             # 유저 생성했으니까 이제 유저랑 one to one인 eve_access_token obejct 생성
-            res_save_eve_token = self.save_eve_token(res_dict)
+            res_save_eve_access_token = self.save_eve_access_token(res_dict)
             # save_eve_token에서 validation error 생기면
-            if res_save_eve_token:
-                return res_save_eve_token
+            if res_save_eve_access_token:
+                # response(validation error)
+                return res_save_eve_access_token
 
             # 이브 계정으로 유저 생성할 경우
             # 생성 했으면 status code 201 보내줘야함
