@@ -19,7 +19,7 @@ import datetime
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
-    queryset = User.objects
+    queryset = User.objects.all()
     serializer_class = EveUserSerializer
 
     @action(methods=['get'], detail=False, url_path='redirect')

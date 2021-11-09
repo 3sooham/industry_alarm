@@ -19,8 +19,6 @@ class InvalidPassword(Exception):
 
 
 class EveTokenSerializer(serializers.ModelSerializer):
-    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
-
     class Meta:
         model = EveAccessToken
         fields = ['id', 'user_id', 'access_token', 'expires_in', 'token_type', 'refresh_token']
