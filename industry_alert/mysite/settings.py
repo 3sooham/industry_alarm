@@ -142,13 +142,15 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Seoul'
+# 이거 utc사용해야함 한국시간으로 보여줄때는 시간 그냥 바꿔서 보여주는게 안헷갈리는 길임
+# TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+# set false to user defacult timezone(utc)
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
