@@ -143,7 +143,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
            
             # 이브 계정으로 user 로그인할경우
             del serializer_data["status"]
-            self.eve_token(res_dict)
+            aaa = self.eve_token(res_dict)
+            return aaa
             return Response(serializer_data)
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
