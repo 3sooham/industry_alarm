@@ -149,7 +149,10 @@ USE_I18N = True
 
 USE_L10N = True
 
-# set false to user defacult timezone(utc)
+# set false to use defacult timezone(utc)
+# 이거 mysql도 utc로 해서 통일해줘야지 덜 헷갈림
+# mysql timezone은 로컬 컴퓨터 설정 따라감
+# 따라서 이 서버에서는 utc임 
 USE_TZ = False
 
 
