@@ -124,6 +124,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})
 
         # create django user and return its token
+        # eve_user = {} 이렇게 하는거보다 {}이 set, dictionary 둘 다여서 dict()해주는게 좋음
         eve_user = dict()
         eve_user_email = email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
