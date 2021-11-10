@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .models import EveAccessToken, User
-from .serializers import LoginSerializer, UserSerializer, EveUserSerializer, EveTokenSerializer, InvalidPassword
+from .serializers import LoginSerializer, UserSerializer, EveUserSerializer, EveAccessTokenSerializer, InvalidPassword
 
 # eve login
 import requests
@@ -130,23 +130,14 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user['name'] = character_dict['CharacterName']
         eve_user['eve_access_token'] = res_dict
 
-        serializer = self.get_serializer(data=eve_user)
+        serializer = EveAccessToken(data=eve_user)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            # 유저 생성했으니까 이제 유저랑 one to one인 eve_access_token obejct 생성
-            context = self.get_serializer_context()
-
-            res_save_eve_access_token = self.save_eve_access_token(res_dict)
-            # save_eve_token에서 validation error 생기면
-            if res_save_eve_access_token:
-                # response(validation error)
-                return res_save_eve_access_token
-
             # 이브 계정으로 유저 생성할 경우
             # 생성 했으면 status code 201 보내줘야함
-            serializer_data = serializer.data
+            serializer_data, = serializer.data()
             if serializer.data['status'] == 201:
                 del serializer_data['status']
                 self.eve_token(res_dict)
@@ -157,6 +148,34 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             return Response(serializer_data)
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
+
+        # serializer = self.get_serializer(data=eve_user)
+        # try:
+        #     serializer.is_valid(raise_exception=True)
+        #     serializer.save()
+
+        #     # 유저 생성했으니까 이제 유저랑 one to one인 eve_access_token obejct 생성
+        #     context = self.get_serializer_context()
+
+        #     res_save_eve_access_token = self.save_eve_access_token(res_dict)
+        #     # save_eve_token에서 validation error 생기면
+        #     if res_save_eve_access_token:
+        #         # response(validation error)
+        #         return res_save_eve_access_token
+
+        #     # 이브 계정으로 유저 생성할 경우
+        #     # 생성 했으면 status code 201 보내줘야함
+        #     serializer_data = serializer.data
+        #     if serializer.data['status'] == 201:
+        #         del serializer_data['status']
+        #         self.eve_token(res_dict)
+        #         return Response(serializer_data, status=status.HTTP_201_CREATED)
+           
+        #     # 이브 계정으로 user 로그인할경우
+        #     del serializer_data["status"]
+        #     return Response(serializer_data)
+        # except serializers.ValidationError:
+        #     return Response({"status": "failed login user via eve account", "errors": serializer.errors})
 
 
 # drf login

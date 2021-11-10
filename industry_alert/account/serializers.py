@@ -25,7 +25,6 @@ class EveUserSerializer(serializers.Serializer):
     status = serializers.IntegerField(read_only=True)
 
     def create(self, validated_data):
-        eve_access_token_data = validated_data.pop('eve_access_token')
         # CharacterName으로 생성해서 넣어준 email로 유저 찾았는데 있으면
         if User.objects.all().filter(email=validated_data['email']).exists():
             email = validated_data['email']
@@ -34,25 +33,20 @@ class EveUserSerializer(serializers.Serializer):
             token, _ = Token.objects.get_or_create(user=user)
             # eve_access_token update
 
-            # return {'token': token.key, 'status': 200}
-            return user
+            return {'token': token.key, 'status': 200}
 
         # 유저가 존재하지 않으면 회원가입
         # eve_access_token_data는 user 생성할때 필요 없으니 빼줌
         validated_data['password'] = create_random_string()
         # 유저생성
         user = User.objects.create_user(**validated_data)
-        # eve_access_token 생성
-        eat = EveAccessToken.objects.create(user=user, **eve_access_token_data)
-        print(eat)
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
-        # return {"token": token.key, 'status': 201}
-        return user
+        return {"token": token.key, 'status': 201}
 
 
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
-class EveTokenSerializer(serializers.ModelSerializer):
+class EveAceessTokenSerializer(serializers.ModelSerializer):
     # user = User.objects.all().filter(email=validated_data['email'])
     # 이거 user가 User를 가리키도록해서 create()를 새로 만들어야할듯
     # user id로 User를얻어와서
@@ -61,6 +55,15 @@ class EveTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = EveAccessToken
         fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        # 유저 생성
+        user = User.objects.get_or_create(**user_data)
+        # EveAccessToken 생성
+        instance = EveAccessToken.objects.update_or_create(user=user)
+        return user, instance
+
 
 
 # class EveUserSerializer(serializers.Serializer):
