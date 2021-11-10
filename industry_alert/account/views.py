@@ -138,12 +138,12 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
             serializer.is_valid(raise_exception=True)
-            token, status_code = serializer.save()
+            instance, update_status, status_code, token = serializer.save()
 
             # 이브 계정으로 유저 생성할 경우
             # 생성 했으면 status code 201 보내줘야함
             if status_code == 201:
-                return Response(token, status=status.HTTP_201_CREATED)
+                return Response(token, instance, status=status.HTTP_201_CREATED)
            
             # 이브 계정으로 user 로그인할경우
             return Response(token)
