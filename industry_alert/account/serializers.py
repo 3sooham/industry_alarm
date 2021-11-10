@@ -46,7 +46,7 @@ class EveUserSerializer(serializers.Serializer):
 
 
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
-class EveAceessTokenSerializer(serializers.ModelSerializer):
+class EveAccessTokenSerializer(serializers.ModelSerializer):
     # user = User.objects.all().filter(email=validated_data['email'])
     # 이거 user가 User를 가리키도록해서 create()를 새로 만들어야할듯
     # user id로 User를얻어와서

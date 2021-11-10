@@ -128,9 +128,14 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user_email = email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
-        eve_user['eve_access_token'] = res_dict
 
-        serializer = EveAccessToken(data=eve_user)
+        temp_dict = dict()
+        temp_dict['user'] = eve_user
+        temp_dict['access_token'] = res_dict['access_token']
+        temp_dict['expires_in'] = res_dict['expires_in']
+        temp_dict['resfresh_token'] = res_dict['refresh_dict']
+
+        serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
