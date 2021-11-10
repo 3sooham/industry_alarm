@@ -18,24 +18,66 @@ class InvalidPassword(Exception):
     pass
 
 
-class EveUserSerializer(serializers.Serializer):
+# https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
+class EveTokenSerializer(serializers.ModelSerializer):
+    # user = User.objects.all().filter(email=validated_data['email'])
+    # 이거 user가 User를 가리키도록해서 create()를 새로 만들어야할듯
+    # user id로 User를얻어와서
+
+    class Meta:
+        model = EveAccessToken
+        fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
+
+
+# class EveUserSerializer(serializers.Serializer):
+#     email = serializers.CharField(write_only=True)
+#     token = serializers.CharField(read_only=True)
+#     status = serializers.IntegerField(read_only=True)
+#     name = serializers.CharField(write_only=True)
+#     eve_access_token = EveTokenSerializer()
+
+#     def create(self, validated_data):
+#         # 유저가 존재할 경우에
+#         if User.objects.all().filter(email=validated_data['email']).exists():
+#             email = validated_data['email']
+#             user = User.objects.get(email=email)
+#             print(user.name)
+#             # 위에서 get안되면 exception 뱉어서 여기 안탐
+#             token, _ = Token.objects.get_or_create(user=user)
+
+#             return {'token': token.key, 'status': 200}
+
+#         # 유저가 존재하지 않으면 회원가입
+#         validated_data['password'] = create_random_string()
+#         user = User.objects.create_user(**validated_data)
+
+#         token, _ = Token.objects.get_or_create(user=user)
+#         user.token = token
+#         return {"token": token.key, 'status': 201}
+
+class EveUserSerializer(serializers.ModelSerializer):
     email = serializers.CharField(write_only=True)
+    name = serializers.CharField(write_only=True)
     token = serializers.CharField(read_only=True)
     status = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(write_only=True)
+    eve_access_token = EveTokenSerializer()
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'password', 'name', 'token', 'status', 'eve_access_token']
 
     def create(self, validated_data):
-        # 유저가 존재할 경우에
+        # CharacterName으로 생성해서 넣어준 email로 유저 찾았는데 있으면
         if User.objects.all().filter(email=validated_data['email']).exists():
             email = validated_data['email']
             user = User.objects.get(email=email)
-            print(user.name)
             # 위에서 get안되면 exception 뱉어서 여기 안탐
             token, _ = Token.objects.get_or_create(user=user)
 
             return {'token': token.key, 'status': 200}
 
         # 유저가 존재하지 않으면 회원가입
+
         validated_data['password'] = create_random_string()
         user = User.objects.create_user(**validated_data)
 
@@ -43,16 +85,17 @@ class EveUserSerializer(serializers.Serializer):
         user.token = token
         return {"token": token.key, 'status': 201}
 
-# https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
-class EveTokenSerializer(serializers.ModelSerializer):
-    # user = User.objects.all().filter(email=validated_data['email'])
-    # 이거 user가 User를 가리키도록해서 create()를 새로 만들어야할듯
-    # user id로 User를얻어와서
-    user = EveUserSerializer()
-
-    class Meta:
-        model = EveAccessToken
-        fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
+    def update(self, instance, validated_data):
+        # items()은 key, value 튜플쌍을 튜플로 리턴하는 함수임
+        print("in update instance=", instance)
+        print("in update validated_data", validated_data)
+        for key, value in validated_data.items():
+            # 제일 첫번째 인자에 key가 있으면 True 없으면 False 반환하는게 hasattr이고
+            if hasattr(instance, key):
+                # 값 저장하는게 setattr
+                setattr(instance, key, value)
+        instance.save()
+        return instance
 
 
 # drf

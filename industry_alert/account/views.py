@@ -135,6 +135,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
 
             # 유저 생성했으니까 이제 유저랑 one to one인 eve_access_token obejct 생성
+            context = self.get_serializer_context()
+            
             res_save_eve_access_token = self.save_eve_access_token(res_dict)
             # save_eve_token에서 validation error 생기면
             if res_save_eve_access_token:
