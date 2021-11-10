@@ -31,9 +31,7 @@ class EveUserSerializer(serializers.Serializer):
             user = User.objects.get(email=email)
             # 위에서 get안되면 exception 뱉어서 여기 안탐
             token, _ = Token.objects.get_or_create(user=user)
-            # eve_access_token update
-
-            return {'token': token.key, 'status': 200}
+            return user, 201
 
         # 유저가 존재하지 않으면 회원가입
         # eve_access_token_data는 user 생성할때 필요 없으니 빼줌
@@ -42,14 +40,11 @@ class EveUserSerializer(serializers.Serializer):
         user = User.objects.create_user(**validated_data)
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
-        return {"token": token.key, 'status': 201}
+        return user, 200
 
 
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
 class EveAccessTokenSerializer(serializers.ModelSerializer):
-    # user = User.objects.all().filter(email=validated_data['email'])
-    # 이거 user가 User를 가리키도록해서 create()를 새로 만들어야할듯
-    # user id로 User를얻어와서
     user = EveUserSerializer()
 
     class Meta:
@@ -59,11 +54,38 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         # 유저 생성
-        user, _ = User.objects.get_or_create(**user_data)
-        print(user)
+        # Returns a tuple of (object, created),
+        # where object is the retrieved or created object and created is a boolean specifying whether a new object was created.
+        user, status = EveUserSerializer.create(user_data)
+        print(f"in EATS user={user}, user.id={user.id}, user.token={user.token}, status={status}")
         # EveAccessToken 생성
+        # Returns a tuple of (object, created), 
+        # where object is the created or updated object and created is a boolean specifying whether a new object was created.
         instance, _ = EveAccessToken.objects.update_or_create(user=user, **validated_data)
-        return user, instance
+        print(f"in EATS instnace={instance}, instance.user.id={instance.user.id}")
+        return user.token, status
+
+
+# # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
+# class EveAccessTokenSerializer(serializers.ModelSerializer):
+#     user = EveUserSerializer()
+
+#     class Meta:
+#         model = EveAccessToken
+#         fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
+
+#     def create(self, validated_data):
+#         user_data = validated_data.pop('user')
+#         # 유저 생성
+#         # Returns a tuple of (object, created),
+#         # where object is the retrieved or created object and created is a boolean specifying whether a new object was created.
+#         user, _ = User.objects.get_or_create(**user_data)
+#         print(user)
+#         # EveAccessToken 생성
+#         # Returns a tuple of (object, created), 
+#         # where object is the created or updated object and created is a boolean specifying whether a new object was created.
+#         instance, _ = EveAccessToken.objects.update_or_create(user=user, **validated_data)
+#         return user, instance
 
 
 
