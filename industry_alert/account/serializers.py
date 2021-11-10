@@ -125,15 +125,19 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
 
     def create(self, validated_data):
+        print(f'in eat validated_data={validated_data}')
         user_data = validated_data.pop('user')
+        print(f'in eat validated_data after pop={validated_data}')
         # 유저가 존재하면
         if User.objects.all().filter(email=user_data['email']).exists():
             user_email = user_data['email']
             user_instance = User.objects.get(email=user_email)
+            print(f'in eat found user_instance={user_instance}, user.id={user_instance.id}')
             # 내 토큰 발급
             token, _ = Token.objects.get_or_create(user=user_instance)
             # EAT 저장
             instance, update_status = EveAccessToken.objects.update_or_create(user=user_instance, **validated_data)
+            print(f'in eat instance={instance}, update_status={update_status}, token={token}')
             return instance, update_status, 201, {"token": token.key}
         
         # 유저가 존재하지않으면 회원가입
