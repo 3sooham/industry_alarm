@@ -63,7 +63,9 @@ class EveUserSerializer(serializers.Serializer):
     eve_access_token = EveTokenSerializer()
 
     def create(self, validated_data):
-        print(validated_data)
+        print("in serializer validated_data = " ,validated_data)
+        eve_access_token_data = validated_data.pop('eve_access_token')
+        print("in serializer after pop validated_data = " ,validated_data)
         # CharacterName으로 생성해서 넣어준 email로 유저 찾았는데 있으면
         if User.objects.all().filter(email=validated_data['email']).exists():
             email = validated_data['email']
@@ -77,13 +79,12 @@ class EveUserSerializer(serializers.Serializer):
 
         # 유저가 존재하지 않으면 회원가입
         # eve_access_token_data는 user 생성할때 필요 없으니 빼줌
-        eve_access_token_data = validated_data.pop('eve_access_token')
         validated_data['password'] = create_random_string()
         # 유저생성
         user = User.objects.create_user(**validated_data)
         # eve_access_token 생성
-        EveAccessToken.objects.create(user=user, **eve_access_token_data)
-
+        eat = EveAccessToken.objects.create(user=user, **eve_access_token_data)
+        print(eat)
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
         return {"token": token.key, 'status': 201}
