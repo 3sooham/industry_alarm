@@ -133,7 +133,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         temp_dict['user'] = eve_user
         temp_dict['access_token'] = res_dict['access_token']
         temp_dict['expires_in'] = res_dict['expires_in']
-        temp_dict['resfresh_token'] = res_dict['refresh_dict']
+        temp_dict['token_type'] = res_dict['token_type']
+        temp_dict['resfresh_token'] = res_dict['refresh_token']
 
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
