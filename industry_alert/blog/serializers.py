@@ -61,6 +61,7 @@ class CommentSerializer(serializers.ModelSerializer):
     # 이 related field들이 fk constraint말고도 실제로 칼럼이름이 post_id로 저장되어 있음
     # post_id같이 (related_field이름)_id 이런식으로 실제 db에 기록대고
     # 이게 본체인거고 저런 post 같은게 장고가 알아서 해주는 부분인데
+    # 밑에 이거 없어도되는거같은데 물어보기
     post_id = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), required=False)
 
     class Meta:

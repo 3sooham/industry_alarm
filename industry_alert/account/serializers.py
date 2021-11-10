@@ -18,12 +18,6 @@ class InvalidPassword(Exception):
     pass
 
 
-class EveTokenSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EveAccessToken
-        fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
-
-
 class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
     token = serializers.CharField(read_only=True)
@@ -48,6 +42,18 @@ class EveUserSerializer(serializers.Serializer):
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
         return {"token": token.key, 'status': 201}
+
+# https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
+class EveTokenSerializer(serializers.ModelSerializer):
+    # user = User.objects.all().filter(email=validated_data['email'])
+    # 이거 user가 User를 가리키도록해서 create()를 새로 만들어야할듯
+    # user id로 User를얻어와서
+    user = EveUserSerializer()
+
+    class Meta:
+        model = EveAccessToken
+        fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
+
 
 # drf
 # 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성
