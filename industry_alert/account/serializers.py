@@ -71,28 +71,22 @@ class EveUserSerializer(serializers.Serializer):
             # 위에서 get안되면 exception 뱉어서 여기 안탐
             token, _ = Token.objects.get_or_create(user=user)
 
+            # eve_access_token update
+
             return {'token': token.key, 'status': 200}
 
         # 유저가 존재하지 않으면 회원가입
-        
+        # eve_access_token_data는 user 생성할때 필요 없으니 빼줌
+        eve_access_token_data = validated_data.pop('eve_access_token')
         validated_data['password'] = create_random_string()
+        # 유저생성
         user = User.objects.create_user(**validated_data)
+        # eve_access_token 생성
+        EveAccessToken.objects.create(user=user, **eve_access_token_data)
 
         token, _ = Token.objects.get_or_create(user=user)
         user.token = token
         return {"token": token.key, 'status': 201}
-
-    def update(self, instance, validated_data):
-        # items()은 key, value 튜플쌍을 튜플로 리턴하는 함수임
-        print("in update instance=", instance)
-        print("in update validated_data", validated_data)
-        for key, value in validated_data.items():
-            # 제일 첫번째 인자에 key가 있으면 True 없으면 False 반환하는게 hasattr이고
-            if hasattr(instance, key):
-                # 값 저장하는게 setattr
-                setattr(instance, key, value)
-        instance.save()
-        return instance
 
 
 # drf

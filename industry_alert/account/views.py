@@ -128,6 +128,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user_email = email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
+        eve_user['eve_access_token'] = res_dict
 
         serializer = self.get_serializer(data=eve_user)
         try:
@@ -136,7 +137,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
             # 유저 생성했으니까 이제 유저랑 one to one인 eve_access_token obejct 생성
             context = self.get_serializer_context()
-            
+
             res_save_eve_access_token = self.save_eve_access_token(res_dict)
             # save_eve_token에서 validation error 생기면
             if res_save_eve_access_token:
