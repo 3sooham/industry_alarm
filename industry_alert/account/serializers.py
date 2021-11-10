@@ -61,7 +61,7 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
         # 유저 생성
         user = User.objects.get_or_create(**user_data)
         # EveAccessToken 생성
-        instance = EveAccessToken.objects.update_or_create(user=user)
+        instance = EveAccessToken.objects.update_or_create(user=user, **validated_data)
         return user, instance
 
 
