@@ -100,7 +100,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             # access_token = res_dict.get('access_token')
             # get()은 default를 return 하니때문에 keyerror생성안하니 get()이거 쓰면 안됨
             access_token = res_dict['access_token']
-            res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=11, seconds=59)
+            res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
             # 이거 어차피 여기서 access_token이 안온거면 연결이  실패한거임
             # 그러니까 예외는 여기서 keyError하나만 잡고 나머지 다른 에러는
             # django에서 500에러 주니 이거 logging 해서 잡아내면됨
