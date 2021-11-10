@@ -55,18 +55,15 @@ class EveTokenSerializer(serializers.ModelSerializer):
 #         user.token = token
 #         return {"token": token.key, 'status': 201}
 
-class EveUserSerializer(serializers.ModelSerializer):
+class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
     name = serializers.CharField(write_only=True)
     token = serializers.CharField(read_only=True)
     status = serializers.IntegerField(read_only=True)
     eve_access_token = EveTokenSerializer()
 
-    class Meta:
-        model = get_user_model()
-        fields = ['email', 'password', 'name', 'token', 'status', 'eve_access_token']
-
     def create(self, validated_data):
+        print(validated_data)
         # CharacterName으로 생성해서 넣어준 email로 유저 찾았는데 있으면
         if User.objects.all().filter(email=validated_data['email']).exists():
             email = validated_data['email']
@@ -77,7 +74,7 @@ class EveUserSerializer(serializers.ModelSerializer):
             return {'token': token.key, 'status': 200}
 
         # 유저가 존재하지 않으면 회원가입
-
+        
         validated_data['password'] = create_random_string()
         user = User.objects.create_user(**validated_data)
 
