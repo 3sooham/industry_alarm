@@ -24,7 +24,7 @@ class EveUserSerializer(serializers.Serializer):
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
 class EveAccessTokenSerializer(serializers.Serializer):
     # required=True는 default임
-    user = EveUserSerializer()
+    user = EveUserSerializer(write_only=True)
     # 여기 token 넣어줘야지 create()에서 리턴해줄 수 있음 아니면 serialize를 못함
     token = serializers.CharField(read_only=True)
 

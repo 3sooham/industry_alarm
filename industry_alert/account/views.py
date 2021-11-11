@@ -221,7 +221,7 @@ class AccountViewSet(viewsets.GenericViewSet):
                 # 이거 pw는 write_only라서 안보임
                 print("in register2")
                 print(serializer.data)
-                return serializer.data
+                return Response(serializer.data)
             except serializers.ValidationError:
                 return Response({"status": "failed", "errors": serializer.errors})
         else: 
