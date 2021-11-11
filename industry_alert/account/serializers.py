@@ -38,6 +38,7 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
         user_data.pop('email')
         # 이거 kwargs로 찾고 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
         user_instance, created = User.objects.get_or_create(email=user_email, defaults=user_data)
+        print(type(user_instance))
         # 내 토큰 발급
         token, _ = Token.objects.get_or_create(user=user_instance)
         # EAT update하거나 생성
