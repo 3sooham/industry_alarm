@@ -120,7 +120,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user_email = email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
-        eve_user['passowrd'] = create_random_string()
+        eve_user['password'] = create_random_string()
 
         temp_dict = dict()
         temp_dict['user'] = eve_user
