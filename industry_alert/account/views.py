@@ -122,10 +122,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user['name'] = character_dict['CharacterName']
         eve_user['password'] = create_random_string()
 
-        temp_dict = dict()
+        temp_dict = res_dict.copy()
         temp_dict['user'] = eve_user
-        for key, value in res_dict.items():
-            temp_dict[key] = value
 
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:

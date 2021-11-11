@@ -22,19 +22,20 @@ class EveUserSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
-class EveAccessTokenSerializer(serializers.ModelSerializer):
+class EveAccessTokenSerializer(serializers.Serializer):
     # required=True는 default임
     user = EveUserSerializer()
+    # 여기 token 넣어줘야지 create()에서 리턴해줄 수 있음 아니면 serialize를 못함
+    token = serializers.CharField(read_only=True)
 
     class Meta:
         model = EveAccessToken
-        fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
+        fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token', 'token']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
 
-        user_email = user_data['email']
-        user_data.pop('email')
+        user_email = user_data.pop('email')
         # 이거 kwargs로 찾고 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
         user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
         # 내 토큰 발급
@@ -44,7 +45,6 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
 
         # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
         #   return instance, user_instance, updated, 201, {"token": token.key}
-        # 유저가 있었으면
         return {"token": token.key}
 
 
