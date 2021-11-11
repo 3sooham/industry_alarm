@@ -127,21 +127,12 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         for key, value in res_dict.items():
             temp_dict[key] = value
 
-        print(f'in viws temp_dict = {temp_dict}')
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
             serializer.is_valid(raise_exception=True)
-            instance, user_instance, update_status, status_code, token = serializer.save()
-            print(f'in view instance={instance}, user_insatnce={user_instance}, update_status={update_status}, status_code={status_code}, token={token}, \
-                serializer.data={serializer.data}')
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            # 이브 계정으로 유저 생성할 경우
-            # 생성 했으면 status code 201 보내줘야함
-            if status_code == 201:
-                return Response(token, status=status.HTTP_201_CREATED)
-           
-            # 이브 계정으로 user 로그인할경우
-            return Response(token)
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
 

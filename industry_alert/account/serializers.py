@@ -31,22 +31,21 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token']
 
     def create(self, validated_data):
-        print(f'in eat validated_data={validated_data}')
         user_data = validated_data.pop('user')
 
         user_email = user_data['email']
         user_data.pop('email')
         # 이거 kwargs로 찾고 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
-        user_instance, created = User.objects.get_or_create(email=user_email, defaults=user_data)
+        user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
         # 내 토큰 발급
         token, _ = Token.objects.get_or_create(user=user_instance)
         # EAT update하거나 생성
-        instance, update_status = EveAccessToken.objects.update_or_create(user=user_instance, defaults=validated_data)
-        # 유저가 없었으면
-        if created:
-            return instance, user_instance, update_status, 201, {"token": token.key}
+        EveAccessToken.objects.update_or_create(user=user_instance, defaults=validated_data)
+
+        # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
+        #   return instance, user_instance, updated, 201, {"token": token.key}
         # 유저가 있었으면
-        return instance, user_instance, update_status, 200, {"token": token.key}
+        return {"token": token.key}
 
 
 # drf
