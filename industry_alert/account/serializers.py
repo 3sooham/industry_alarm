@@ -1,10 +1,8 @@
 from requests.api import get
 from rest_framework import serializers
 from .models import User, EveAccessToken
-from blog.models import Post
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from .utils import create_random_string
 # get_user_model() : 클래스이다.
 # >>> get_user_model()
 # <class 'accounts.models.User'>
@@ -20,10 +18,8 @@ class InvalidPassword(Exception):
 
 class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
-    token = serializers.CharField(read_only=True)
-    status = serializers.IntegerField(read_only=True)
     name = serializers.CharField(write_only=True)
-
+    password = serializers.CharField(write_only=True)
 
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
 class EveAccessTokenSerializer(serializers.ModelSerializer):
@@ -36,8 +32,7 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(f'in eat validated_data={validated_data}')
-        user_data = validated_data.pop('user')
-        print(f'in eat validated_data after pop={validated_data}')
+        user_data = validated_data['user']
 
         user_email = user_data['email']
         user_data.pop('email')
@@ -49,9 +44,9 @@ class EveAccessTokenSerializer(serializers.ModelSerializer):
         instance, update_status = EveAccessToken.objects.update_or_create(user=user_instance, defaults=validated_data)
         # 유저가 없었으면
         if created:
-            return instance, update_status, 201, {"token": token.key}
+            return instance, user_instance, update_status, 201, {"token": token.key}
         # 유저가 있었으면
-        return instance, update_status, 200, {"token": token.key}
+        return instance, user_instance, update_status, 200, {"token": token.key}
 
 
 # drf

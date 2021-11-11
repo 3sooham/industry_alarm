@@ -11,7 +11,7 @@ import requests
 import base64
 from dotenv import load_dotenv
 import os
-from .utils import url_creator, email_creator
+from .utils import url_creator, email_creator, create_random_string
 
 # eve token
 import datetime
@@ -120,6 +120,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user_email = email_creator(character_dict['CharacterName'])
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
+        eve_user['passowrd'] = create_random_string()
 
         temp_dict = dict()
         temp_dict['user'] = eve_user
@@ -130,14 +131,14 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
             serializer.is_valid(raise_exception=True)
-            instance, update_status, status_code, token = serializer.save()
-            print(f'in view instance={instance}, update_status={update_status}, status_code={status_code}, token={token}, \
+            instance, user_instance, update_status, status_code, token = serializer.save()
+            print(f'in view instance={instance}, user_insatnce={user_instance}, update_status={update_status}, status_code={status_code}, token={token}, \
                 serializer.data={serializer.data}')
 
             # 이브 계정으로 유저 생성할 경우
             # 생성 했으면 status code 201 보내줘야함
             if status_code == 201:
-                return Response(token, instance, status=status.HTTP_201_CREATED)
+                return Response(token, status=status.HTTP_201_CREATED)
            
             # 이브 계정으로 user 로그인할경우
             return Response(token)
