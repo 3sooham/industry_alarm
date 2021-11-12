@@ -34,7 +34,7 @@ from django.utils import timezone
 
 class EveAccessToken(models.Model):
     # fk 보다 one_to_one 사용
-    # one to many보다 one to one이 당연히 조인 비용 적음
+    # one to many보다 one to one이 조인 비용 적음
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="eve_token")
     # access_token jwt인데 이거 길이 상한이 없어서 char/varchar로 못하고 TextField로 해줘야함
     access_token = models.TextField()

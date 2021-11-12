@@ -15,6 +15,12 @@ from rest_framework.authtoken.models import Token
 class InvalidPassword(Exception):
     pass
 
+# class EsiIndustryJobs(serializers.ModelSerializer):
+
+#     class Meta:
+#         model = IndustryJobs
+
+
 
 class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
