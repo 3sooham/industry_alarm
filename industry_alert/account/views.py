@@ -129,7 +129,16 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+            # esi request
+            esi = requests.get(
+                'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/',
+                headers= {"Authorization": access_token}
+            )
+            esi_dict = esi.json()
+
+            return Response(serializer.data, esi_dict, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})

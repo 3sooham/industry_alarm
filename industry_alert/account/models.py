@@ -5,6 +5,15 @@ from django.conf import settings
 from django.db.models.fields import related
 from django.utils import timezone
 
+# class IndustryJobs(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_jobs")
+
+#     activity_id = models.IntegerField()
+#     blueprint_id = models.IntegerField()
+#     blueprint_type = models.IntegerField()
+#     completed_character_id = models.IntegerField()
+
+
 class EveAccessToken(models.Model):
     # fk 보다 one_to_one 사용
     # one to many보다 one to one이 당연히 조인 비용 적음
