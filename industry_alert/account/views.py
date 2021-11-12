@@ -130,17 +130,16 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-
             # esi request
-            url1 = 'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/?datasource=tranquility'
-            print(url1)
+            url2 = 'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/?datasource=tranquility'
+            print(acc)
             esi = requests.get(
-                url1,
+                url2,
                 headers={"Authorization": acc}
             )
             esi_dict = esi.json()
 
-            return Response(esi_dict)
+            return Response({"res" :esi_dict})
             # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
