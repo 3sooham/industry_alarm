@@ -103,7 +103,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # 여기서 말하는 JSON payload가 위의 res에 저장됨
 
         # access_token으로 eve character name 가져옴
-        acc = 'Bearer ' + access_token
+        acc = f'Bearer {access_token}'
         try:
             character_res = requests.get(
                 "https://login.eveonline.com/oauth/verify",
@@ -131,15 +131,14 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
 
             # esi request
-            url2 = 'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/?datasource=tranquility'
-            print(acc)
+            url2 = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry_jobs/?datasource=tranquility'
             esi = requests.get(
                 url2,
                 headers={"Authorization": acc}
             )
             esi_dict = esi.json()
 
-            return Response({"res" :esi_dict})
+            return Response(data=esi_dict)
             # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
