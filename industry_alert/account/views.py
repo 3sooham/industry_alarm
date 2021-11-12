@@ -132,13 +132,15 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
 
             # esi request
+            url1 = 'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/?datasource=tranquility',
             esi = requests.get(
-                'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/',
+                url1,
                 headers= {"Authorization": access_token}
             )
             esi_dict = esi.json()
 
-            return Response(serializer.data, esi_dict, status=status.HTTP_201_CREATED)
+            return Response(esi_dict)
+            # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
