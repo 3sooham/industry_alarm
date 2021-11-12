@@ -132,10 +132,10 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
 
             # esi request
-            url1 = 'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/?datasource=tranquility',
+            url1 = 'https://esi.evetech.net/latest/characters/' + str(character_id) + '/industry_jobs/?datasource=tranquility'
             esi = requests.get(
                 url1,
-                headers= {"Authorization": access_token}
+                headers= {"Authorization": 'Bearer ' + access_token}
             )
             esi_dict = esi.json()
 
