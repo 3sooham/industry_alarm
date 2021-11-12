@@ -131,7 +131,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
 
             # esi request
-            url2 = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry_jobs/?datasource=tranquility'
+            url2 = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
             esi = requests.get(
                 url2,
                 headers={"Authorization": acc}
