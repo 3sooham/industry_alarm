@@ -22,5 +22,5 @@ class IndustryJobs(models.Model):
     runs = models.IntegerField()
     start_date = models.DateTimeField()
     station_id = models.BigIntegerField()
-    status = models.CharField(max_length)
+    status = models.CharField(max_length=255)
     successful_runs = models.IntegerField()
