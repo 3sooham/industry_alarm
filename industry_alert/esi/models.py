@@ -14,6 +14,7 @@ class IndustryJobs(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_jobs")
     activity_id = models.IntegerField()
     blueprint_id = models.BigIntegerField()
+    blueprint_location_id = models.BigIntegerField()
     blueprint_type_id = models.BigIntegerField()
     completed_character_id = models.IntegerField()
     completed_data = models.DateTimeField()
