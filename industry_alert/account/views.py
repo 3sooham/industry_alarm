@@ -123,12 +123,10 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 headers={"Authorization": acc}
             )
             esi_dict = esi.json()
-            print(type(esi_dict))
+
             
             # from celery.execute import send_task  
             # send_task('my_task', [], kwargs)
-            aaa = IndustryJobViewSet.create(self, esi_dict)
-            print(aaa.data)
 
 
             return Response(data=esi_dict)
