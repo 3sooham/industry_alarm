@@ -41,4 +41,5 @@ urlpatterns = [
     # 장고는 http://127.0.0.1:8000/ 로 들어오는 모든 접속 요청을 blog.urls로 전송해 추가 명령을 찾을 거예요.
     path('', include('blog.urls')),
     path('', include('account.urls')),
+    path('', include('esi.urls')),
 ]

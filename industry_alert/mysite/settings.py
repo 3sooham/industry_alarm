@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog', # blog 사용한다고 알려줘야함
     'account',
+    'esi',
     # drf login
     "rest_framework",
     "rest_framework.authtoken",

@@ -138,6 +138,10 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             )
             esi_dict = esi.json()
 
+            
+            # from celery.execute import send_task  
+            # send_task('my_task', [], kwargs)
+
             return Response(data=esi_dict)
             # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
