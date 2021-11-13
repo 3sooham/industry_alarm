@@ -23,6 +23,7 @@ class IndustryJobs(models.Model):
     duration = models.IntegerField()
     end_date = models.DateTimeField()
     facility_id = models.BigIntegerField()
+    installer_id = models.IntegerField()
     job_id = models.IntegerField()
     licensed_runs = models.IntegerField()
     output_location_id = models.BigIntegerField()
