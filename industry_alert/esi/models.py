@@ -2,10 +2,11 @@ from django.db import models
 from django.conf import settings
 
 class IndustryJobs(models.Model):
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_jobs")
     activity_id = models.IntegerField()
     blueprint_id = models.BigIntegerField()
-    blueprint_type = models.BigIntegerField()
+    blueprint_type_id = models.BigIntegerField()
     completed_character_id = models.IntegerField()
     completed_data = models.DateTimeField()
     cost = models.DecimalField(max_digits=13, decimal_places=4)
@@ -21,5 +22,16 @@ class IndustryJobs(models.Model):
     runs = models.IntegerField()
     start_date = models.DateTimeField()
     station_id = models.BigIntegerField()
-    status = models.CharField(max_length=255)
+    class StatusInJobs(models.TextChoices):
+        ACTIVE = 'active'
+        CANCELLED = 'cancelled',
+        DELIVERED = 'delivered'
+        PAUSED = 'paused'
+        READY = 'ready'
+        REVERTED = 'reverted'
+
+        status = models.CharField(
+            max_length=10,
+            choices=StatusInJobs.choices
+        )
     successful_runs = models.IntegerField()
