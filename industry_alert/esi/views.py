@@ -42,9 +42,9 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
         status_choice_class = IndustryJob
         try:
             choice = getattr(status_choice_class, value)
+            return choice
         except AttributeError:
             pass
-        return choice
 
     # bulk create
     def create(self, request):
