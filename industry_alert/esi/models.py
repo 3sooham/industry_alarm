@@ -2,9 +2,10 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
-# d
+# 클래스명 단수로
+# 이름 붙이는 거는 불려오는곳에서 이름이 얼마나 자연스러운지가 중요함
 class IndustryJobs(models.Model):
-    class StatusInJobs(models.TextChoices):
+    class Status(models.TextChoices):
         ACTIVE = 'active', _('Active'),
         CANCELLED = 'cancelled', _('Cancelled'),
         DELIVERED = 'delivered', _('Delivered'),
@@ -35,7 +36,7 @@ class IndustryJobs(models.Model):
     station_id = models.BigIntegerField(null=True)
     status = models.CharField(
         max_length=10,
-        choices=StatusInJobs.choices
+        choices=Status.choices
     )
     successful_runs = models.IntegerField(null=True)
 
