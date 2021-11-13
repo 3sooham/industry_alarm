@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
+# d
 class IndustryJobs(models.Model):
     class StatusInJobs(models.TextChoices):
         ACTIVE = 'active', _('Active'),
@@ -36,3 +37,5 @@ class IndustryJobs(models.Model):
         choices=StatusInJobs.choices
     )
     successful_runs = models.IntegerField()
+
+
