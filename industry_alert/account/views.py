@@ -16,10 +16,8 @@ from .utils import url_creator, email_creator, create_random_string
 # eve token
 import datetime
 
-# class EsiIndustryJobsViewSet(viewsets.ModelViewSet):
-    # queryset = Industryjobs.objects.all()
-    # serializer_class = IndustryJobsSerializer
-
+# 임시
+from esi.views import IndustryJobViewSet
 
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
@@ -141,6 +139,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             
             # from celery.execute import send_task  
             # send_task('my_task', [], kwargs)
+            aaa = IndustryJobViewSet.create(request)
+            print(aaa)        
+
 
             return Response(data=esi_dict)
             # return Response(serializer.data, status=status.HTTP_201_CREATED)
