@@ -19,24 +19,12 @@ import datetime
 # 임시
 from esi.views import IndustryJobViewSet
 
+
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
     queryset = User.objects.all()
     serializer_class = EveUserSerializer
-
-
-    def save_eve_access_token(self, res_dict):
-        # 이브 토큰 db에 저장하는데 user랑 onetoone이기 때문에 user를 먼저 생성하고 이거를 생성해야함
-        # res_dict의 expires_in 이거를python datetime format으로 바꿔서 넣어줘야함
-        serializer = EveTokenSerializer(data=res_dict)
-        try:
-            print("in func eve_access_token", res_dict)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            print("in func eve__access_token", serializer.data)
-        except serializers.ValidationError:
-            return Response({"status": "failed", "errors": serializer.errors})
 
     @action(methods=['get'], detail=False)
     def callback(self, request):

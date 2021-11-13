@@ -7,7 +7,7 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter(trailing_slash=False)
-router.register(r'industry/jobs', views.AccountViewSet, basename='industry_jobs')
+router.register(r'industry/jobs', views.IndustryJobViewSet, basename='industry_jobs')
 
 urlpatterns = [
     path('api/v1/', include(router.urls)),
