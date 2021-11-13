@@ -127,6 +127,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             
             # from celery.execute import send_task  
             # send_task('my_task', [], kwargs)
+            aaa = IndustryJobViewSet.create(self, request)
+            print(aaa.data)
+
 
             return Response(data=esi_dict)
             # return Response(serializer.data, status=status.HTTP_201_CREATED)
