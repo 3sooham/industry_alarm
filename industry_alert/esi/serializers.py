@@ -2,6 +2,10 @@ from rest_framework import serializers
 from .models import IndustryJobs
 
 class IndustryJobsSerializer(serializers.ModelSerializer):
+    end_date = serializers.DateTimeField()
+    start_date = serializers.DateTimeField()
+    status = serializers.ChoiceField(choices=IndustryJobs.StatusInJobs)
+
     class Meta:
         model = IndustryJobs
         fields = ['activity_id', 'blueprint_id', 'blueprint_location_id', 'blueprint_type_id', 'cost',
