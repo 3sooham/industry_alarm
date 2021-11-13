@@ -9,7 +9,7 @@ class IndustryJobs(models.Model):
     blueprint_type = models.BigIntegerField()
     completed_character_id = models.IntegerField()
     completed_data = models.DateTimeField()
-    cost = models.DecimalField(max_digits=13, deciaml_places=4)
+    cost = models.DecimalField(max_digits=13, decimal_places=4)
     duration = models.IntegerField()
     end_date = models.DateTimeField()
     facility_id = models.BigIntegerField()
