@@ -48,7 +48,7 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
         #     return serializer
         # 대충 이렇게 생김 자세한 코드는 찾아보기
         # import pdb; pdb.set_trace()
-        serializer = self.get_serializer(data=request.data, many=True)
+        serializer = self.get_serializer(data=request, many=True)
         try:
             serializer.is_valid(raise_exception=True)
             # 이거 save()했을때 불려오는 method는
