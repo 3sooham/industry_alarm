@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone # timezone.now() 사용하기 위함임
 
-from .models import IndustryJobs
+from .models import IndustryJob
 from .serializers import IndustryJobsSerializer
 
 # 여기부터 drf viewset 적용위한거임
@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 
 class IndustryJobViewSet(viewsets.GenericViewSet):
-    queryset = IndustryJobs.objects.all()
+    queryset = IndustryJob.objects.all()
     serializer_class = IndustryJobsSerializer
 
     # http GET http://127.0.0.1:8000/api/v1/post "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
@@ -38,6 +38,14 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
 
     # 아직 완료안된 job 가져오기
 
+    def format_status(self, value):
+        status_choice_class = IndustryJob
+        try:
+            choice = getattr(status_choice_class, value)
+        except AttributeError:
+            pass
+        return choice
+
     # bulk create
     def create(self, request):
         # 이거 하면
@@ -47,7 +55,10 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
         #     return serializer
         # 대충 이렇게 생김 자세한 코드는 찾아보기
         # import pdb; pdb.set_trace()
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        data['status'] = self.format_status(data['status'])
+
+        serializer = self.get_serializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
             # 이거 save()했을때 불려오는 method는

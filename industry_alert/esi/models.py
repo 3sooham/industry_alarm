@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 # 클래스명 단수로
 # 이름 붙이는 거는 불려오는곳에서 이름이 얼마나 자연스러운지가 중요함
-class IndustryJobs(models.Model):
+class IndustryJob(models.Model):
     class Status(models.TextChoices):
         ACTIVE = 'active', _('Active'),
         CANCELLED = 'cancelled', _('Cancelled'),

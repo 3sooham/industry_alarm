@@ -9,10 +9,6 @@ class IndustryJobsSerializer(serializers.ModelSerializer):
                   'duration', 'end_date', 'facility_id', 'installer_id', 'job_id', 'licensed_runs', 'output_location_id',
                   'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status']
 
-    def validate_status(self, value):
-        status_choice_class = self.Meta.model.Status
-        try:
-            choice = getattr(status_choice_class, value)
-        except AttributeError:
-            raise serializers.ValidationError('no such choices')
-        return choice
+    # 이거 'active' 이런게 들어가는게 아니라
+    # 튜플이 들어가야함
+    # IndustryJobs.objects.create(status=IndustryJobs.StatusInJobs.ACTIVE) 이렇게
