@@ -10,9 +10,9 @@ class IndustryJobsSerializer(serializers.ModelSerializer):
                   'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status']
 
     def validate_status(self, value):
-        status_choice_class = self.Meta.model.StatusInJobs
+        status_choice_class = self.Meta.model.Status
         try:
             choice = getattr(status_choice_class, value)
         except AttributeError:
-            raise ValidationError('no such choices')
+            raise serializers.ValidationError('no such choices')
         return choice
