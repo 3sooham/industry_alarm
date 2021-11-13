@@ -3,7 +3,6 @@ from django.conf import settings
 
 class IndustryJobs(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_jobs")
-
     activity_id = models.IntegerField()
     blueprint_id = models.BigIntegerField()
     blueprint_type = models.BigIntegerField()

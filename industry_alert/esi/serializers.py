@@ -5,5 +5,6 @@ class IndustryJobsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IndustryJobs
+        fields = '__all__'
 
-    # bulk create로 생성하기
+    # create overide해서 bulk create/update로 생성하기
