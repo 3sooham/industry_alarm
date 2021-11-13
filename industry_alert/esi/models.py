@@ -1,7 +1,15 @@
 from django.db import models
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 class IndustryJobs(models.Model):
+    class StatusInJobs(models.TextChoices):
+        ACTIVE = 'active', _('Active'),
+        CANCELLED = 'cancelled', _('Cancelled'),
+        DELIVERED = 'delivered', _('Delivered'),
+        PAUSED = 'paused', _('Paused'),
+        READY = 'ready', _('Ready'),
+        REVERTED = 'reverted', _('Reverted')
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_jobs")
     activity_id = models.IntegerField()
@@ -22,16 +30,8 @@ class IndustryJobs(models.Model):
     runs = models.IntegerField()
     start_date = models.DateTimeField()
     station_id = models.BigIntegerField()
-    class StatusInJobs(models.TextChoices):
-        ACTIVE = 'active'
-        CANCELLED = 'cancelled',
-        DELIVERED = 'delivered'
-        PAUSED = 'paused'
-        READY = 'ready'
-        REVERTED = 'reverted'
-
-        status = models.CharField(
-            max_length=10,
-            choices=StatusInJobs.choices
-        )
+    status = models.CharField(
+        max_length=10,
+        choices=StatusInJobs.choices
+    )
     successful_runs = models.IntegerField()
