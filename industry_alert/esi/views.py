@@ -56,7 +56,8 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
         # 대충 이렇게 생김 자세한 코드는 찾아보기
         # import pdb; pdb.set_trace()
         data = request.data.copy()
-        data['status'] = self.format_status(data['status'])
+        status = self.format_status(data['status'])
+        data['status'] = status
 
         serializer = self.get_serializer(data=data)
         try:
