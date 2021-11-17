@@ -137,9 +137,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             industry_jobs = res.json()
             industry_job_status = industry_jobs['status']
             print(industry_jobs)
-            return Response(industry_jobs)
+            return Response({"status": industry_jobs)
         except Exception as e:
-            return Response({"status": "failed to establish connection to esi server", "errors": e})
+            return Response({"status": "failed to establish connection to esi server"})
         #
         # # 일단 없으면 bulk_create 해줌
         # if not IndustryJob.objects.filter(user=user_instance).exists():
