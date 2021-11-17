@@ -126,20 +126,20 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
 
-        print(esi_dict)
-        return Response(data=esi_dict)
         # # 여기부터 bulk_create 테스트
-        # # esi request
-        # try:
-        #     url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
-        #     res = requests.get(
-        #         url2,
-        #         headers={"Authorization": acc}
-        #     )
-        #     industry_jobs = res.json()
-        #     industry_job_status = industry_jobs['status']
-        # except Exception as e:
-        #     return Response({"status": "failed to establish connection to esi server", "errors": e})
+        # esi request
+        try:
+            url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
+            res = requests.get(
+                url2,
+                headers={"Authorization": acc}
+            )
+            industry_jobs = res.json()
+            industry_job_status = industry_jobs['status']
+            print(industry_jobs)
+            return Response(industry_jobs)
+        except Exception as e:
+            return Response({"status": "failed to establish connection to esi server", "errors": e})
         #
         # # 일단 없으면 bulk_create 해줌
         # if not IndustryJob.objects.filter(user=user_instance).exists():
