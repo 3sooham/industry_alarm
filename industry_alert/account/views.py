@@ -131,17 +131,29 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         try:
             url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
             res = requests.get(
-                url2,
+                url,
                 headers={"Authorization": acc}
             )
-            print(character_id)
+
+            # 이거하면 리스트로 들어오는듯
             industry_jobs = res.json()
-            industry_job_status = industry_jobs['status']
-            print(industry_jobs)
-            return Response({"status": industry_jobs})
+            industry_job_status = industry_jobs[0]['status']
+            user = User.objects.filter(email=eve_user_email)
+            # 각각의 job에 user를 다 넣어줌
+            for industry_job in industry_jobs:
+                industry_job['user'] = user
+
+            serializer = IndustryJobSerializer(data=industry_jobs, many=True)
+            try:
+                serializer.is_valid(raise_exception=True)
+                serializer.bulk_create()
+            except serializers.ValidationError:
+                return Response({"status": "으엉", "errors": serializer.errors})
+
+            return Response({"status": industry_jobs, "validated_data": serializer.data})
         except Exception as e:
             print(e)
-            return Response({"status": "failed to establish connection to esi server"})
+            return Response({"status": e})
         #
         # # 일단 없으면 bulk_create 해줌
         # if not IndustryJob.objects.filter(user=user_instance).exists():
