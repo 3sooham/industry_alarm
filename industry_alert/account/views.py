@@ -18,6 +18,7 @@ import datetime
 
 # celery task
 from .tasks import get_industry_jobs
+from esi.serializers import IndustryJobSerializer
 
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
@@ -116,14 +117,40 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            # 회원가입/로그인하면 celery로 인더잡 불러와서 db에 인더잡들 생성/갱신하기
-            get_industry_jobs.delay(character_id, request.user)
-
-            return Response(data=esi_dict)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # # 회원가입/로그인하면 celery로 인더잡 불러와서 db에 인더잡들 생성/갱신하기
+            # get_industry_jobs.delay(character_id, request.user)
+            #
+            # return Response(data=esi_dict)
+            # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
+
+        print(esi_dict)
+        return Response(data=esi_dict)
+        # # 여기부터 bulk_create 테스트
+        # # esi request
+        # try:
+        #     url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
+        #     res = requests.get(
+        #         url2,
+        #         headers={"Authorization": acc}
+        #     )
+        #     industry_jobs = res.json()
+        #     industry_job_status = industry_jobs['status']
+        # except Exception as e:
+        #     return Response({"status": "failed to establish connection to esi server", "errors": e})
+        #
+        # # 일단 없으면 bulk_create 해줌
+        # if not IndustryJob.objects.filter(user=user_instance).exists():
+        #     serializer = IndustryJobSerializer(data=industry_jobs)
+        #     try:
+        #         serializer.is_valid(raise_exception=True)
+        #         serializer.bulk_create()
+        #
+        #         return Response({"status": serializer.data})
+        #     except serializers.ValidationError:
+        #         return Response({"status": "으엉", "errors": serializer.errors})
 
 
 # drf login

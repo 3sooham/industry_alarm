@@ -47,5 +47,6 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'pause_date', 'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status',
                   'successful_runs']
 
-    def bulk_create(self):
-        pass
+    # bulk_create 테스트
+    def bulk_create(self, validated_data):
+        print(validated_data)
