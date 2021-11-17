@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import IndustryJob
 
-class IndustryJobSerializer(serializers.ListSerializer):
+class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         print(validated_data)
         print(type(validated_data))
