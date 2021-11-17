@@ -5,7 +5,7 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         print(validated_data)
         print(type(validated_data))
-        for job in jobs:
+        for job in validated_data:
             print(job)
 
     def update(self, instance, validated_data):
