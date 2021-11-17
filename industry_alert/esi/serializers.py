@@ -39,7 +39,7 @@ class IndustryJobSerializer(serializers.ModelSerializer):
     successful_runs = serializers.IntegerField(required=False)
 
     class Meta:
-        list_serializer_class = IndustryJobListSerializer
+        # list_serializer_class = IndustryJobListSerializer
         model = IndustryJob
         fields = ['id', 'user', 'activity_id', 'blueprint_id', 'blueprint_location_id', 'blueprint_type_id',
                   'completed_character_id', 'completed_date', 'cost',
