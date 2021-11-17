@@ -134,11 +134,13 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 url2,
                 headers={"Authorization": acc}
             )
+            print(character_id)
             industry_jobs = res.json()
             industry_job_status = industry_jobs['status']
             print(industry_jobs)
-            return Response({"status": industry_jobs)
+            return Response({"status": industry_jobs})
         except Exception as e:
+            print(e)
             return Response({"status": "failed to establish connection to esi server"})
         #
         # # 일단 없으면 bulk_create 해줌
