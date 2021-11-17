@@ -137,19 +137,19 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
             # 이거하면 리스트로옴
             industry_jobs = res.json()
-            print(type(industry_jobs))
-            # industry_job_status = industry_jobs[0]['status']
-            # user = User.objects.get(email=eve_user_email).id
-            # # 각각의 job에 user를 다 넣어줌
-            # for industry_job in industry_jobs:
-            #     industry_job['user'] = user
-            #
-            # serializer = IndustryJobSerializer(data=industry_jobs)
-            # try:
-            #     serializer.is_valid(raise_exception=True)
-            #     serializer.bulk_create()
-            # except serializers.ValidationError:
-            #     return Response({"status": "으엉", "errors": serializer.errors})
+
+            industry_job_status = industry_jobs[0]['status']
+            user = User.objects.get(email=eve_user_email).id
+            # 각각의 job에 user를 다 넣어줌
+            for industry_job in industry_jobs:
+                industry_job['user'] = user
+
+            serializer = IndustryJobSerializer(data=industry_jobs, many=True)
+            try:
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            except serializers.ValidationError:
+                return Response({"status": "으엉", "errors": serializer.errors})
 
             return Response({"status": industry_jobs})
             return Response({"status": industry_jobs, "validated_data": serializer.data})
