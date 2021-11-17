@@ -6,7 +6,12 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         print("in serializer validated_data = ", validated_data)
         industry_jobs = [IndustryJob(**item) for item in validated_data]
         print("in serializer industry_jobs =", industry_jobs)
-        return IndustryJob.objects.bulk_create(industry_jobs)
+
+        res = IndustryJob.objects.bulk_create(industry_jobs)
+        print("in serializer res = res")
+        return res
+
+
 
     def update(self, instance, validated_data):
         # Maps for id->instance and id->data item.
