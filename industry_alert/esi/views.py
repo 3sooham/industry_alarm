@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone # timezone.now() 사용하기 위함임
 
 from .models import IndustryJob
-from .serializers import IndustryJobsSerializer
+from .serializers import IndustryJobSerializer
 
 # 여기부터 drf viewset 적용위한거임
 from rest_framework import viewsets, serializers, status
