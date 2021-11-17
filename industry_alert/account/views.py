@@ -135,10 +135,11 @@ class EveLoginViewSet(viewsets.GenericViewSet):
                 headers={"Authorization": acc}
             )
 
-            # 이거하면 리스트로 들어오는듯
+            # 이거하면 리스트로옴
             industry_jobs = res.json()
             industry_job_status = industry_jobs[0]['status']
-            user = User.objects.filter(email=eve_user_email).user_id
+            user = User.objects.get(email=eve_user_email).id
+            # user를 시리얼라이저에 넣어서 id를 가져오아ㅑ하
             # 각각의 job에 user를 다 넣어줌
             for industry_job in industry_jobs:
                 industry_job['user'] = user
