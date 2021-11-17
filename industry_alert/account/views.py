@@ -16,6 +16,9 @@ from .utils import url_creator, email_creator, create_random_string
 # eve token
 import datetime
 
+# celery task
+from .tasks import get_industry_jobs
+
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
