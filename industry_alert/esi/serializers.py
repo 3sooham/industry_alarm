@@ -8,6 +8,8 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         for job in validated_data:
             print(job)
 
+        return {'job': job}
+
     def update(self, instance, validated_data):
         # Maps for id->instance and id->data item.
         job_mapping = {job.id: job for job in instance}
