@@ -111,26 +111,17 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         temp_dict = res_dict.copy()
         temp_dict['user'] = eve_user
 
+        # EveAccessToken 저장
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            # esi request
-            url2 = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
-            esi = requests.get(
-                url2,
-                headers={"Authorization": acc}
-            )
-            esi_dict = esi.json()
-
-            
-            # from celery.execute import send_task  
-            # send_task('my_task', [], kwargs)
-
+            # 회원가입/로그인하면 celery로 인더잡 불러와서 db에 인더잡들 생성/갱신하기
+            get_industry_jobs.delay(character_id, request.user)
 
             return Response(data=esi_dict)
-            # return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})

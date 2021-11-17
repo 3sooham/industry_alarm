@@ -29,7 +29,7 @@ class IndustryJob(models.Model):
     licensed_runs = models.IntegerField(null=True)
     output_location_id = models.BigIntegerField(null=True)
     pause_date = models.DateTimeField(null=True)
-    probability = models.IntegerField(null=True)
+    probability = models.FloatField(null=True)
     product_type_id = models.IntegerField(null=True)
     runs = models.IntegerField(null=True)
     start_date = models.DateTimeField(null=True)
