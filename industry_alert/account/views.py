@@ -138,7 +138,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             # 이거하면 리스트로 들어오는듯
             industry_jobs = res.json()
             industry_job_status = industry_jobs[0]['status']
-            user = User.objects.filter(email=eve_user_email)
+            user = User.objects.filter(email=eve_user_email).user_id
             # 각각의 job에 user를 다 넣어줌
             for industry_job in industry_jobs:
                 industry_job['user'] = user

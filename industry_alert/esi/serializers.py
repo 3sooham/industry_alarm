@@ -28,7 +28,7 @@ from .models import IndustryJob
 
 class IndustryJobSerializer(serializers.ModelSerializer):
     # 이거 id 기본으로는 read_only여가지고 이렇게 해줘야함
-    id = serializers.IntegerField()
+    # id = serializers.IntegerField()
     completed_character_id = serializers.IntegerField(required=False)
     completed_date = serializers.DateTimeField(required=False)
     cost = serializers.DecimalField(max_digits=13, decimal_places=4, required=False)
@@ -50,3 +50,4 @@ class IndustryJobSerializer(serializers.ModelSerializer):
     # bulk_create 테스트
     def bulk_create(self, validated_data):
         print(validated_data)
+        print(type(validated_data))
