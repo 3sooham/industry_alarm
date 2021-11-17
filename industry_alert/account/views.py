@@ -146,17 +146,15 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         for industry_job in industry_jobs:
             industry_job['user'] = user
 
-
         serializer = IndustryJobSerializer(data=industry_jobs, many=True)
         try:
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
-            print(instance)
+            print("in view instance = ", instance)
         except serializers.ValidationError:
             return Response({"status": "failed", "errors": serializer.errors})
 
-            return Response({"status": serializer.data})
-        return Response({"status": industry_jobs, "validated_data": serializer.data})
+        return Response({"instance": instance, "validated_data": serializer.data})
 
 
 # drf login

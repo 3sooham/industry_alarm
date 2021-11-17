@@ -3,12 +3,10 @@ from .models import IndustryJob
 
 class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
-        print(validated_data)
-        print(type(validated_data))
+        print("in serializer validated_data = ", validated_data)
         industry_jobs = [IndustryJob(**item) for item in validated_data]
-        print(industry_jobs)
-        print(type(industry_jobs))
-        return validated_data
+        print("in serializer industry_jobs =", industry_jobs)
+        return IndustryJob.objects.bulk_create(industry_jobs)
 
     def update(self, instance, validated_data):
         # Maps for id->instance and id->data item.
