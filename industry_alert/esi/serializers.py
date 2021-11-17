@@ -1,29 +1,29 @@
 from rest_framework import serializers
 from .models import IndustryJob
 
-# class IndustryJobSerializer(serializers.ListSerializer):
-#     def update(self, instance, validated_data):
-#         # Maps for id->instance and id->data item.
-#         job_mapping = {job.id: job for job in instance}
-#         data_mapping = {item['id']: item for item in validated_data}
-#
-#         # Perform creations and updates
-#         ret = []
-#         for job_id, data in data_mapping.items():
-#             industry_job = job_mapping.get(job_id, None)
-#             # job 없으면 생성
-#             if industry_job is None:
-#                 ret.append(self.child.create(data))
-#             # 있으면 업데이트
-#             else:
-#                 ret.append(self.child.update(industry_job, data))
-#
-#         # # Perform deletions.
-#         # for book_id, book in book_mapping.items():
-#         #     if book_id not in data_mapping:
-#         #         book.delete()
-#
-#         return ret
+class IndustryJobSerializer(serializers.ListSerializer):
+    def update(self, instance, validated_data):
+        # Maps for id->instance and id->data item.
+        job_mapping = {job.id: job for job in instance}
+        data_mapping = {item['id']: item for item in validated_data}
+
+        # Perform creations and updates
+        ret = []
+        for job_id, data in data_mapping.items():
+            industry_job = job_mapping.get(job_id, None)
+            # job 없으면 생성
+            if industry_job is None:
+                ret.append(self.child.create(data))
+            # 있으면 업데이트
+            else:
+                ret.append(self.child.update(industry_job, data))
+
+        # # Perform deletions.
+        # for book_id, book in book_mapping.items():
+        #     if book_id not in data_mapping:
+        #         book.delete()
+
+        return ret
 
 
 class IndustryJobSerializer(serializers.ModelSerializer):

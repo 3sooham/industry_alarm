@@ -139,12 +139,11 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             industry_jobs = res.json()
             industry_job_status = industry_jobs[0]['status']
             user = User.objects.get(email=eve_user_email).id
-            # user를 시리얼라이저에 넣어서 id를 가져오아ㅑ하
             # 각각의 job에 user를 다 넣어줌
             for industry_job in industry_jobs:
                 industry_job['user'] = user
 
-            serializer = IndustryJobSerializer(data=industry_jobs, many=True)
+            serializer = IndustryJobSerializer(data=industry_jobs)
             try:
                 serializer.is_valid(raise_exception=True)
                 serializer.bulk_create()
