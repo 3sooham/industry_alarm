@@ -137,36 +137,26 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
             # 이거하면 리스트로옴
             industry_jobs = res.json()
-
             industry_job_status = industry_jobs[0]['status']
-            user = User.objects.get(email=eve_user_email).id
-            # 각각의 job에 user를 다 넣어줌
-            for industry_job in industry_jobs:
-                industry_job['user'] = user
+        except KeyError:
+            return Response({"status": "faild to establish connection to eve server"})
 
-            serializer = IndustryJobSerializer(data=industry_jobs, many=True)
-            try:
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-            except serializers.ValidationError:
-                return Response({"status": "으엉", "errors": serializer.errors})
+        # 각각의 job에 user를 다 넣어줌
+        user = User.objects.get(email=eve_user_email).id
+        for industry_job in industry_jobs:
+            industry_job['user'] = user
 
-            return Response({"status": industry_jobs})
-            return Response({"status": industry_jobs, "validated_data": serializer.data})
-        except Exception as e:
-            print(e)
-            return Response({"status": e})
-        #
-        # # 일단 없으면 bulk_create 해줌
-        # if not IndustryJob.objects.filter(user=user_instance).exists():
-        #     serializer = IndustryJobSerializer(data=industry_jobs)
-        #     try:
-        #         serializer.is_valid(raise_exception=True)
-        #         serializer.bulk_create()
-        #
-        #         return Response({"status": serializer.data})
-        #     except serializers.ValidationError:
-        #         return Response({"status": "으엉", "errors": serializer.errors})
+
+        serializer = IndustryJobSerializer(data=industry_jobs, many=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+            instance = serializer.save()
+            print(instance)
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
+
+            return Response({"status": serializer.data})
+        return Response({"status": industry_jobs, "validated_data": serializer.data})
 
 
 # drf login
