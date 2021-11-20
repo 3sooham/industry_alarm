@@ -166,7 +166,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         if user_created:
             try:
                 serializer.is_valid(raise_exception=True)
-                instance = serializer.save()
+                instance = serializer.temp_update()
                 print("in view instance = ", instance)
             except serializers.ValidationError:
                 return Response({"status": "failed", "errors": serializer.errors})
