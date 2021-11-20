@@ -11,8 +11,6 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         print("in serializer res = res")
         return res
 
-
-
     def update(self, instance, validated_data):
         # Maps for id->instance and id->data item.
         job_mapping = {job.id: job for job in instance}
@@ -29,10 +27,10 @@ class IndustryJobListSerializer(serializers.ListSerializer):
             else:
                 ret.append(self.child.update(industry_job, data))
 
-        # # Perform deletions.
-        # for book_id, book in book_mapping.items():
-        #     if book_id not in data_mapping:
-        #         book.delete()
+        # Perform deletions.
+        for job_id, job in job_mapping.items():
+            if job_id not in data_mapping:
+                job.delete()
 
         return ret
 
