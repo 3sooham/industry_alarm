@@ -155,6 +155,10 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
         instance = IndustryJob.objects.filter(user=user)
         print(instance)
+        print(type(instance))
+        for i in instance:
+            print(i)
+            print(type(i))
         serializer = IndustryJobSerializer(instance, data=industry_jobs, many=True)
         # 유저가 처음 로그인해서 job이 비어있는 경우
         if user_created:
