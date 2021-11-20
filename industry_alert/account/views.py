@@ -116,6 +116,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            print(serializer.data)
             user_created = serializer.data['created']
 
             # # 회원가입/로그인하면 celery로 인더잡 불러와서 db에 인더잡들 생성/갱신하기
