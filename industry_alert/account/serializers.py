@@ -52,7 +52,7 @@ class EveAccessTokenSerializer(serializers.Serializer):
 
         # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
         #   return instance, user_instance, updated, 201, {"token": token.key}
-        return {"token": token.key, "exist" : created}
+        return {"token": token.key, "created": created}
 
 
 # drf

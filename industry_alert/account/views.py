@@ -116,12 +116,13 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            user_created = serializer.data['created']
 
             # # 회원가입/로그인하면 celery로 인더잡 불러와서 db에 인더잡들 생성/갱신하기
-            # get_industry_jobs.delay(character_id, request.user)
-            #
-            # return Response(data=esi_dict)
-            # return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # if serializer.data['created']:
+            #   create_industry_jobs.delay(character_id, request.user)
+            # update_industry_jobs.delay(character_id, request.user)
+            # return Response({'token' : serializer.data['token']}, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
@@ -143,21 +144,24 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
         # 각각의 job에 user를 다 넣어줌
         user = User.objects.get(email=eve_user_email).id
-        [industry_jobs.update(user=user) for industry_job in industry_jobs]
+        [industry_job.update(user=user) for industry_job in industry_jobs]
         # for industry_job in industry_jobs:
         #     # industry_job['user'] = user
         #     industry_job.update(user=user)
 
-        serializer = IndustryJobSerializer(data=industry_jobs, many=True)
+        instance = esi.IndustryJob.objects.filter(user=user)
+        serializer = IndustryJobSerializer(instance, data=industry_jobs, many=True)
         # 유저가 처음 로그인해서 job이 비어있는 경우
-        try:
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
-            print("in view instance = ", instance)
-        except serializers.ValidationError:
-            return Response({"status": "failed", "errors": serializer.errors})
-        return Response({"validated_data": serializer.data})
+        if user_created:
+            try:
+                serializer.is_valid(raise_exception=True)
+                instance = serializer.save()
+                print("in view instance = ", instance)
+            except serializers.ValidationError:
+                return Response({"status": "failed", "errors": serializer.errors})
+            return Response({"validated_data": serializer.data})
         # 이미 있는 유저가 로그인 한 경우
+        serializer = IndustryJobSerializer(instance, data=request.data, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()

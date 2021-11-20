@@ -13,9 +13,13 @@ class IndustryJobListSerializer(serializers.ListSerializer):
 
     def update(self, instance, validated_data):
         # Maps for id->instance and id->data item.
+        print("in serializer update")
+        print("in serializer update instance=", instance)
+        print("in serializer update validated_data=", validated_data)
         job_mapping = {job.id: job for job in instance}
         data_mapping = {item['id']: item for item in validated_data}
-
+        print("in serializer update job_mapping=", job_mapping)
+        print("in serializer update data_mapping=", data_mapping)
         # Perform creations and updates
         ret = []
         for job_id, data in data_mapping.items():
