@@ -20,6 +20,9 @@ import datetime
 from .tasks import get_industry_jobs
 from esi.serializers import IndustryJobSerializer
 
+# 임시
+from esi.models import IndustryJob
+
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
@@ -150,7 +153,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         #     # industry_job['user'] = user
         #     industry_job.update(user=user)
 
-        instance = esi.models.IndustryJob.objects.filter(user=user)
+        instance = IndustryJob.objects.filter(user=user)
         serializer = IndustryJobSerializer(instance, data=industry_jobs, many=True)
         # 유저가 처음 로그인해서 job이 비어있는 경우
         if user_created:
