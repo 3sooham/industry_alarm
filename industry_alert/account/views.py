@@ -177,6 +177,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         #     traceback.print_exc()
         #     # return Response({"status": "failed", "errors": serializer.errors})
         serializer.is_valid(raise_exception=True)
+        import traceback
+        traceback.print_exc()
         return Response({"validated_data": serializer.data})
 
 
