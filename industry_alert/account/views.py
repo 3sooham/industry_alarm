@@ -173,6 +173,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             instance = serializer.save()
             print("in view instance = ", instance)
         except serializers.ValidationError as e:
+            import traceback
+            traceback.print_exc()
             print(e)
             # return Response({"status": "failed", "errors": serializer.errors})
         return Response({"validated_data": serializer.data})
