@@ -150,7 +150,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         #     # industry_job['user'] = user
         #     industry_job.update(user=user)
 
-        instance = esi.IndustryJob.objects.filter(user=user)
+        instance = esi.models.IndustryJob.objects.filter(user=user)
         serializer = IndustryJobSerializer(instance, data=industry_jobs, many=True)
         # 유저가 처음 로그인해서 job이 비어있는 경우
         if user_created:
