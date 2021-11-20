@@ -34,6 +34,7 @@ class EveAccessTokenSerializer(serializers.Serializer):
     user = EveUserSerializer(write_only=True)
     # 여기 token 넣어줘야지 create()에서 리턴해줄 수 있음 아니면 serialize를 못함
     token = serializers.CharField(read_only=True)
+    created = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = EveAccessToken
