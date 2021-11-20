@@ -166,14 +166,14 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         if user_created:
             try:
                 serializer.is_valid(raise_exception=True)
-                instance = serializer.temp_update()
+                instance = serializer.save()
                 print("in view instance = ", instance)
             except serializers.ValidationError:
                 return Response({"status": "failed", "errors": serializer.errors})
             return Response({"validated_data": serializer.data})
         # 이미 있는 유저가 로그인 한 경우
         print("before")
-        serializer = IndustryJobSerializer(instance, data=request.data, partial=True)
+        serializer = IndustryJobSerializer(li, data=request.data, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()

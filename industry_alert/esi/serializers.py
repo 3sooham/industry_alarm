@@ -11,7 +11,7 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         print("in serializer res = res")
         return res
 
-    def temp_update(self, instance, validated_data):
+    def update(self, instance, validated_data):
         # Maps for id->instance and id->data item.
         print("in serializer update")
         print("in serializer update instance=", instance)
