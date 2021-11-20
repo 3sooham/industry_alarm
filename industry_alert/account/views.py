@@ -160,7 +160,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             print(i)
             print(type(i))
 
-        li = [ins for ins in insatnce]
+        li = [ins for ins in instance]
         serializer = IndustryJobSerializer(instance, data=industry_jobs, many=True)
         # 유저가 처음 로그인해서 job이 비어있는 경우
         if user_created:
