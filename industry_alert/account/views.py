@@ -167,15 +167,14 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # 이미 있는 유저가 로그인 한 경우
         print("before")
         instance = IndustryJob.objects.filter(user=user)
-        print(instance)
         serializer = IndustryJobSerializer(instance, data=request.data, many=True, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
             print("in view instance = ", instance)
         except serializers.ValidationError:
-            return Response({"status": "failed", "errors": serializer.errors})
-        return Response({"validated_data": serializer.data})
+            # return Response({"status": "failed", "errors": serializer.errors})
+        # return Response({"validated_data": serializer.data})
 
 
 # drf login
