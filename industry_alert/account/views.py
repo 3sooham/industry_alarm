@@ -170,12 +170,12 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         serializer = IndustryJobSerializer(instance, data=request.data, many=True, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
-            print("in view instance = ", instance)
-        except serializers.ValidationError as e:
             import traceback
             traceback.print_exc()
-            print(e)
+            instance = serializer.save()
+            print("in view instance = ", instance)
+        except serializers.ValidationError:
+            pass
             # return Response({"status": "failed", "errors": serializer.errors})
         return Response({"validated_data": serializer.data})
 
