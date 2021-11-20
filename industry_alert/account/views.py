@@ -174,7 +174,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             print("in view instance = ", instance)
         except serializers.ValidationError:
             # return Response({"status": "failed", "errors": serializer.errors})
-        # return Response({"validated_data": serializer.data})
+        return Response({"validated_data": serializer.data})
 
 
 # drf login
