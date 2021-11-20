@@ -173,7 +173,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             return Response({"validated_data": serializer.data})
         # 이미 있는 유저가 로그인 한 경우
         print("before")
-        serializer = IndustryJobSerializer(li, data=request.data, partial=True)
+        serializer = IndustryJobSerializer(instance, data=request.data, many=True, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
