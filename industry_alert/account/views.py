@@ -153,14 +153,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         #     # industry_job['user'] = user
         #     industry_job.update(user=user)
 
-        instance = IndustryJob.objects.filter(user=user)
-        print(instance)
-        print(type(instance))
-        for i in instance:
-            print(i)
-            print(type(i))
-
-        li = [ins for ins in instance]
+        # li = [ins for ins in instance]
         serializer = IndustryJobSerializer(data=industry_jobs, many=True)
         # 유저가 처음 로그인해서 job이 비어있는 경우
         if user_created:
@@ -173,6 +166,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             return Response({"validated_data": serializer.data})
         # 이미 있는 유저가 로그인 한 경우
         print("before")
+        instance = IndustryJob.objects.filter(user=user)
+        print(instance)
         serializer = IndustryJobSerializer(instance, data=request.data, many=True, partial=True)
         try:
             serializer.is_valid(raise_exception=True)
