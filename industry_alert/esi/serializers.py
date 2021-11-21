@@ -65,8 +65,18 @@ class IndustryJobSerializer(serializers.ModelSerializer):
     class Meta:
         list_serializer_class = IndustryJobListSerializer
         model = IndustryJob
-        fields = ['id', 'user', 'activity_id', 'blueprint_id', 'blueprint_location_id', 'blueprint_type_id',
+        # 이거 context로 user넣어줄거라서 user일단 fields에서 뺌
+        fields = ['id', 'activity_id', 'blueprint_id', 'blueprint_location_id', 'blueprint_type_id',
                   'completed_character_id', 'completed_date', 'cost',
                   'duration', 'end_date', 'facility_id', 'installer_id', 'job_id', 'licensed_runs', 'output_location_id',
                   'pause_date', 'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status',
                   'successful_runs']
+
+    def validate(self, attr):
+        print("in validate")
+        # 이거는 request 전부가 serializer로 감
+        # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
+        # 어떤 함수 불러온지 알 수 있기 때문임
+        attr['user'] = self.context['user']
+        print(attr)
+        return attr
