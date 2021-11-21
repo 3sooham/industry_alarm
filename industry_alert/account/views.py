@@ -144,7 +144,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         except KeyError:
             return Response({"status": "faild to establish connection to eve server"})
         # 각각의 job에 user를 다 넣어줌
-        user = User.objects.get(email=eve_user_email).id
+        user = User.objects.get(email=eve_user_email)
         # [industry_job.update(user=user) for industry_job in industry_jobs]
         # 잡 생성/업데이트
         serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
