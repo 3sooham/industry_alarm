@@ -149,7 +149,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # user = User.objects.get(email=eve_user_email).id
         # [industry_job.update(user=user) for industry_job in industry_jobs]
         # 잡 생성/업데이트
-        serializer = IndustryJobSerializer(data=industry_jobs, many=True)
+        serializer = IndustryJobSerializer(data=industry_jobs, many=True, context=context)
         try:
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
