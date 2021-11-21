@@ -41,29 +41,14 @@ class IndustryJobListSerializer(serializers.ListSerializer):
 
         return ret
 
-# class IndustryJobSerializer(serializers.ListSerializer):
-#     def update(self, instance, validated_data):
-#         # Maps for id->instance and id->data item.
-#         job_mapping = {job.id: job for job in instance}
-#         data_mapping = {item['id']: item for item in validated_data}
-#
-#         # Perform creations and updates
-#         ret = []
-#         for job_id, data in data_mapping.items():
-#             industry_job = job_mapping.get(job_id, None)
-#             # job 없으면 생성
-#             if industry_job is None:
-#                 ret.append(self.child.create(data))
-#             # 있으면 업데이트
-#             else:
-#                 ret.append(self.child.update(industry_job, data))
-#
-#         # # Perform deletions.
-#         # for book_id, book in book_mapping.items():
-#         #     if book_id not in data_mapping:
-#         #         book.delete()
-#
-#         return ret
+        def validate(self, attr):
+            print("in validate")
+            # 이거는 request 전부가 serializer로 감
+            # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
+            # 어떤 함수 불러온지 알 수 있기 때문임
+            attr['user'] = self.context['user']
+            print(attr)
+            return attr
 
 class IndustryJobSerializer(serializers.ModelSerializer):
     # 이거 id 기본으로는 read_only여가지고 이렇게 해줘야함
@@ -85,12 +70,3 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'duration', 'end_date', 'facility_id', 'installer_id', 'job_id', 'licensed_runs', 'output_location_id',
                   'pause_date', 'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status',
                   'successful_runs']
-
-    def validate(self, attr):
-        print("in validate")
-        # 이거는 request 전부가 serializer로 감
-        # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
-        # 어떤 함수 불러온지 알 수 있기 때문임
-        attr['user'] = self.context['user']
-        print(attr)
-        return attr
