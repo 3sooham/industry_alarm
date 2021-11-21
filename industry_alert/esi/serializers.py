@@ -41,15 +41,6 @@ class IndustryJobListSerializer(serializers.ListSerializer):
 
         return ret
 
-    def validate(self, attr):
-        print("in validate")
-        # 이거는 request 전부가 serializer로 감
-        # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
-        # 어떤 함수 불러온지 알 수 있기 때문임
-        attr['user'] = self.context['user']
-        print(attr)
-        return attr
-
 # class IndustryJobSerializer(serializers.ListSerializer):
 #     def update(self, instance, validated_data):
 #         # Maps for id->instance and id->data item.
@@ -94,3 +85,12 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'duration', 'end_date', 'facility_id', 'installer_id', 'job_id', 'licensed_runs', 'output_location_id',
                   'pause_date', 'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status',
                   'successful_runs']
+
+    def validate(self, attr):
+        print("in validate")
+        # 이거는 request 전부가 serializer로 감
+        # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
+        # 어떤 함수 불러온지 알 수 있기 때문임
+        attr['user'] = self.context['user']
+        print(attr)
+        return attr
