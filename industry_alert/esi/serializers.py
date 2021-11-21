@@ -4,6 +4,9 @@ from .models import IndustryJob
 class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
+        # 먼저 유저에 대해서 잡이 있는지 확인
+        # 잡이 있으면 먼저 없어진 인더 잡들 지우고 update_or_create
+        # 잡이 없으면 create
         industry_jobs = [IndustryJob(**item) for item in validated_data]
         print("in serializer industry_jobs =", industry_jobs)
 
@@ -37,6 +40,15 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                 job.delete()
 
         return ret
+
+    def validate(self, attr):
+        print("in validate")
+        # 이거는 request 전부가 serializer로 감
+        # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
+        # 어떤 함수 불러온지 알 수 있기 때문임
+        attr['user'] = self.context['user']
+        print(attr)
+        return attr
 
 # class IndustryJobSerializer(serializers.ListSerializer):
 #     def update(self, instance, validated_data):
@@ -82,8 +94,3 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'duration', 'end_date', 'facility_id', 'installer_id', 'job_id', 'licensed_runs', 'output_location_id',
                   'pause_date', 'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status',
                   'successful_runs']
-
-    # bulk_create 테스트
-    def bulk_create(self, validated_data):
-        print(validated_data)
-        print(type(validated_data))

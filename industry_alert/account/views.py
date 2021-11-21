@@ -119,8 +119,6 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            print(serializer.data)
-            user_created = serializer.data['created']
 
             # # 회원가입/로그인하면 celery로 인더잡 불러와서 db에 인더잡들 생성/갱신하기
             # if serializer.data['created']:
@@ -145,40 +143,18 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             industry_job_status = industry_jobs[0]['status']
         except KeyError:
             return Response({"status": "faild to establish connection to eve server"})
-
         # 각각의 job에 user를 다 넣어줌
-        user = User.objects.get(email=eve_user_email).id
-        [industry_job.update(user=user) for industry_job in industry_jobs]
-        # for industry_job in industry_jobs:
-        #     # industry_job['user'] = user
-        #     industry_job.update(user=user)
-
-        # li = [ins for ins in instance]
+        context = self.get_serializer_context()
+        context['user'] = User.objects.get(email=eve_user_email).id
+        # user = User.objects.get(email=eve_user_email).id
+        # [industry_job.update(user=user) for industry_job in industry_jobs]
+        # 잡 생성/업데이트
         serializer = IndustryJobSerializer(data=industry_jobs, many=True)
-        # 유저가 처음 로그인해서 job이 비어있는 경우
-        if user_created:
-            try:
-                serializer.is_valid(raise_exception=True)
-                instance = serializer.save()
-                print("in view instance = ", instance)
-            except serializers.ValidationError:
-                return Response({"status": "failed", "errors": serializer.errors})
-            return Response({"validated_data": serializer.data})
-        # 이미 있는 유저가 로그인 한 경우
-        print("before")
-        instance = IndustryJob.objects.filter(user=user)
-        serializer = IndustryJobSerializer(instance, data=request.data, many=True, partial=True)
-        # try:
-        #     serializer.is_valid(raise_exception=True)
-        #     instance = serializer.save()
-        #     print("in view instance = ", instance)
-        # except serializers.ValidationError:
-        #     import traceback
-        #     traceback.print_exc()
-        #     # return Response({"status": "failed", "errors": serializer.errors})
-        serializer.is_valid(raise_exception=True)
-        import traceback
-        traceback.print_exc()
+        try:
+            serializer.is_valid(raise_exception=True)
+            instance = serializer.save()
+        except serializers.ValidationError:
+            return Response({"status": "failed", "errors": serializer.errors})
         return Response({"validated_data": serializer.data})
 
 
