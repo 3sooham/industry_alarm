@@ -6,14 +6,18 @@ from django.db import transaction
 
 
 class IndustryJobListSerializer(serializers.ListSerializer):
-    # atomic allows us to create a block of code within which the atomicity on the database is guaranteed.
-    # 이 함수는 atomic하게 transaction처리함
-    # https://docs.djangoproject.com/en/3.2/topics/db/transactions/#order-of-execution
+    # https://wikidocs.net/21054
+    # 이거를 그냥 하면 이 함수를 불러올때마다 스택에 올렸다 내렸다하니
+    # @staticmethod로 힙에 올려버리기
+    # 지금은 작아서 상관없는데 커지면 유의미해짐
     @staticmethod
     def set_status(job, new_status):
         job.status = new_status
         return job
 
+    # atomic allows us to create a block of code within which the atomicity on the database is guaranteed.
+    # 이 함수는 atomic하게 transaction처리함
+    # https://docs.djangoproject.com/en/3.2/topics/db/transactions/#order-of-execution
     @transaction.atomic
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
@@ -32,7 +36,6 @@ class IndustryJobListSerializer(serializers.ListSerializer):
             # 새로 받아온 job들을 job_id를 키로 정리
             data_mapping = {item['job_id']: item for item in validated_data}
 
-            ret = []
             # 새로 받아온 job이 db에 저장되어 있는지 확인하고 없으면 생성
             need_create = [
                 IndustryJob(**data) for job_id, data in data_mapping.items() if job_mapping.get(job_id) is None
@@ -53,8 +56,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
             # 아래 리스트 만들면서 job.delete() 실행하고 다음줄 내려가면서 메모리에서 날아감
             [job.delete() for job_id, job in job_mapping.items() if job_id not in data_mapping]
 
-            # 이거 한거 return 해주고 싶은데 어떻게 해야할지를 모르겠음
-            return ret
+            # bulk_create, bulk_update의 리턴값을 넘겨주지말고 그냥 이렇게 해도됨
+            # 실제로 생성된 것도 아니니까 생성전 데이터만 넣어주기
+            return [*need_create, *need_update]
 
         # 유저에 대해서 잡이 없으면 create
         industry_jobs = [IndustryJob(**item) for item in validated_data]
