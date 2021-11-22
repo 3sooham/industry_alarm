@@ -80,6 +80,9 @@ class AccountManager(BaseUserManager):
 # https://medium.com/geekculture/register-login-and-logout-users-in-django-rest-framework-51486390c29
 # https://github.com/django/django/blob/910ecd1b8df7678f45c3d507dde6bcb1faafa243/django/contrib/auth/base_user.py#L16 참조하기
 # 여기에 이름 생년월일 전화번호 같은 거 더 추가하기
+
+
+# 여기에다가 eve esi account id 추가해야함 그래야지 그거가지고 esi request함
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name="email", max_length=60, unique=True, default=None)
     password = models.CharField(verbose_name='password', max_length=255)
