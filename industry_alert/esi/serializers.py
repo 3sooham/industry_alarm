@@ -4,51 +4,44 @@ from .models import IndustryJob
 class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
+        print("in serializer validated_data type = ", type(validated_data))
         # 먼저 유저에 대해서 잡이 있는지 확인
-        # 잡이 있으면 먼저 없어진 인더 잡들 지우고 update_or_create
-        # 잡이 없으면 create
+        instance = IndustryJob.objects.filter(user=validated_data['user'])
+        if instance.exist():
+            # instance를 job_id를 key로 정리
+            job_mapping = {job.job_id: job for job in instance}
+            # validated_data를 job_id를 키로 정리
+            data_mapping = {item['job_id']: item for item in validated_data}
+            ret = []
+            need_create = []
+            for job_id, data in data_mapping.items():
+                # validated_data에서 job_id를 가져와서 이게 instance에 있는지 확인
+                industry_job = job_mapping.get(job_id, None)
+                # job 없으면 새로 생긴거니 생성
+                if industry_job is None:
+                    need_create.append(industry_job)
+                    # ret.append(self.child.create(data))
+                # job이 있으면 업데이트
+                else:
+                    ret.append(self.child.update(industry_job, data))
+                    # bulk update 사용
+
+            # validated_data이거 dic인지 list인지 확인해야함
+            industry_jobs = [IndustryJob(**item) for item in need_create]
+            IndustryJob.objects.bulk_create(industry_jobs)
+
+            # Perform deletions.
+            # 이미 있는 잡이 새로 불러온 job에 없으면 완료되서 사라진거니 삭제해줌
+            for job_id, job in job_mapping.items():
+                if job_id not in data_mapping:
+                    job.delete()
+
+            return ret
+
+        # 유저에 대해서 잡이 없으면 create
         industry_jobs = [IndustryJob(**item) for item in validated_data]
-        print("in serializer industry_jobs =", industry_jobs)
-
         res = IndustryJob.objects.bulk_create(industry_jobs)
-        print("in serializer res = res")
         return res
-
-    def update(self, instance, validated_data):
-        # Maps for id->instance and id->data item.
-        print("in serializer update")
-        print("in serializer update instance=", instance)
-        print("in serializer update validated_data=", validated_data)
-        job_mapping = {job.id: job for job in instance}
-        data_mapping = {item['id']: item for item in validated_data}
-        print("in serializer update job_mapping=", job_mapping)
-        print("in serializer update data_mapping=", data_mapping)
-        # Perform creations and updates
-        ret = []
-        for job_id, data in data_mapping.items():
-            industry_job = job_mapping.get(job_id, None)
-            # job 없으면 생성
-            if industry_job is None:
-                ret.append(self.child.create(data))
-            # 있으면 업데이트
-            else:
-                ret.append(self.child.update(industry_job, data))
-
-        # Perform deletions.
-        for job_id, job in job_mapping.items():
-            if job_id not in data_mapping:
-                job.delete()
-
-        return ret
-
-        def validate(self, attr):
-            print("in validate")
-            # 이거는 request 전부가 serializer로 감
-            # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
-            # 어떤 함수 불러온지 알 수 있기 때문임
-            attr['user'] = self.context['user']
-            print(attr)
-            return attr
 
 class IndustryJobSerializer(serializers.ModelSerializer):
     # 이거 id 기본으로는 read_only여가지고 이렇게 해줘야함
@@ -73,10 +66,5 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'successful_runs']
 
     def validate(self, attr):
-        print("in validate2")
-        # 이거는 request 전부가 serializer로 감
-        # self.context['view'].action 이거로 더 자세한 정보 볼 수 있음
-        # 어떤 함수 불러온지 알 수 있기 때문임
         attr['user'] = self.context['user']
-        print(attr)
         return attr
