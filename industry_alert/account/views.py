@@ -150,7 +150,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         user = User.objects.get(email=eve_user_email)
         # [industry_job.update(user=user) for industry_job in industry_jobs]
         # 잡 생성/업데이트
-        industry_jobs = {
+        industry_jobs = [{
             "activity_id": 9,
             "blueprint_id": 1035652091451,
             "blueprint_location_id": 1032879057055,
@@ -172,7 +172,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             "station_id": 1032879057055,
             "status": "paused",
             "successful_runs": None
-        }
+        }]
         serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)
