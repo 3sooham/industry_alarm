@@ -6,8 +6,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         print("in serializer validated_data = ", validated_data)
         print("in serializer validated_data type = ", type(validated_data))
 
-        # 먼저 유저에 대해서 잡이 있는지 확인
+        # 먼저 유저에 대해서 저장된 잡이 있는지 확인
         instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
+        # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():
             # instance를 job_id를 key로 정리
             job_mapping = {job.job_id: job for job in instance}
@@ -15,41 +16,44 @@ class IndustryJobListSerializer(serializers.ListSerializer):
             data_mapping = {item['job_id']: item for item in validated_data}
             ret = []
             need_create = []
+            need_update = []
             for job_id, data in data_mapping.items():
-                # validated_data에서 job_id를 가져와서 이게 instance에 있는지 확인
+                # 새로 받아온 job에서 job_id를 가져와서 이게 현재 저장된 유저의 job instance에 있는지 확인
                 industry_job = job_mapping.get(job_id, None)
                 # job 없으면 새로 생긴거니 생성
                 if industry_job is None:
                     print("in add")
-                    need_create.append(IndustryJob(**data))
                     print(IndustryJob(**industry_job))
                     print(type(IndustryJob(**industry_job)))
-                # job이 있고 status가 변경된게 있으면 update
+                    need_create.append(IndustryJob(**data))
+                # 기존 job이 새로 받아온 job에도 있고 status가 변경된게 있으면 update
                 else:
                     if data['status'] != IndustryJob.objects.get(job_id=job_id):
-                        print('in update')
-                        ret.append(self.child.update(industry_job, data))
-                        # bulk update 사용
+                        print(data['status'], IndustryJob.objects.get(job_id=job_id).status)
+                        need_update.append()
+                        # ret.append(self.child.update(industry_job, data))
 
-            print(need_create)
-            # industry_jobs = [IndustryJob(**item) for item in need_create]
-            IndustryJob.objects.bulk_create(need_create)
-
+            # 생성할게 있으면 생성해줌
+            if need_create:
+                print(need_create)
+                # industry_jobs = [IndustryJob(**item) for item in need_create]
+                IndustryJob.objects.bulk_create(need_create)
+            # 업데이트 할게 있으면 업데이트해줌
+            if need_update:
+                IndustryJob.objects.bulk_update(need_update, ['status'])
             # Perform deletions.
             # 이미 있는 잡이 새로 불러온 job에 없으면 완료되서 사라진거니 삭제해줌
             for job_id, job in job_mapping.items():
                 if job_id not in data_mapping:
-                    print("deleteeeeeeeeeee")
                     job.delete()
 
             return ret
 
-
         # 유저에 대해서 잡이 없으면 create
         print('in mass create')
-        industry_jobs = [IndustryJob(**item) for item in validated_data]
-        print(type(IndustryJob(**validated_data[0])))
         print(IndustryJob(**validated_data[0]))
+        print(type(IndustryJob(**validated_data[0])))
+        industry_jobs = [IndustryJob(**item) for item in validated_data]
         res = IndustryJob.objects.bulk_create(industry_jobs)
         return res
 
