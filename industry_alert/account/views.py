@@ -146,31 +146,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             return Response({"status": "there is no industry job"})
         except KeyError:
             return Response({"status": "faild to establish connection to eve server"})
-
         user = User.objects.get(email=eve_user_email)
-        # [industry_job.update(user=user) for industry_job in industry_jobs]
         # 잡 생성/업데이트
-        industry_jobs = [{
-            "activity_id": 9,
-            "blueprint_id": 1035652091451,
-            "blueprint_location_id": 1032879057055,
-            "blueprint_type_id": 46204,
-            "cost": 784226,
-            "duration": 83939,
-            "end_date": "2021-11-21T13:51:03Z",
-            "facility_id": 1032879057055,
-            "installer_id": 2117307293,
-            "job_id": 474299040,
-            "licensed_runs": 1000,
-            "output_location_id": 1032879057055,
-            "probability": 1,
-            "product_type_id": 16671,
-            "runs": 12,
-            "start_date": "2021-11-20T14:32:04Z",
-            "station_id": 1032879057055,
-            "status": "active"
-        }]
-        # many=True면 dict가 아니라 list를 넘겨줘야함
+        # many=true면 dict가 아닌 list를 넘겨야함
         serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)
