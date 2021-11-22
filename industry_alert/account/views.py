@@ -151,7 +151,6 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # [industry_job.update(user=user) for industry_job in industry_jobs]
         # 잡 생성/업데이트
         industry_jobs = {
-            "id": null,
             "activity_id": 9,
             "blueprint_id": 1035652091451,
             "blueprint_location_id": 1032879057055,
