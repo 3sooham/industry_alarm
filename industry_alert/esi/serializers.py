@@ -58,8 +58,10 @@ class IndustryJobListSerializer(serializers.ListSerializer):
 
             # bulk_create, bulk_update의 리턴값을 넘겨주지말고 그냥 이렇게 해도됨
             # 실제로 생성된 것도 아니니까 생성전 데이터만 넣어주기
-            print(*need_create)
-            return [*need_create, *need_update]
+            ret = [*need_create, *need_update]
+            if ret:
+                return ret
+            return validated_data
 
         # 유저에 대해서 잡이 없으면 create
         industry_jobs = [IndustryJob(**item) for item in validated_data]
