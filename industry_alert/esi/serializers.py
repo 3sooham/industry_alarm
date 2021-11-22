@@ -10,9 +10,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
         # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():
-            # instance를 job_id를 key로 정리
+            # 기존에 존재하는 job들을 job_id를 key로 정리
             job_mapping = {job.job_id: job for job in instance}
-            # validated_data를 job_id를 키로 정리
+            # 새로 받아온 job들을 job_id를 키로 정리
             data_mapping = {item['job_id']: item for item in validated_data}
             ret = []
             need_create = []
@@ -28,9 +28,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                     need_create.append(IndustryJob(**data))
                 # 기존 job이 새로 받아온 job에도 있고 status가 변경된게 있으면 update
                 else:
-                    if data['status'] != IndustryJob.objects.get(job_id=job_id):
+                    if data['status'] != IndustryJob.objects.get(job_id=job_id).status:
                         print(data['status'], IndustryJob.objects.get(job_id=job_id).status)
-                        need_update.append()
+                        need_update.append(industry_job)
                         # ret.append(self.child.update(industry_job, data))
 
             # 생성할게 있으면 생성해줌
