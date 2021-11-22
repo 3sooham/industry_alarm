@@ -45,7 +45,7 @@ class IndustryJobListSerializer(serializers.ListSerializer):
 
             # 새로 받아온 job이 db에 저장되어 있고 status가 변경 됐으면 update 해줌
             need_update = [
-                IndustryJob(**data) for job_id, data in data_mapping.items()
+                job_mapping.get(job_id, None) for job_id, data in data_mapping.items()
                 if job_mapping.get(job_id) is not None and job_mapping.get(job_id).status != data['status']
             ]
             ret.append(IndustryJob.objects.bulk_update(need_update, ['status']))
