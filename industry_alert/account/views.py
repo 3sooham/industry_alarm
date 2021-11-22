@@ -155,7 +155,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             "blueprint_id": 1035652091451,
             "blueprint_location_id": 1032879057055,
             "blueprint_type_id": 46204,
-            "completed_character_id": null,
+            "completed_character_id": None,
             "cost": "784226.0000",
             "duration": 83939,
             "end_date": "2021-11-21T13:51:03",
@@ -164,14 +164,14 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             "job_id": 474299040,
             "licensed_runs": 1000,
             "output_location_id": 1032879057055,
-            "pause_date": null,
+            "pause_date": None,
             "probability": 1.0,
             "product_type_id": 16671,
             "runs": 12,
             "start_date": "2021-11-20T14:32:04",
             "station_id": 1032879057055,
             "status": "paused",
-            "successful_runs": null
+            "successful_runs": None
         }
         serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
         try:
