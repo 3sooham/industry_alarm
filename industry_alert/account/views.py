@@ -141,6 +141,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             # 이거하면 리스트로옴
             industry_jobs = res.json()
             industry_job_status = industry_jobs[0]['status']
+        except IndexError:
+            return Response({"status": "there is no industry job"})
         except KeyError:
             return Response({"status": "faild to establish connection to eve server"})
         user = User.objects.get(email=eve_user_email)
