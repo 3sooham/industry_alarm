@@ -48,6 +48,10 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                 job_mapping.get(job_id, None) for job_id, data in data_mapping.items()
                 if job_mapping.get(job_id) is not None and job_mapping.get(job_id).status != data['status']
             ]
+            need_update = [
+                job for job_id, job in job_mapping.items() \
+                if job_id in data_mapping.keys() and job.status != data_mapping[job_id]['status']
+            ]
             ret.append(IndustryJob.objects.bulk_update(need_update, ['status']))
 
             # 이미 있는 잡이 새로 불러온 job에 없으면 완료되서 사라진거니 삭제해줌
