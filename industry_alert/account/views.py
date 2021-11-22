@@ -168,7 +168,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             "runs": 12,
             "start_date": "2021-11-20T14:32:04Z",
             "station_id": 1032879057055,
-            "status": "paused"
+            "status": "active"
         }]
         # many=True면 dict가 아니라 list를 넘겨줘야함
         serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
