@@ -9,6 +9,11 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     # atomic allows us to create a block of code within which the atomicity on the database is guaranteed.
     # 이 함수는 atomic하게 transaction처리함
     # https://docs.djangoproject.com/en/3.2/topics/db/transactions/#order-of-execution
+    @staticmethod
+    def set_status(job, new_status):
+        job.status = new_status
+        return job
+
     @transaction.atomic
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
@@ -36,10 +41,6 @@ class IndustryJobListSerializer(serializers.ListSerializer):
             IndustryJob.objects.bulk_create(need_create)
 
             # 새로 받아온 job이 db에 저장되어 있고 status가 변경 됐으면 update 해줌
-            @staticmethod
-            def set_status(job, new_status):
-                job.status = new_status
-                return job
             need_update = [
                 set_status(job, data_mapping[job_id]['status']) for job_id, job in job_mapping.items()
                 if job_id in data_mapping.keys() and job.status != data_mapping[job_id]['status']
