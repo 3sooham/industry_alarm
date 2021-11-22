@@ -41,8 +41,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
             IndustryJob.objects.bulk_create(need_create)
 
             # 새로 받아온 job이 db에 저장되어 있고 status가 변경 됐으면 update 해줌
+            # 이거 staticmethod는 불러올때 크래스명
             need_update = [
-                set_status.__func__(job, data_mapping[job_id]['status']) for job_id, job in job_mapping.items()
+                IndustryJobListSerializer.set_status(job, data_mapping[job_id]['status']) for job_id, job in job_mapping.items()
                 if job_id in data_mapping.keys() and job.status != data_mapping[job_id]['status']
             ]
             IndustryJob.objects.bulk_update(need_update, ['status'])
