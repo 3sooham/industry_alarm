@@ -55,7 +55,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
             # 아래 리스트 만들면서 job.delete() 실행하고 다음줄 내려가면서 메모리에서 날아감
             [job.delete() for job_id, job in job_mapping.items() if job_id not in data_mapping]
 
-            return ret
+            print(ret)
+            print(type(ret))
+            return []
 
         # 유저에 대해서 잡이 없으면 create
         industry_jobs = [IndustryJob(**item) for item in validated_data]
