@@ -170,6 +170,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             "station_id": 1032879057055,
             "status": "paused"
         }]
+        # many=True면 dict가 아니라 list를 넘겨줘야함
         serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
         try:
             serializer.is_valid(raise_exception=True)

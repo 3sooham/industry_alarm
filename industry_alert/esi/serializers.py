@@ -11,7 +11,6 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     @transaction.atomic
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
-        print("in serializer validated_data type = ", type(validated_data))
 
         # 유저에 대해서 저장된 잡이 있는지 확인
         # filter에서는 db hit 안함
@@ -40,7 +39,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                 job for job_id, job in job_mapping.items()
                 if job_id in data_mapping.keys() and job.status != data_mapping[job_id]['status']
             ]
-            IndustryJob.objects.bulk_update(need_update, ['status'])
+            print(need_update)
+            aa = IndustryJob.objects.bulk_update(need_update, ['status'])
+            print(aa.status)
 
             # 이미 있는 잡이 새로 불러온 job에 없으면 완료되서 사라진거니 삭제해줌
             # 이거 python gc가 reference기반이어서 아래에서 더이상 안쓰면 알아서 지워줌
