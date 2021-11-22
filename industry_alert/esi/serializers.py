@@ -19,16 +19,17 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                 industry_job = job_mapping.get(job_id, None)
                 # job 없으면 새로 생긴거니 생성
                 if industry_job is None:
-                    need_create.append(industry_job)
-                    # ret.append(self.child.create(data))
-                # job이 있으면 업데이트
+                    need_create.append(IndustryJob(**industry_job))
+                    print(IndustryJob(**industry_job))
+                    print(type(IndustryJob(**industry_job)))
+                # job이 있고 status가 변경된게 있으면 update
                 else:
                     ret.append(self.child.update(industry_job, data))
                     # bulk update 사용
 
-            # validated_data이거 dic인지 list인지 확인해야함
-            industry_jobs = [IndustryJob(**item) for item in need_create]
-            IndustryJob.objects.bulk_create(industry_jobs)
+            print(need_create)
+            # industry_jobs = [IndustryJob(**item) for item in need_create]
+            IndustryJob.objects.bulk_create(need_create)
 
             # Perform deletions.
             # 이미 있는 잡이 새로 불러온 job에 없으면 완료되서 사라진거니 삭제해줌
