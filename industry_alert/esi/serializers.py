@@ -12,22 +12,21 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
         print("in serializer validated_data type = ", type(validated_data))
-        print(**validated_data[0])
 
         # 유저에 대해서 저장된 잡이 있는지 확인
         # filter에서는 db hit 안함
         # 이거 찍어보면 queryset 오브젝트 나오고 하나 get하기전에는 db에서 값을 가져오지 않음
         # https://docs.djangoproject.com/en/3.2/ref/models/querysets/
         # evaluate할때만 db랑 통신함
-        print(instance[0])
         instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
+        print(instance[0])
         # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():
             # 기존에 존재하는 job들을 job_id를 key로 정리
             # 여기서 iterate하니  db hit 하는거임
             job_mapping = {job.job_id: job for job in instance}
             for j in job_mapping:
-                print(type(j))
+                print(j)
                 break
             # 새로 받아온 job들을 job_id를 키로 정리
             data_mapping = {item['job_id']: item for item in validated_data}
