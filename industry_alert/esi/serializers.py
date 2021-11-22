@@ -7,7 +7,7 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         print("in serializer validated_data type = ", type(validated_data))
         # 먼저 유저에 대해서 잡이 있는지 확인
         instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
-        if instance.exist():
+        if instance.exists():
             # instance를 job_id를 key로 정리
             job_mapping = {job.job_id: job for job in instance}
             # validated_data를 job_id를 키로 정리
