@@ -25,7 +25,7 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                     print(type(IndustryJob(**industry_job)))
                 # job이 있고 status가 변경된게 있으면 update
                 else:
-                    if data['status'] != IndustryJob.get(job_id=job_id):
+                    if data['status'] != IndustryJob.objects.get(job_id=job_id):
                         print('in update')
                         ret.append(self.child.update(industry_job, data))
                         # bulk update 사용
