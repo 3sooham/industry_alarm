@@ -12,18 +12,15 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
         print("in serializer validated_data type = ", type(validated_data))
-
-        print(IndustryJob)
-        print(IndustryJob(**validated_data[0]))
-        print(type(IndustryJob(**validated_data[0])))
+        print(**validated_data[0])
 
         # 유저에 대해서 저장된 잡이 있는지 확인
         # filter에서는 db hit 안함
         # 이거 찍어보면 queryset 오브젝트 나오고 하나 get하기전에는 db에서 값을 가져오지 않음
         # https://docs.djangoproject.com/en/3.2/ref/models/querysets/
         # evaluate할때만 db랑 통신함
+        print(instance[0])
         instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
-        print(type(instance))
         # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():
             # 기존에 존재하는 job들을 job_id를 key로 정리
@@ -41,14 +38,14 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                 IndustryJob(**data) for job_id, data in data_mapping.items() if job_mapping.get(job_id) is None
             ]
             # 이거 []들어가면 실행안하고 끝나서 if need_crate: 이렇게 안해도됨
-            ret.append(IndustryJob.objects.bulk_create(need_create))
+            ret = IndustryJob.objects.bulk_create(need_create)
 
             # 새로 받아온 job이 db에 저장되어 있고 status가 변경 됐으면 update 해줌
             need_update = [
                 job for job_id, job in job_mapping.items()
                 if job_id in data_mapping.keys() and job.status != data_mapping[job_id]['status']
             ]
-            ret.append(IndustryJob.objects.bulk_update(need_update, ['status']))
+            ret += IndustryJob.objects.bulk_update(need_update, ['status'])
 
             # 이미 있는 잡이 새로 불러온 job에 없으면 완료되서 사라진거니 삭제해줌
             # 이거 python gc가 reference기반이어서 아래에서 더이상 안쓰면 알아서 지워줌

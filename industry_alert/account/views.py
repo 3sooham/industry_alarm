@@ -146,6 +146,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             return Response({"status": "there is no industry job"})
         except KeyError:
             return Response({"status": "faild to establish connection to eve server"})
+
         user = User.objects.get(email=eve_user_email)
         # [industry_job.update(user=user) for industry_job in industry_jobs]
         # 잡 생성/업데이트
