@@ -3,6 +3,7 @@ from celery import shared_task
 import requests
 from esi.serializers import IndustryJobSerializer
 from esi.models import IndustryJob
+from .models import User
 from rest_framework import serializers
 
 
