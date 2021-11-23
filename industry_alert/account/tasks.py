@@ -24,9 +24,9 @@ def get_industry_jobs(character_id, acc, eve_user_email):
           industry_job_status = industry_jobs[0]['status']
      # job이 없으면 task 종료
      except IndexError:
-          return Response({"status": "there is no industry job"})
+          return {"status": "there is no industry job"}
      except KeyError:
-          return Response({"status": "faild to establish connection to eve server"})
+          return {"status": "faild to establish connection to eve server"}
 
      user = User.objects.get(email=eve_user_email)
      # 잡 생성/업데이트
@@ -36,5 +36,5 @@ def get_industry_jobs(character_id, acc, eve_user_email):
           serializer.is_valid(raise_exception=True)
           serializer.save()
      except serializers.ValidationError:
-          return Response({"status": "failed", "errors": serializer.errors})
-     return Response({"validated_data": serializer.data})
+          return {"status": "failed", "errors": serializer.errors}
+     return serializer.data
