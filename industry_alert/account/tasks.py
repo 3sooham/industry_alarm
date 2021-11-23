@@ -8,7 +8,9 @@ from rest_framework import serializers
 
 # async task니까 리턴해줄 필요없음
 @shared_task()
-def get_industry_jobs(character_id):
+def get_industry_jobs(character_id, acc):
+     # get access token from database
+
      # esi request
      try:
           url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'

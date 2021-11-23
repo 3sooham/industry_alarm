@@ -55,7 +55,6 @@ class EveAccessTokenSerializer(serializers.Serializer):
         #   return instance, user_instance, updated, 201, {"token": token.key}
         return {"token": token.key}
 
-
 # drf
 # 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성
 # 2. 각 serializer는 아래와 같은 field를 가지고 이름에 맞는 동작을 해야함

@@ -106,6 +106,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         eve_user['email'] = eve_user_email
         eve_user['name'] = character_dict['CharacterName']
         eve_user['password'] = create_random_string()
+        eve_user['character_id'] = character_id
 
         temp_dict = res_dict.copy()
         temp_dict['user'] = eve_user
@@ -117,7 +118,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
 
             # celery로 job 받아오기
-            get_industry_jobs.delay(character_id)
+            get_industry_jobs.delay(character_id, acc)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
