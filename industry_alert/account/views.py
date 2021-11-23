@@ -9,19 +9,15 @@ from .serializers import LoginSerializer, UserSerializer, EveUserSerializer, Eve
 # eve login
 import requests
 import base64
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 from .utils import url_creator, email_creator, create_random_string
 
-# eve token
+# eve access token
 import datetime
 
 # celery task
 from .tasks import get_industry_jobs
-from esi.serializers import IndustryJobSerializer
-
-# 임시
-from esi.models import IndustryJob
 
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
@@ -120,43 +116,12 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            # # 회원가입/로그인하면 celery로 인더잡 불러와서 db에 인더잡들 생성/갱신하기
-            # if serializer.data['created']:
-            #   create_industry_jobs.delay(character_id, request.user)
-            # update_industry_jobs.delay(character_id, request.user)
-            # return Response({'token' : serializer.data['token']}, status=status.HTTP_201_CREATED)
+            # celery로 job 받아오기
+            get_industry_jobs.delay(character_id)
+            return Response({'token': serializer.data}, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
-
-        # # 여기부터 bulk_create 테스트
-        # esi request
-        try:
-            url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
-            res = requests.get(
-                url,
-                headers={"Authorization": acc}
-            )
-
-            # 이거하면 리스트로옴
-            industry_jobs = res.json()
-            industry_job_status = industry_jobs[0]['status']
-        # job이 없으면 task 종료
-        except IndexError:
-            return Response({"status": "there is no industry job"})
-        except KeyError:
-            return Response({"status": "faild to establish connection to eve server"})
-        user = User.objects.get(email=eve_user_email)
-        # 잡 생성/업데이트
-        # many=true면 dict가 아닌 list를 넘겨야함
-        serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
-        try:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-        except serializers.ValidationError:
-            return Response({"status": "failed", "errors": serializer.errors})
-        return Response({"validated_data": serializer.data})
-
 
 # drf login
 # https://stackoverflow.com/questions/26906630/django-rest-framework-authentication-credentials-were-not-provided 이거 지금 해결안되고있음
