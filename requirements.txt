@@ -11,6 +11,7 @@ click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.2.0
 Django==3.2.5
+django-celery-results==2.2.0
 django-environ==0.8.1
 djangorestframework==3.12.4
 drf-spectacular==0.20.2
