@@ -88,6 +88,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(verbose_name='password', max_length=255)
     # charfield는 null true하는거아님 값이 비어있다를 표시하는게 빈스트링이랑 null 두가지가 다되면서 곱창남
     name = models.CharField(verbose_name='name', max_length=30, default='', blank=True)
+    character_id = models.IntegerField(verbose_name='character_id', default='', blank=True)
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 

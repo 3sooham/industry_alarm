@@ -112,7 +112,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ['email', 'password', 'name', 'token']
+        fields = ['email', 'password', 'name', 'character_id', 'token']
 
     # 이거 근데 user.mode()에서 해주는데 없어야하는거 같음
     # override하는거니까 인자 맞춰줘야함
