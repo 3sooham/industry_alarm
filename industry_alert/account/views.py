@@ -118,7 +118,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
             # celery로 job 받아오기
             get_industry_jobs.delay(character_id)
-            return Response({'token': serializer.data}, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
