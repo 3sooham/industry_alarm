@@ -14,6 +14,8 @@ def url_creator(character_id, scopes):
 def email_creator(character_name):
     domain = '@eveoline.com'
     cut = character_name.split(' ')
+
+    # 이거 이렇게 하지말고 for문 타면서 공백마다! 넣어줘야함
     try:
         cut[1]
         return cut[0] + '!' + cut[1] + domain
