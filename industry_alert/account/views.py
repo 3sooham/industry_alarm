@@ -118,7 +118,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
 
             # celery로 job 받아오기
-            get_industry_jobs.delay(character_id, acc)
+            get_industry_jobs.delay(character_id, acc, eve_user_email)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:

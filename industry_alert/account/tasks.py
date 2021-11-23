@@ -9,7 +9,7 @@ from rest_framework import serializers
 
 # async task니까 리턴해줄 필요없음
 @shared_task()
-def get_industry_jobs(character_id, acc):
+def get_industry_jobs(character_id, acc, eve_user_email):
      # get access token from database
 
      # esi request
