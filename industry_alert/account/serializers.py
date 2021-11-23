@@ -26,6 +26,7 @@ class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
     name = serializers.CharField(write_only=True)
     password = serializers.CharField(write_only=True)
+    character_id = serializers.IntegerField(write_only=True)
 
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
 class EveAccessTokenSerializer(serializers.Serializer):
