@@ -42,7 +42,7 @@ class EveAccessTokenSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-
+        print(user_data)
         user_email = user_data.pop('email')
         # 계정을 kwargs로 찾고 계정이 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
         user_instance, _= User.objects.get_or_create(email=user_email, defaults=user_data)
