@@ -13,14 +13,9 @@ def url_creator(character_id, scopes):
     
 def email_creator(character_name):
     domain = '@eveoline.com'
-    cut = character_name.split(' ')
+    character_name.replace(" ", "")
 
-    # 이거 이렇게 하지말고 for문 타면서 공백마다! 넣어줘야함
-    try:
-        cut[1]
-        return cut[0] + '!' + cut[1] + domain
-    except:
-        return cut[0] + domain
+    return character_name + domain
 
 def create_random_string():
     alphabet = string.ascii_letters + string.digits

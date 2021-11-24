@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_results',
+    'django_celery_beat', #
     'blog', # blog 사용한다고 알려줘야함
     'account',
     'esi',

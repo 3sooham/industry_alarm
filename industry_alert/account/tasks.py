@@ -7,7 +7,12 @@ from .models import User
 from rest_framework import serializers
 
 
+# 주기적으로 task calling 하기
+@shared_task()
+def temp_task(a, b)
+     return a + b
 # async task니까 리턴해줄 필요없음
+# 리턴하면 celery resutls에 저장됨
 @shared_task()
 def get_industry_jobs(character_id, acc, eve_user_email):
      # get access token from database
