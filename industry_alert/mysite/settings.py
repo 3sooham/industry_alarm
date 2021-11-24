@@ -158,6 +158,8 @@ USE_L10N = True
 # 따라서 이 서버에서는 utc임 
 USE_TZ = False
 
+# django-celery-beat
+DJANGO_CELERY_BEAT_TZ_AWARE = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
