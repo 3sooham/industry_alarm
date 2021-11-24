@@ -1,7 +1,7 @@
 import os
 
 from celery import Celery
-from account.task import temp_task
+from account.tasks import temp_task
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
