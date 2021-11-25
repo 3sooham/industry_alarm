@@ -11,6 +11,46 @@ from rest_framework import serializers
 @shared_task()
 def temp_task(a, b):
      return a + b
+
+@shared_task()
+def periodic_task1():
+     instance = User.objects.all()
+
+     for user in instance:
+          # 이브를 통해서 생성된 계정이면
+          if user.character_id != 0:
+               pass
+
+
+# 갱신하는 토큰으로 새 토큰 받아옴
+def get_new_accesstoken():
+     pass
+
+def esi_reqeust(character_id, access_token):
+
+     acc = f'Bearer {access_token}'
+     # 처음에 가지고 있던 access token으로 시도 해봄
+     try:
+          url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
+          res = requests.get(
+               url,
+               headers={"Authorization": acc}
+          )
+          # 이거하면 리스트로옴
+          industry_jobs = res.json()
+          industry_job_status = industry_jobs[0]['status']
+
+          return industry_jobs
+     # job이 없으면 task 종료
+     except IndexError:
+          return {"status": "there is no industry job"}
+     except KeyError:
+          return {"status": "faild to establish connection to eve server"}
+     except:
+          # 이게 만료된거면 refresh 해서 새로운거 가져와야함
+          pass
+
+
 # async task니까 리턴해줄 필요없음
 # 리턴하면 celery resutls에 저장됨
 @shared_task()
@@ -18,6 +58,7 @@ def get_industry_jobs(character_id, acc, eve_user_email):
      # get access token from database
 
      # esi request
+     # acc가 만료되면 새로 받아오는 과정이 있어야해서 이거를 함수로 만들어야할거같음
      try:
           url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
           res = requests.get(
