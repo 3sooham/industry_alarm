@@ -33,8 +33,13 @@ class EveAccessTokenSerializer(serializers.Serializer):
     # required=True는 default임
     # 이거 돌려줄 필요없음
     user = EveUserSerializer(write_only=True)
+    access_token = serializers.CharField(write_only=True)
+    expires_in = serializers.DateTimeField(write_only=True)
+    token_type = serializers.CharField(write_only=True)
+    refresh_token = serializers.CharField(write_only=True)
     # 여기 token 넣어줘야지 create()에서 리턴해줄 수 있음 아니면 serialize를 못함
     token = serializers.CharField(read_only=True)
+
 
     class Meta:
         model = EveAccessToken

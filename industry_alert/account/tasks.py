@@ -56,6 +56,7 @@ def esi_reqeust(character_id, access_token):
 def get_industry_jobs(character_id, acc, eve_user_email):
      # get access token from database
 
+     print(character_id, acc, eve_user_email)
      # esi request
      # acc가 만료되면 새로 받아오는 과정이 있어야해서 이거를 함수로 만들어야할거같음
      try:
@@ -72,6 +73,9 @@ def get_industry_jobs(character_id, acc, eve_user_email):
           return {"status": "there is no industry job"}
      except KeyError:
           return {"status": "faild to establish connection to eve server"}
+
+     print(2)
+     print(industry_jobs)
 
      user = User.objects.get(email=eve_user_email)
      # 잡 생성/업데이트
