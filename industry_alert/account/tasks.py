@@ -18,6 +18,7 @@ def periodic_task1():
      instance = User.objects.filter(character_id__gt=0)
 
      for user in instance:
+          pass
 
 
 # 갱신하는 토큰으로 새 토큰 받아옴
