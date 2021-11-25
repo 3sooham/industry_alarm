@@ -14,12 +14,10 @@ def temp_task(a, b):
 
 @shared_task()
 def periodic_task1():
-     instance = User.objects.all()
+     # 이브로 회원 가입한 유저들 가져옴
+     instance = User.objects.filter(character_id__gt=0)
 
      for user in instance:
-          # 이브를 통해서 생성된 계정이면
-          if user.character_id != 0:
-               pass
 
 
 # 갱신하는 토큰으로 새 토큰 받아옴

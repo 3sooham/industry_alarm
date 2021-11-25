@@ -35,7 +35,6 @@ class EveAccessTokenSerializer(serializers.Serializer):
     user = EveUserSerializer(write_only=True)
     # 여기 token 넣어줘야지 create()에서 리턴해줄 수 있음 아니면 serialize를 못함
     token = serializers.CharField(read_only=True)
-    created = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = EveAccessToken
@@ -50,6 +49,7 @@ class EveAccessTokenSerializer(serializers.Serializer):
         # 내 토큰 발급
         token, _ = Token.objects.get_or_create(user=user_instance)
         # EAT update하거나 생성
+        print(validated_data)
         EveAccessToken.objects.update_or_create(user=user_instance, defaults=validated_data)
 
         # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임

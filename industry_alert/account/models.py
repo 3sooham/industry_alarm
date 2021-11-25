@@ -6,6 +6,8 @@ from django.db.models.fields import related
 from django.utils import timezone
 
 
+# 이런거 다 eve_access_token 이렇게 바꿔야함
+# myqsl에서 보기가 너무 힘듬
 class EveAccessToken(models.Model):
     # fk 보다 one_to_one 사용
     # one to many보다 one to one이 조인 비용 적음
