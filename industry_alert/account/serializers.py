@@ -29,7 +29,7 @@ class EveUserSerializer(serializers.Serializer):
     character_id = serializers.IntegerField(write_only=True)
 
 # https://stackoverflow.com/questions/42314882/drf-onetoonefield-create-serializer
-class EveAccessTokenSerializer(serializers.ModelSerializer):
+class EveAccessTokenSerializer(serializers.Serializer):
     # required=True는 default임
     # 이거 돌려줄 필요없음
     user = EveUserSerializer(write_only=True)
