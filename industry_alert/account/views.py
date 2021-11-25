@@ -112,6 +112,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         temp_dict['user'] = eve_user
 
         # EveAccessToken 저장
+        print("temp_dict = ", temp_dict)
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
             serializer.is_valid(raise_exception=True)
