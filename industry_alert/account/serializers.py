@@ -46,22 +46,20 @@ class EveAccessTokenSerializer(serializers.Serializer):
         fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token', 'token']
 
     def create(self, validated_data):
-        print("before pop = ", validated_data)
         user_data = validated_data.pop('user')
-        print('user_data = ', user_data)
-        print("after pop = ", validated_data)
         user_email = user_data.pop('email')
         # 계정을 kwargs로 찾고 계정이 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
         user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
         # 내 토큰 발급
         token, _ = Token.objects.get_or_create(user=user_instance)
         # EAT update하거나 생성
-        print(validated_data)
         EveAccessToken.objects.update_or_create(user=user_instance, defaults=validated_data)
-        print('token = ', token.key)
-        # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
+        # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐
+        # 여기서 리턴하는게 field에 있어야만 serializer.data에 들어가는거임
+        # 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
         #   return instance, user_instance, updated, 201, {"token": token.key}
         return {"token": token.key}
+
 
 # drf
 # 1. Serializer를 상속받은 LoginSerializer, 그리고 ModelSerializer를 상속받은 UserSerializer 두 개 작성

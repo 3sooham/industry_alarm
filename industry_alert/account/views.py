@@ -112,14 +112,13 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         temp_dict['user'] = eve_user
 
         # EveAccessToken 저장
-        print("temp_dict = ", temp_dict)
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            print("after save = ", serializer.data)
+
             # celery로 job 받아오기
-            get_industry_jobs.delay(character_id, acc, eve_user_email)
+            get_industry_jobs.delay(character_id, access_token, eve_user_email)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
