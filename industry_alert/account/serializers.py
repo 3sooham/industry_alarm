@@ -15,12 +15,6 @@ from rest_framework.authtoken.models import Token
 class InvalidPassword(Exception):
     pass
 
-# class EsiIndustryJobs(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = IndustryJobs
-
-
 
 class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
@@ -59,6 +53,17 @@ class EveAccessTokenSerializer(serializers.Serializer):
         # 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
         #   return instance, user_instance, updated, 201, {"token": token.key}
         return {"token": token.key}
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user')
+        user_instance = User.objects.get(email=user_data['email'])
+        validated_data['user'] = user_instance
+
+        for key, value in validated_data.items():
+            if hasattr(instance, key):
+                setattr(instance, key, value)
+        instance.save()
+        return instance
 
 
 # drf

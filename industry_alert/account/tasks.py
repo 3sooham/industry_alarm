@@ -6,63 +6,18 @@ from esi.models import IndustryJob
 from .models import User, EveAccessToken
 from rest_framework import serializers
 
+import os
+from dotenv import load_dotenv
+import base64
+import datetime
 
 # 주기적으로 task calling 하기
 @shared_task()
 def temp_task(a, b):
      return a + b
 
-@shared_task()
-def periodic_task1():
-     task_result = []
-     # 이브로 회원 가입한 유저들 가져옴
-     instance = User.objects.filter(character_id__gt=0)
-     for user in instance:
-          access_token = EveAccessToken.objects.filter(user)
-          esi_result = esi_reqeust(instance.character_id, access_token.access_token)
 
-          error = esi_result.get('error')
-          # 토큰이 만료됐으면
-          if error == 'token is expired':
-               # refresh access token with a refresh token
-               access_token = refresh_access_token(user, access_token)
-
-               # 다시 esi_request
-          # 인더잡을 잘 가져왔으면
-          elif error == None:
-               # 잡 가져온거 저장해줘야함
-               pass
-          else:
-               task_result.append(error)
-
-     return task_result
-
-# db에 job 저장
-def save_industry_jobs(industry_jobs, user):
-     # 잡 생성/업데이트
-     serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
-     try:
-          serializer.is_valid(raise_exception=True)
-          serializer.save()
-     except serializers.ValidationError:
-          return {"status": "failed", "errors": serializer.errors}
-     return serializer.data
-
-# 갱신하는 토큰으로 새 토큰 받아옴
-def refresh_access_token(user, access_token):
-
-     # get new token with a refresh token
-
-     serializer = EveAccessTokenSerializer(access_token, data=temp_dict)
-     try:
-          serializer.is_valid(raise_exception=True)
-          instance = serializer.save()
-     except:
-          pass
-
-     return instance
-
-def esi_reqeust(character_id, access_token):
+def esi_request(character_id, access_token):
 
      acc = f'Bearer {access_token}'
      # 처음에 가지고 있던 access token으로 시도 해봄
@@ -76,11 +31,60 @@ def esi_reqeust(character_id, access_token):
           industry_jobs = res.json()
           industry_job_status = industry_jobs[0]['status']
 
-          return industry_jobs
      except IndexError:
           return {"error": "there is no industry job"}
      except KeyError:
           return {"error": "faild to establish connection to eve server"}
+
+# 갱신하는 토큰으로 새 토큰 받아옴
+@shared_task
+def refresh_access_token(user, instance):
+     load_dotenv()
+     client_id = os.getenv('ID')
+     secret_key = os.getenv('KEY')
+
+     user_pass = f'{client_id}:{secret_key}'
+     basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
+     auth_header = f'Basic {basic_auth}'
+
+     headers = {
+          "Authorization": auth_header,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Host": "login.eveonline.com"
+     }
+     body = {
+          'grant_type': 'refresh_token',
+          'refresh_token': instance.refresh_token
+     }
+     try:
+          res = requests.post(
+               'https://login.eveonline.com/v2/oauth/token',
+               headers=headers,
+               data=body
+          )
+          res_dict = res.json()
+          access_token = res_dict['access_token']
+          res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
+     except KeyError:
+          return {"status": "failed", "errors": "이브서버와 통신을 실패했습니다."}
+
+     eve_user = dict()
+     eve_user['email'] = user.email
+     eve_user['name'] = user.name
+     eve_user['password'] = user.password
+     eve_user['character_id'] = user.character_id
+
+     data_dict = res_dict.copy()
+     data_dict['user'] = eve_user
+
+     serializer = EveAccessTokenSerializer(instance, data=data_dict)
+     try:
+          serializer.is_valid(raise_exception=True)
+          serializer.save()
+     except serializers.ValidationError:
+          return {"status": "failed login user via eve account", "errors": serializer.errors}
+
+     return serializer.data
 
 
 # async task니까 리턴해줄 필요없음
@@ -90,11 +94,23 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
      # get access token from database
 
      # esi request
-     industry_jobs = esi_reqeust(character_id, access_token)
-
+     industry_jobs = esi_request(character_id, access_token)
+     errors = industry_jobs.get('error')
      # esi request 실패했으면 에러 리턴
-     if esi_result.get('error'):
-         return industry_jobs
+     if errors:
+          if errors == 'token is expired':
+               # refresh token
+               user = User.objects.get(character_id=character_id)
+               instance = EveAccessToken.objects.get(access_token=access_token)
+               access_token = refresh_access_token(user, instance)
+
+               industry_jobs = esi_request(character_id, access_token)
+               errors = industry_jobs.get('error')
+               # 여기서 실패해도 에러 리턴
+               if errors:
+                    return industry_jobs
+
+          return industry_jobs
 
      # esi request가  성공했으면
      user = User.objects.get(email=eve_user_email)
@@ -107,3 +123,16 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
      except serializers.ValidationError:
           return {"status": "failed", "errors": serializer.errors}
      return serializer.data
+
+
+@shared_task
+def periodic_task():
+     task_result = []
+     # 이브로 회원 가입한 유저들 가져옴
+     instance = User.objects.filter(character_id__gt=0)
+     for user in instance:
+          access_token = EveAccessToken.objects.get(user=user)
+          esi_result = get_industry_jobs(instance.character_id, access_token.access_token, instance.email).delay()
+          task_result.append(esi_result)
+
+     return task_result
