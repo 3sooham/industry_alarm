@@ -2,6 +2,7 @@
 from celery import shared_task
 import requests
 from esi.serializers import IndustryJobSerializer
+from .serializers import EveAccessTokenSerializer
 from esi.models import IndustryJob
 from .models import User, EveAccessToken
 from rest_framework import serializers
@@ -69,6 +70,7 @@ def refresh_access_token(user, instance):
      try:
           res = requests.post(
                'https://login.eveonline.com/v2/oauth/token',
+               'https://login.eveonline.com/v2/oauth/token',
                headers=headers,
                data=body
           )
@@ -98,6 +100,7 @@ def refresh_access_token(user, instance):
 
 def save_jobs(eve_user_email, industry_jobs):
      user = User.objects.get(email=eve_user_email)
+
      # 잡 생성/업데이트
      # many=true면 dict가 아닌 list를 넘겨야함
      serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
@@ -119,14 +122,14 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
      # 실패했을 경우 dict로 옴
      if isinstance(industry_jobs, dict):
           errors = industry_jobs.get('error')
-          # esi request 실패했으면 에러 리턴
+          # 토큰 만료됐으면
           if errors == 'token is expired':
                # refresh token
                user = User.objects.get(character_id=character_id)
                instance = EveAccessToken.objects.get(access_token=access_token)
                access_token = refresh_access_token(user, instance)
 
-               industry_jobs = esi_request(character_id, access_token)
+               industry_jobs = esi_request(character_id, access_token['access_token'])
                errors = industry_jobs.get('error')
                # 여기서 실패해도 에러 리턴
                if isinstance(industry_jobs, dict):
@@ -138,6 +141,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
           return industry_jobs
 
      return save_jobs(eve_user_email, industry_jobs)
+
 
      # # esi request가  성공했으면
      # # 이 부분을 2번쓰니까 함수로 만들어야함

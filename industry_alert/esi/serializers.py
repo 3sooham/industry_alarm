@@ -22,12 +22,18 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         print("in serializer validated_data = ", validated_data)
 
+        # 이거 validated_data가 비어이씅면 어떻게해야함?
+
         # 유저에 대해서 저장된 잡이 있는지 확인
         # filter에서는 db hit 안함
         # 이거 찍어보면 queryset 오브젝트 나오고 하나 get하기전에는 db에서 값을 가져오지 않음
         # https://docs.djangoproject.com/en/3.2/ref/models/querysets/
         # evaluate할때만 db랑 통신함
-        instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
+
+        # 밑처럼 하지말고 self.context['user'] 로 instance가져오기
+        # instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
+        print(self.context['user'])
+        instance = IndustryJob.objects.filter(user=self.context['user'])
         # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():
             # 기존에 존재하는 job들을 job_id를 key로 정리
@@ -90,5 +96,8 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'successful_runs']
 
     def validate(self, attr):
-        attr['user'] = self.context['user']
-        return attr
+        if self.context.get(user):
+            attr['user'] = self.context['user']
+            return attr
+
+        raise ValidationError
