@@ -21,20 +21,28 @@ def esi_request(character_id, access_token):
 
      acc = f'Bearer {access_token}'
      # 처음에 가지고 있던 access token으로 시도 해봄
-     try:
-          url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
-          res = requests.get(
-               url,
-               headers={"Authorization": acc}
-          )
-          # 이거하면 리스트로옴
-          industry_jobs = res.json()
-          industry_job_status = industry_jobs[0]['status']
+     # try:
+     #      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
+     #      res = requests.get(
+     #           url,
+     #           headers={"Authorization": acc}
+     #      )
+     #      # 이거하면 리스트로옴
+     #      industry_jobs = res.json()
+     #      industry_job_status = industry_jobs[0]['status']
+     #
+     # except IndexError:
+     #      return {"error": "there is no industry job"}
+     # except KeyError:
+     #      return {"error": "faild to establish connection to eve server"}
 
-     except IndexError:
-          return {"error": "there is no industry job"}
-     except KeyError:
-          return {"error": "faild to establish connection to eve server"}
+     url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
+     res = requests.get(
+          url,
+          headers={"Authorization": acc}
+     )
+     # 이거 성공하면 리스트로옴
+     industry_jobs = res.json()
 
      return industry_jobs
 
@@ -88,6 +96,17 @@ def refresh_access_token(user, instance):
 
      return serializer.data
 
+def save_jobs(eve_user_email, industry_jobs):
+     user = User.objects.get(email=eve_user_email)
+     # 잡 생성/업데이트
+     # many=true면 dict가 아닌 list를 넘겨야함
+     serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
+     try:
+          serializer.is_valid(raise_exception=True)
+          serializer.save()
+     except serializers.ValidationError:
+          return {"status": "failed", "errors": serializer.errors}
+     return serializer.data
 
 # async task니까 리턴해줄 필요없음
 # 리턴하면 celery resutls에 저장됨
@@ -113,19 +132,25 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                if isinstance(industry_jobs, dict):
                     return industry_jobs
 
+              # 성공하면 저장
+               return save_jobs(eve_user_email, industry_jobs)
+
           return industry_jobs
 
-     # esi request가  성공했으면
-     user = User.objects.get(email=eve_user_email)
-     # 잡 생성/업데이트
-     # many=true면 dict가 아닌 list를 넘겨야함
-     serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
-     try:
-          serializer.is_valid(raise_exception=True)
-          serializer.save()
-     except serializers.ValidationError:
-          return {"status": "failed", "errors": serializer.errors}
-     return serializer.data
+     return save_jobs(eve_user_email, industry_jobs)
+
+     # # esi request가  성공했으면
+     # # 이 부분을 2번쓰니까 함수로 만들어야함
+     # user = User.objects.get(email=eve_user_email)
+     # # 잡 생성/업데이트
+     # # many=true면 dict가 아닌 list를 넘겨야함
+     # serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
+     # try:
+     #      serializer.is_valid(raise_exception=True)
+     #      serializer.save()
+     # except serializers.ValidationError:
+     #      return {"status": "failed", "errors": serializer.errors}
+     # return serializer.data
 
 
 @shared_task
@@ -135,6 +160,7 @@ def periodic_task():
      instance = User.objects.filter(character_id__gt=0)
      for user in instance:
           access_token = EveAccessToken.objects.get(user=user)
+          # 이거에 delay() 해줘야함
           esi_result = get_industry_jobs(user.character_id, access_token.access_token, user.email).delay()
           task_result.append(esi_result)
 
