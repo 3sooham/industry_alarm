@@ -97,9 +97,10 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
 
      # esi request
      industry_jobs = esi_request(character_id, access_token)
-     errors = industry_jobs[0].get('error')
-     # esi request 실패했으면 에러 리턴
-     if errors:
+     # 실패했을 경우 dict로 옴
+     if isinstance(industry_jobs, dict):
+          errors = industry_jobs.get('error')
+          # esi request 실패했으면 에러 리턴
           if errors == 'token is expired':
                # refresh token
                user = User.objects.get(character_id=character_id)
@@ -109,7 +110,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                industry_jobs = esi_request(character_id, access_token)
                errors = industry_jobs.get('error')
                # 여기서 실패해도 에러 리턴
-               if errors:
+               if isinstance(industry_jobs, dict):
                     return industry_jobs
 
           return industry_jobs
@@ -134,7 +135,7 @@ def periodic_task():
      instance = User.objects.filter(character_id__gt=0)
      for user in instance:
           access_token = EveAccessToken.objects.get(user=user)
-          esi_result = get_industry_jobs(instance.character_id, access_token.access_token, instance.email).delay()
+          esi_result = get_industry_jobs(user.character_id, access_token.access_token, user.email).delay()
           task_result.append(esi_result)
 
      return task_result
