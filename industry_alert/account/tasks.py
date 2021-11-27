@@ -48,7 +48,6 @@ def esi_request(character_id, access_token):
      return industry_jobs
 
 # 갱신하는 토큰으로 새 토큰 받아옴
-@shared_task
 def refresh_access_token(user, instance):
      load_dotenv()
      client_id = os.getenv('ID')
@@ -141,6 +140,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
           # 토큰에러가 아닌 다른 에러일 경우 에러 리턴
           return industry_jobs
 
+     # 에러 없을 경우 저장
      return save_jobs(eve_user_email, industry_jobs)
 
 
