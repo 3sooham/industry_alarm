@@ -37,6 +37,7 @@ def esi_request(character_id, access_token):
      # except KeyError:
      #      return {"error": "faild to establish connection to eve server"}
 
+     print("in esi_request : ", character_id, access_token)
      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
      res = requests.get(
           url,
@@ -44,6 +45,8 @@ def esi_request(character_id, access_token):
      )
      # 이거 성공하면 리스트로옴
      industry_jobs = res.json()
+
+     print("in esi_request : ", industry_jobs)
 
      return industry_jobs
 
@@ -69,9 +72,8 @@ def refresh_access_token(user, instance):
      try:
           res = requests.post(
                'https://login.eveonline.com/v2/oauth/token',
-               'https://login.eveonline.com/v2/oauth/token',
                headers=headers,
-               data=body
+               data=body,
           )
           res_dict = res.json()
           access_token = res_dict['access_token']
