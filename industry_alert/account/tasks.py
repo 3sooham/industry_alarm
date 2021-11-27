@@ -36,6 +36,8 @@ def esi_request(character_id, access_token):
      except KeyError:
           return {"error": "faild to establish connection to eve server"}
 
+     return industry_jobs
+
 # 갱신하는 토큰으로 새 토큰 받아옴
 @shared_task
 def refresh_access_token(user, instance):
@@ -95,7 +97,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
 
      # esi request
      industry_jobs = esi_request(character_id, access_token)
-     errors = industry_jobs.get('error')
+     errors = industry_jobs[0].get('error')
      # esi request 실패했으면 에러 리턴
      if errors:
           if errors == 'token is expired':
