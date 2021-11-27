@@ -138,6 +138,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
               # 성공하면 저장
                return save_jobs(eve_user_email, industry_jobs)
 
+          # 토큰에러가 아닌 다른 에러일 경우 에러 리턴
           return industry_jobs
 
      return save_jobs(eve_user_email, industry_jobs)
@@ -165,7 +166,7 @@ def periodic_task():
      for user in instance:
           access_token = EveAccessToken.objects.get(user=user)
           # 이거에 delay() 해줘야함
-          esi_result = get_industry_jobs(user.character_id, access_token.access_token, user.email).delay()
+          esi_result = get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
           task_result.append(esi_result)
 
      return task_result
