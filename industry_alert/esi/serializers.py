@@ -96,7 +96,7 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'successful_runs']
 
     def validate(self, attr):
-        if self.context.get(user):
+        if self.context.get('user'):
             attr['user'] = self.context['user']
             return attr
 
