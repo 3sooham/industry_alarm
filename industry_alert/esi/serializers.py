@@ -20,7 +20,7 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     # https://docs.djangoproject.com/en/3.2/topics/db/transactions/#order-of-execution
     @transaction.atomic
     def create(self, validated_data):
-        print("in serializer validated_data = ", validated_data)
+        # print("in serializer validated_data = ", validated_data)
 
         # 이거 validated_data가 비어이씅면 어떻게해야함?
 
@@ -32,7 +32,7 @@ class IndustryJobListSerializer(serializers.ListSerializer):
 
         # 밑처럼 하지말고 self.context['user'] 로 instance가져오기
         # instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
-        print(self.context['user'])
+        # print(self.context['user'])
         instance = IndustryJob.objects.filter(user=self.context['user'])
         # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():

@@ -18,13 +18,13 @@ app.autodiscover_tasks()
 
 # on_after_finalize
 
-@app.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    # Calls test('hello') every 10 seconds.
-
-    # Setting these up from within the on_after_configure handler means that
-    # we’ll not evaluate the app at module level when using test.s()
-    sender.add_periodic_task(10.0, test.s(1, 2), name='add every 10')
+# @app.on_after_configure.connect
+# def setup_periodic_tasks(sender, **kwargs):
+#     # Calls test('hello') every 10 seconds.
+#
+#     # Setting these up from within the on_after_configure handler means that
+#     # we’ll not evaluate the app at module level when using test.s()
+#     sender.add_periodic_task(10.0, test.s(1, 2), name='add every 10')
 
 
 @app.task
