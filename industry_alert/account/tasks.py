@@ -133,11 +133,11 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
 
                # 이거 access_token이 에러 리턴하는거 확인해줘야함
                if not access_token.get('access_token'):
-                    return 'failed to refresh access_token'
+                    return access_token
                print("in get_industry_jobs : " ,access_token)
                industry_jobs = esi_request(character_id, access_token['access_token'])
-               errors = industry_jobs.get('error')
-               # 여기서 실패해도 에러 리턴
+
+               # 여기서 실패해도 에러 리턴 성공하면 이거 리스트로옴
                if isinstance(industry_jobs, dict):
                     return industry_jobs
 
