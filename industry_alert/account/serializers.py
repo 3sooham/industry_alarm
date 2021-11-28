@@ -27,7 +27,7 @@ class EveAccessTokenSerializer(serializers.Serializer):
     # required=True는 default임
     # 이거 돌려줄 필요없음
     user = EveUserSerializer(write_only=True)
-    access_token = serializers.CharField(write_only=True)
+    access_token = serializers.CharField()
     expires_in = serializers.DateTimeField(write_only=True)
     token_type = serializers.CharField(write_only=True)
     refresh_token = serializers.CharField(write_only=True)
@@ -63,6 +63,8 @@ class EveAccessTokenSerializer(serializers.Serializer):
             if hasattr(instance, key):
                 setattr(instance, key, value)
         instance.save()
+
+        print("in EAT 시리얼라지어 INSTANCE=", instance)
         return instance
 
 
