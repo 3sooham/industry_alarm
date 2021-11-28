@@ -37,7 +37,7 @@ def esi_request(character_id, access_token):
      # except KeyError:
      #      return {"error": "faild to establish connection to eve server"}
 
-     print("in esi_request : ", character_id, access_token)
+     # print("in esi_request : ", character_id, access_token)
      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
      res = requests.get(
           url,
@@ -46,7 +46,7 @@ def esi_request(character_id, access_token):
      # 이거 성공하면 리스트로옴
      industry_jobs = res.json()
 
-     print("in esi_request : ", industry_jobs)
+     # print("in esi_request : ", industry_jobs)
 
      return industry_jobs
 
@@ -130,6 +130,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                instance = EveAccessToken.objects.get(access_token=access_token)
                access_token = refresh_access_token(user, instance)
 
+               print("in get_industry_jobs : " ,access_token)
                industry_jobs = esi_request(character_id, access_token['access_token'])
                errors = industry_jobs.get('error')
                # 여기서 실패해도 에러 리턴
