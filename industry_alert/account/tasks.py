@@ -162,13 +162,13 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
 
 @shared_task
 def periodic_task():
-     task_result = []
+     # task_result = []
      # 이브로 회원 가입한 유저들 가져옴
      instance = User.objects.filter(character_id__gt=0)
      for user in instance:
           access_token = EveAccessToken.objects.get(user=user)
-          # 이거에 delay() 해줘야함
-          esi_result = get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
-          task_result.append(esi_result)
+          # esi_result = get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
+          get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
+          # task_result.append(esi_result)
 
-     return task_result
+     # return task_result
