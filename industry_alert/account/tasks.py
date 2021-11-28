@@ -130,9 +130,10 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                instance = EveAccessToken.objects.get(access_token=access_token)
                access_token = refresh_access_token(user, instance)
 
-               
+
                # 이거 access_token이 에러 리턴하는거 확인해줘야함
-               if access_token
+               if not access_token.get('access_token'):
+                    return 'failed to refresh access_token'
                print("in get_industry_jobs : " ,access_token)
                industry_jobs = esi_request(character_id, access_token['access_token'])
                errors = industry_jobs.get('error')
