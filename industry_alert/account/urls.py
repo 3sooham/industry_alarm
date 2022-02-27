@@ -11,5 +11,5 @@ router.register(r'user', views.AccountViewSet, basename='logins')
 router.register(r'evelogin', views.EveLoginViewSet, basename='evelogins')
 
 urlpatterns = [
-    path('api/v1/', include(router.urls)),
+    path('', include(router.urls)),
 ]

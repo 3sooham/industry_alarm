@@ -25,7 +25,7 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # drf
-    path('api/v1/', include(router.urls)),
+    path('', include(router.urls)),
 
     # post_list라는 view가 루트 URL에 할당되었습니다.
     # 이 URL 패턴은 빈 문자열에 매칭이 되며, 

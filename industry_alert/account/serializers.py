@@ -64,7 +64,7 @@ class EveAccessTokenSerializer(serializers.Serializer):
                 setattr(instance, key, value)
         instance.save()
 
-        print("in EAT 시리얼라지어 INSTANCE=", instance)
+        # print("in EAT 시리얼라지어 INSTANCE=", instance)
         return instance
 
 
@@ -129,13 +129,13 @@ class UserSerializer(serializers.ModelSerializer):
     # 이거 근데 user.mode()에서 해주는데 없어야하는거 같음
     # override하는거니까 인자 맞춰줘야함
     def create(self, validated_data):
-        print("유저시리얼라이저 - create")
+        # print("유저시리얼라이저 - create")
         # 이제 이 validate_data는 validation도 끝났으니 정합한 데이터니 그냥 때려버리면 됨
         # 이거 **은
         # **d means "take all additional named arguments to this function
         # and insert them into this parameter as dictionary entries."
         # 이거 create_user가 인자를 2개 받아야하니 **validated_data
-        print(validated_data)
+        # print(validated_data)
         user = User.objects.create_user(**validated_data)
         # 가져오거나 생성한값이랑
         # 생성됐는지 가져온건지 여부를
@@ -153,7 +153,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # items()은 key, value 튜플쌍을 튜플로 리턴하는 함수임
-        print(instance.password)
+        # print(instance.password)
         for key, value in validated_data.items():
             # 제일 첫번째 인자에 key가 있으면 True 없으면 False 반환하는게 hasattr이고
             if hasattr(instance, key):
