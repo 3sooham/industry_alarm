@@ -25,6 +25,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = EveUserSerializer
 
+    def redirect(self, request):
+         return Response({"status": "failed login user via eve account"})
+
     @action(methods=['get'], detail=False)
     def callback(self, request):
         # get()
