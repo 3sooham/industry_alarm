@@ -3,8 +3,6 @@ FROM oem0404/ubuntu_python:0.3
 # ADD 복사할파일경로 이미지에서파일이위치할경로
 ADD . /code/
 
-ADD requirements.txt /code/
-
 RUN pip install -r /code/requirements.txt
 
 RUN chown -R www-data:www-data /code
