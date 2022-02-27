@@ -1,7 +1,8 @@
 
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
-from .models import EntryImage, Post, Comment, User
+from .models import EntryImage, Post, Comment
+from account.models import User
 from django.db.models.functions import Concat
 from django.db.models import Value
 

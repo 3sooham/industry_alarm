@@ -28,7 +28,7 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -54,7 +54,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_results',
+    'django_celery_beat', #
     'blog', # blog 사용한다고 알려줘야함
+    'account',
+    'esi',
     # drf login
     "rest_framework",
     "rest_framework.authtoken",
@@ -141,14 +145,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+# 이거 utc사용해야함 한국시간으로 보여줄때는 시간 그냥 바꿔서 보여주는게 안헷갈리는 길임
 TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
 USE_L10N = True
 
+# set false to use defacult timezone(utc)
+# 이거 mysql도 utc로 해서 통일해줘야지 덜 헷갈림
+# mysql timezone은 로컬 컴퓨터 설정 따라감
+# 따라서 이 서버에서는 utc임 
 USE_TZ = True
 
+# django-celery-beat
+# DJANGO_CELERY_BEAT_TZ_AWARE = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -203,4 +214,4 @@ SPECTACULAR_SETTINGS = {
 # from django.contrib.auth import get_user_model
 # get_user_model() 하면 내가 정의한 Users로 User모델이 바뀐게 보일거임
 # https://han-py.tistory.com/353
-AUTH_USER_MODEL='blog.User'
+AUTH_USER_MODEL='account.User'

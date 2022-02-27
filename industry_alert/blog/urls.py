@@ -16,8 +16,6 @@ router = DefaultRouter(trailing_slash=False)
 # create api는 post-create
 router.register(r'post', views.PostViewSet2, basename='posts')
 router.register(r'comment', views.CommentViewSet, basename='comments')
-router.register(r'user', views.AccountViewSet, basename='logins')
-router.register(r'evelogin', views.EveLoginViewSet, basename='evelogins')
 
 urlpatterns = [
 	# YOUR PATTERNS
@@ -27,7 +25,7 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # drf
-    path('api/v1/', include(router.urls)),
+    path('', include(router.urls)),
 
     # post_list라는 view가 루트 URL에 할당되었습니다.
     # 이 URL 패턴은 빈 문자열에 매칭이 되며, 

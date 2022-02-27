@@ -39,5 +39,7 @@ urlpatterns = [
     # 지금 상태는 로그아웃하면 setting.py에 LOGOUT_REDIRECT_URL = '/' 이거로 가도록 해둠
     # path('accounts/logout/', views.LogoutView.as_view(), name='logout'),
     # 장고는 http://127.0.0.1:8000/ 로 들어오는 모든 접속 요청을 blog.urls로 전송해 추가 명령을 찾을 거예요.
-    path('', include('blog.urls')),
+    path('api/v1/blog/', include('blog.urls')),
+    path('api/v1/account/', include('account.urls')),
+    path('api/v1/esi/', include('esi.urls')),
 ]
