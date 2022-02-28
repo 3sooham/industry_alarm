@@ -2,7 +2,6 @@
 from celery import shared_task
 import requests
 from esi.serializers import IndustryJobSerializer
-from .serializers import EveAccessTokenSerializer
 from esi.models import IndustryJob
 from .models import User, EveAccessToken
 from rest_framework import serializers
@@ -90,6 +89,8 @@ def refresh_access_token(user, instance):
      data_dict = res_dict.copy()
      data_dict['user'] = eve_user
 
+     # circular import 방지
+     from .serializers import EveAccessTokenSerializer
      serializer = EveAccessTokenSerializer(instance, data=data_dict)
      try:
           serializer.is_valid(raise_exception=True)
