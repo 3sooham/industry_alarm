@@ -25,6 +25,8 @@ class EveLoginViewSet(viewsets.GenericViewSet):
 
     @action(methods=['get'], detail=False)
     def callback(self, request):
+
+        console.log("in callback")
         # get()
         # Returns the value for key in the dictionary; if not found returns a default value.
         # Optional. 
