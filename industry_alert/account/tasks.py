@@ -119,6 +119,8 @@ def save_jobs(eve_user_email, industry_jobs):
 def get_industry_jobs(character_id, access_token, eve_user_email):
      # get access token from database
 
+     print("in celery get_industry_jobs")
+
      # esi request
      industry_jobs = esi_request(character_id, access_token)
      # 실패했을 경우 dict로 옴
