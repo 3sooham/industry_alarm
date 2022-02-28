@@ -57,6 +57,8 @@ class EveAccessTokenSerializer(serializers.Serializer):
         # 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
         #   return instance, user_instance, updated, 201, {"token": token.key}
 
+        print(user_instance, token)
+
         # celery로 job 받아오기
         get_industry_jobs.delay(user_data['character_id'], validated_data['access_token'], user_email)
 
