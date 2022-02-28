@@ -16,17 +16,12 @@ from .utils import url_creator, email_creator, create_random_string
 # eve access token
 import datetime
 
-# celery task
-from .tasks import get_industry_jobs
 
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
     queryset = User.objects.all()
     serializer_class = EveUserSerializer
-
-    def redirect(self, request):
-         return Response({"status": "failed login user via eve account"})
 
     @action(methods=['get'], detail=False)
     def callback(self, request):
@@ -120,8 +115,6 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            # celery로 job 받아오기
-            get_industry_jobs.delay(character_id, access_token, eve_user_email)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:

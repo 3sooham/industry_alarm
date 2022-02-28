@@ -11,6 +11,9 @@ from rest_framework.authtoken.models import Token
 # >>> settings.AUTH_USER_MODEL
 # 'accounts.User'
 
+# celery task
+from .tasks import get_industry_jobs
+
 # exceptions
 class InvalidPassword(Exception):
     pass
@@ -52,6 +55,10 @@ class EveAccessTokenSerializer(serializers.Serializer):
         # 여기서 리턴하는게 field에 있어야만 serializer.data에 들어가는거임
         # 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
         #   return instance, user_instance, updated, 201, {"token": token.key}
+
+        # celery로 job 받아오기
+        get_industry_jobs.delay(user_data['character_id'], validated_data['access_token'], user_email)
+
         return {"token": token.key}
 
     def update(self, instance, validated_data):
