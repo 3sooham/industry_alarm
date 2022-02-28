@@ -50,6 +50,7 @@ class PostViewSet2(viewsets.GenericViewSet):
 
     # http GET http://127.0.0.1:8000/api/v1/post "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
     def list(self, request):
+        print("in post list")
         queryset = self.get_queryset().filter(published_date__lte=timezone.now()).order_by('published_date')
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
