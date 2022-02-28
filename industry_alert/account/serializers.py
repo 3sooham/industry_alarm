@@ -50,8 +50,6 @@ class EveAccessTokenSerializer(serializers.Serializer):
         # 내 토큰 발급
         token, _ = Token.objects.get_or_create(user=user_instance)
 
-        print(user_instance)
-        print(token)
         # EAT update하거나 생성
         EveAccessToken.objects.update_or_create(user=user_instance, defaults=validated_data)
         # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐
@@ -61,6 +59,8 @@ class EveAccessTokenSerializer(serializers.Serializer):
 
         # celery로 job 받아오기
         get_industry_jobs.delay(user_data['character_id'], validated_data['access_token'], user_email)
+
+        print("in create")
 
         return {"token": token.key}
 
