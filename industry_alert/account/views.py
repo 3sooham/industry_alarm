@@ -81,7 +81,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             # 클라이언트는 잡다한 예외 상황 알 필요없고 여기 기준으로는 이브와의 서버 통신을 실패한거만 알면 되기 떄문에
             # 그냥 access_token 없으면 이브 서버와의 통신이 실패한거니 실패했다고 알려주면됨.
         except KeyError:
-            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})
+            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / access_token 가져오는 것 실패"})
 
         # 여기서 말하는 JSON payload가 위의 res에 저장됨
 
@@ -95,7 +95,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             character_dict = character_res.json()
             character_id = character_dict['CharacterID']
         except KeyError:
-            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다."})
+            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / esi request 실패"})
 
         # create django user and return its token
         # eve_user = {} 이렇게 하는거보다 {}이 set, dictionary 둘 다여서 dict()해주는게 좋음

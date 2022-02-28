@@ -78,7 +78,7 @@ def refresh_access_token(user, instance):
           access_token = res_dict['access_token']
           res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
      except KeyError:
-          return {"status": "failed", "errors": "이브서버와 통신을 실패했습니다."}
+          return {"status": "failed", "errors": "tasks/refresh_access_token 이브서버와 통신을 실패했습니다."}
 
      eve_user = dict()
      eve_user['email'] = user.email
