@@ -30,7 +30,9 @@ class EveAccessTokenSerializer(serializers.Serializer):
     # required=True는 default임
     # 이거 돌려줄 필요없음
     user = EveUserSerializer(write_only=True)
-    access_token = serializers.CharField()
+    # 이거 그냥 required=False로 하고 어차피 갱신할때는 instance를 리턴하니까
+    # create에서는 access_token 리턴할 필요없음
+    access_token = serializers.CharField(required=False)
     expires_in = serializers.DateTimeField(write_only=True)
     token_type = serializers.CharField(write_only=True)
     refresh_token = serializers.CharField(write_only=True)
@@ -57,12 +59,8 @@ class EveAccessTokenSerializer(serializers.Serializer):
         # 여기서 튜플리턴하는데 없는것들 있어서 안가지는거임
         #   return instance, user_instance, updated, 201, {"token": token.key}
 
-        print(user_instance, token)
-
         # celery로 job 받아오기
         get_industry_jobs.delay(user_data['character_id'], validated_data['access_token'], user_email)
-
-        print("in create")
 
         return {"token": token.key}
 
@@ -76,7 +74,6 @@ class EveAccessTokenSerializer(serializers.Serializer):
                 setattr(instance, key, value)
         instance.save()
 
-        # print("in EAT 시리얼라지어 INSTANCE=", instance)
         return instance
 
 
