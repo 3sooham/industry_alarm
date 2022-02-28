@@ -49,6 +49,9 @@ class EveAccessTokenSerializer(serializers.Serializer):
         user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
         # 내 토큰 발급
         token, _ = Token.objects.get_or_create(user=user_instance)
+
+        print(user_instance)
+        print(token)
         # EAT update하거나 생성
         EveAccessToken.objects.update_or_create(user=user_instance, defaults=validated_data)
         # 여기서 return 하는 instance랑 시리얼라이저의 field를 기반으로 serializer.data가 만들어짐
