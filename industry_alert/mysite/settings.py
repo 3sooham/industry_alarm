@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_results',
     'django_celery_beat', #
+    'corsheaders', # corsheader
     'blog', # blog 사용한다고 알려줘야함
     'account',
     'esi',
@@ -69,11 +70,17 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # corsheader
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# cors 허가할 url들
+CORS_ALLOWED_ORIGINS = [
+    os.getenv('FRONT_URL')
 ]
 
 ROOT_URLCONF = 'mysite.urls'

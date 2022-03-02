@@ -15,6 +15,7 @@ router = DefaultRouter(trailing_slash=False)
 # list api는 post-list
 # create api는 post-create
 router.register(r'post', views.PostViewSet2, basename='posts')
+router.register(r'post_test', views.PostViewSet, basename='posts_test')
 router.register(r'comment', views.CommentViewSet, basename='comments')
 
 urlpatterns = [
