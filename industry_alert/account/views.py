@@ -31,6 +31,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
         
         # 저쪽에서 이쪽으로 request 보낸거는 정상으로 간주하고 해야함
+        print(request.query_params)
         auth_code = request.GET.get('code')
         state = request.GET.get('state')
 
