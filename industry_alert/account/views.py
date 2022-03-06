@@ -16,6 +16,8 @@ from .utils import url_creator, email_creator, create_random_string
 # eve access token
 import datetime
 
+# redirect
+from django.shortcuts import redirect
 
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
