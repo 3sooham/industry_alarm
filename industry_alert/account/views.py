@@ -120,8 +120,9 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.save()
 
             # env varib
-            print(serializer.data)
-            redirect_url = f'http://localhost:4200/auth/callback?token={serializer.data}'
+            print(serializer.data['token'])
+            token = serializer.data['token']
+            redirect_url = f'http://localhost:4200/login?token={token}'
             return redirect(redirect_url)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
