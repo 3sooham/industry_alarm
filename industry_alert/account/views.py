@@ -119,6 +119,11 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
+            # env varib
+            print(serializer.data)
+            redirect_url = f'http://localhost:4200/auth/callback?token={serializer.data}'
+            return redirect(redirect_url)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
