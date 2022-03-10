@@ -79,9 +79,10 @@ MIDDLEWARE = [
 ]
 
 # cors 허가할 url들
-CORS_ALLOWED_ORIGINS = [
-    os.getenv('FRONT_URL')
-]
+# CORS_ALLOWED_ORIGINS = [
+#     os.getenv('FRONT_URL')
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'mysite.urls'
 
