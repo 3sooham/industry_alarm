@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'blog', # blog 사용한다고 알려줘야함
     'account',
     'esi',
+    'eve',
     # drf login
     "rest_framework",
     "rest_framework.authtoken",
