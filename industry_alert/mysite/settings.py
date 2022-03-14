@@ -124,9 +124,19 @@ DATABASES = {
         'PASSWORD': os.getenv('INDUSTRY_ALERT_DB_PASSWORD'),
         'HOST': os.getenv('INDUSTRY_ALERT_DB_HOST'),
         'PORT': os.getenv('INDUSTRY_ALERT_DB_PORT'),
+    },
+    'eve': {
+        'NAME': 'eve',
+        'ENGINE': 'django.db.backends.mysql',
+        'USER': os.getenv('USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
+        'HOST': os.getenv('HOST'),
+        'PORT': os.getenv('PORT'),
     }
 }
-print(DATABASES)
+
+# db_router
+DATABASE_ROUTERS = ['mysite.router.AuthRouter']
 
 
 # Password validation
