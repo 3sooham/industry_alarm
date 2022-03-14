@@ -42,4 +42,5 @@ urlpatterns = [
     path('api/v1/blog/', include('blog.urls')),
     path('api/v1/account/', include('account.urls')),
     path('api/v1/esi/', include('esi.urls')),
+    path('api/v1/eve/', include('eve.urls')),
 ]
