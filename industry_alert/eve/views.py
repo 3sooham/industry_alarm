@@ -5,7 +5,7 @@ from .models import Eve
 
 from rest_framework.response import Response
 
-class EveViewSet(viewsets.ModelViewSet):
+class EveViewSet(viewsets.GenericViewSet):
     queryset = Eve.objects.all()
     serializer_class = EveSerializer
     permission_classes = [AllowAny]
@@ -15,5 +15,6 @@ class EveViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
 
         print("나는 뷰")
+        print(serializer.data)
 
         return Response(serializer.data)
