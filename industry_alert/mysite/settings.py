@@ -127,15 +127,16 @@ DATABASES = {
         'PORT': os.getenv('INDUSTRY_ALERT_DB_PORT'),
     },
     'eve': {
-        'NAME': 'eve',
+        'NAME': os.getenv('INDUSTRY_ALERT_DB_NAME_2'),
         'ENGINE': 'django.db.backends.mysql',
-        'USER': os.getenv('USER'),
-        'PASSWORD': os.getenv('PASSWORD'),
-        'HOST': os.getenv('HOST'),
-        'PORT': os.getenv('PORT'),
-    }
+        'USER': os.getenv('INDUSTRY_ALERT_DB_USER'),
+        'PASSWORD': os.getenv('INDUSTRY_ALERT_DB_PASSWORD'),
+        'HOST': os.getenv('INDUSTRY_ALERT_DB_HOST'),
+        'PORT': os.getenv('INDUSTRY_ALERT_DB_PORT'),
+    },
 }
 
+print(DATABASES)
 # db_router
 DATABASE_ROUTERS = ['mysite.router.AuthRouter']
 
