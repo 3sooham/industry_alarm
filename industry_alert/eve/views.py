@@ -6,9 +6,9 @@ from .models import Eve
 from rest_framework.response import Response
 
 class EveViewSet(viewsets.GenericViewSet):
+    permission_classes = [AllowAny]
     queryset = Eve.objects.all()
     serializer_class = EveSerializer
-    permission_classes = [AllowAny]
 
     def list(self, request):
         queryset = self.get_queryset()
