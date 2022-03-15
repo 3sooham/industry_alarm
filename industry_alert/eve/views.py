@@ -14,7 +14,7 @@ class EveViewSet(viewsets.GenericViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
 
-        print("나는 뷰")
+        print("나는 뷰임")
         print(serializer.data)
 
         return Response(serializer.data)
