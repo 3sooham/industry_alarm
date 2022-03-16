@@ -19,6 +19,9 @@ import datetime
 # redirect
 from django.shortcuts import redirect
 
+# urlencode
+from urllib import parse
+
 # 이브 로그인 관련
 class EveLoginViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
@@ -139,12 +142,14 @@ class AccountViewSet(viewsets.GenericViewSet):
 
     @action(methods=['get'], detail=False, permission_classes=[AllowAny])
     def eve_login(self, request):
-        url = f'https://login.eveonline.com/v2/oauth/authorize/?'
-        response_type = f'response_type={os.getenv('REDIRECT_RESPONSE_TYPE')}&'
-        redirect_uri = f'redirect_uri={'REDIRECT_REDIRECT_URI'}&'
-        client_id = f'client_id={os.getenv('REDIRECT_CLIENT_ID')}&'
-        scope = f'{parse.quote(os.getenv('REDIRECT_SCOPE'))&}'
-        state = f'{os.getenv('REDIRECT_STATE')}'
+        url = f"https://login.eveonline.com/v2/oauth/authorize/?"
+        response_type = f"response_type={os.getenv('REDIRECT_RESPONSE_TYPE')}&"
+        # urllib.parse.quote(string, safe='/', encoding=None, errors=None)
+        # safe 안에 있는거는 치환안하기 때문에 나는 치환안할게 없으니 safe=''로 바꿔줘야함.
+        redirect_uri = f"redirect_uri={parse.quote(os.getenv('REDIRECT_REDIRECT_URI'), safe='')}&"
+        client_id = f"client_id={os.getenv('ID')}&"
+        scope = f"{parse.quote(os.getenv('REDIRECT_SCOPE'), safe='')}&"
+        state = f"{os.getenv('REDIRECT_STATE')}"
 
         url = url + response_type + redirect_uri + client_id + scope + state
         print("리다이렉트중임")
