@@ -146,10 +146,11 @@ class AccountViewSet(viewsets.GenericViewSet):
         response_type = f"response_type={os.getenv('REDIRECT_RESPONSE_TYPE')}&"
         # urllib.parse.quote(string, safe='/', encoding=None, errors=None)
         # safe 안에 있는거는 치환안하기 때문에 나는 치환안할게 없으니 safe=''로 바꿔줘야함.
+        # f-string할때 바깥이랑 안이 서로 다른 따옴표 사용하기 둘이 같은 따옴표면 에러나옴.
         redirect_uri = f"redirect_uri={parse.quote(os.getenv('REDIRECT_REDIRECT_URI'), safe='')}&"
         client_id = f"client_id={os.getenv('ID')}&"
         scope = f"{parse.quote(os.getenv('REDIRECT_SCOPE'), safe='')}&"
-        state = f"{os.getenv('REDIRECT_STATE')}"
+        state = f"{os.getenv('STATE')}"
 
         url = url + response_type + redirect_uri + client_id + scope + state
         print("리다이렉트중임")
