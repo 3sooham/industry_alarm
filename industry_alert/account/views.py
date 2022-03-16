@@ -139,9 +139,19 @@ class AccountViewSet(viewsets.GenericViewSet):
 
     @action(methods=['get'], detail=False, permission_classes=[AllowAny])
     def eve_login(self, request):
+        url = f'https://login.eveonline.com/v2/oauth/authorize/?'
+        response_type = f'response_type={os.getenv('REDIRECT_RESPONSE_TYPE')}&'
+        redirect_uri = f'redirect_uri={'REDIRECT_REDIRECT_URI'}&'
+        client_id = f'client_id={os.getenv('REDIRECT_CLIENT_ID')}&'
+        scope = f'{parse.quote(os.getenv('REDIRECT_SCOPE'))&}'
+        state = f'{os.getenv('REDIRECT_STATE')}'
+
+        url = url + response_type + redirect_uri + client_id + scope + state
         print("리다이렉트중임")
+        print(url)
         # 여기 하드코딩한거 env에서 가져오는거로 바꿔야함.
-        return redirect('https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=http%3A%2F%2F13.124.169.90%3A8001%2Fapi%2Fv1%2Faccount%2Fevelogin%2Fcallback&client_id=8e86edc0f4ee45b6a5f70cdba2f01ea7&scope=esi-industry.read_character_jobs.v1&state=3sooham')        
+        # return redirect('https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=http%3A%2F%2F13.124.169.90%3A8001%2Fapi%2Fv1%2Faccount%2Fevelogin%2Fcallback&client_id=8e86edc0f4ee45b6a5f70cdba2f01ea7&scope=esi-industry.read_character_jobs.v1&state=3sooham')        
+        return redirect(url)
 
     # @action은
     # This decorator can be used to add any custom endpoints that don't fit into the standard create/update/delete style.
