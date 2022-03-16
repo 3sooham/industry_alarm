@@ -149,7 +149,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         # f-string할때 바깥이랑 안이 서로 다른 따옴표 사용하기 둘이 같은 따옴표면 에러나옴.
         redirect_uri = f"redirect_uri={parse.quote(os.getenv('REDIRECT_REDIRECT_URI'), safe='')}&"
         client_id = f"client_id={os.getenv('ID')}&"
-        scope = f"{parse.quote(os.getenv('REDIRECT_SCOPE'), safe='')}&"
+        scope = f"scope={parse.quote(os.getenv('REDIRECT_SCOPE'), safe='')}&"
         state = f"state={os.getenv('STATE')}"
 
         url = url + response_type + redirect_uri + client_id + scope + state
