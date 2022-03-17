@@ -20,22 +20,22 @@ def esi_request(character_id, access_token):
      acc = f'Bearer {access_token}'
      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
 
-     try:
-          res = requests.get(
-               url,
-               headers={"Authorization": acc}
-          )
-          # 이거 성공하면 리스트로옴
-          industry_jobs = res.json()
-     except requests.exceptions.HTTPError as e:
-          print("--------------------------")
-          print(e)
-          print(industry_jobs)
-          print("---------------------")
+     # try:
+     res = requests.get(
+          url,
+          headers={"Authorization": acc}
+     )
+     # 이거 성공하면 리스트로옴
+     industry_jobs = res.json()
+     # except requests.exceptions.HTTPError as e:
+     #      print("--------------------------")
+     #      print(e)
+     #      print(industry_jobs)
+     #      print("---------------------")
 
-     print("********************")
-     print(industry_jobs)
-     print("********************")
+     # print("********************")
+     # print(industry_jobs)
+     # print("********************")
 
      return industry_jobs
 
