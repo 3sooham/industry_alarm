@@ -28,15 +28,7 @@ def esi_request(character_id, access_token):
           # 이거 성공하면 리스트로옴
           industry_jobs = res.json()
      except requests.exceptions.HTTPError as e:
-          print("--------------------------")
-          print(e)
-          print(industry_jobs)
-          print("---------------------")
-
-     print("********************")
-     print(character_id)
-     print(industry_jobs)
-     print("********************")
+          raise e
 
      return industry_jobs
 
@@ -68,12 +60,15 @@ def refresh_access_token(user, instance):
           res_dict = res.json()
           access_token = res_dict['access_token']
           res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
+     except requests.exceptions.HTTPError as e:
+          raise e
      except KeyError:
           # invalid 한 refresh token이면 access_token 삭제해야함
-          print("리프레쉬액세스토큰", res_dict)
+          instance = EveAccessToken.get(user=user)
+          instance.delete()
 
-          raise(res_dict)
-          return {"status": "failed", "errors": "tasks/refresh_access_token 이브서버와 통신을 실패했습니다."}
+          raise Exception(res_dict)
+
 
      eve_user = dict()
      eve_user['email'] = user.email
@@ -122,24 +117,21 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                # refresh token
                user = User.objects.get(character_id=character_id)
                instance = EveAccessToken.objects.get(access_token=access_token)
+               # refresh token으로 access 토큰 갱신해줌
                access_token = refresh_access_token(user, instance)
 
-
-               # 이거 access_token이 에러 리턴하는거 확인해줘야함
-               if not access_token.get('access_token'):
-                    return access_token
-               # print("in get_industry_jobs : " ,access_token)
+               # 새로 발급 받은 토큰으로 다시 esi request함
                industry_jobs = esi_request(character_id, access_token['access_token'])
 
-               # 여기서 실패해도 에러 리턴 성공하면 이거 리스트로옴
+               # 실패하면 dict로옴
                if isinstance(industry_jobs, dict):
-                    return industry_jobs
+                    raise Exception(industry_jobs)
 
               # 성공하면 저장
                return save_jobs(eve_user_email, industry_jobs)
 
-          # 토큰에러가 아닌 다른 에러일 경우 에러 리턴
-          return industry_jobs
+          # 토큰 만료가 아닌 다른 에러일 경우
+          raise Exception(industry_jobs)
 
      # 에러 없을 경우 저장
      return save_jobs(eve_user_email, industry_jobs)
@@ -153,7 +145,7 @@ def periodic_task():
           try:
                access_token = EveAccessToken.objects.get(user=user)
                get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
-          # access token 없는 계정이면 인더잡 가져오는거 패스해야함
+          # access token 없는 계정이면 인더잡 가져오는거 건너뜀
           # access token은 revoke 등으로 인해서 없을수가 있음
           except EveAccessToken.DoesNotExist:
                pass
