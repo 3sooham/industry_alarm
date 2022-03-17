@@ -28,7 +28,10 @@ def esi_request(character_id, access_token):
           # 이거 성공하면 리스트로옴
           industry_jobs = res.json()
      except requests.exceptions.HTTPError as e:
-          print(e, industry_jobs)
+          print("--------------------------")
+          print(e)
+          print(industry_jobs)
+          print("---------------------")
 
      return industry_jobs
 
@@ -101,10 +104,6 @@ def save_jobs(eve_user_email, industry_jobs):
 # 리턴하면 celery resutls에 저장됨
 @shared_task()
 def get_industry_jobs(character_id, access_token, eve_user_email):
-     # get access token from database
-
-     print("in celery get_industry_jobs")
-
      # esi request
      industry_jobs = esi_request(character_id, access_token)
      # 실패했을 경우 dict로 옴
