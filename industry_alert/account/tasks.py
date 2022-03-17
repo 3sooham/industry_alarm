@@ -2,7 +2,6 @@
 from celery import shared_task
 import requests
 from esi.serializers import IndustryJobSerializer
-from esi.models import IndustryJob
 from .models import User, EveAccessToken
 from rest_framework import serializers
 
@@ -12,31 +11,13 @@ import base64
 import datetime
 
 # 주기적으로 task calling 하기
-@shared_task()
-def temp_task(a, b):
-     return a + b
-
+# @shared_task()
+# def temp_task(a, b):
+#      return a + b
 
 def esi_request(character_id, access_token):
 
      acc = f'Bearer {access_token}'
-     # 처음에 가지고 있던 access token으로 시도 해봄
-     # try:
-     #      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
-     #      res = requests.get(
-     #           url,
-     #           headers={"Authorization": acc}
-     #      )
-     #      # 이거하면 리스트로옴
-     #      industry_jobs = res.json()
-     #      industry_job_status = industry_jobs[0]['status']
-     #
-     # except IndexError:
-     #      return {"error": "there is no industry job"}
-     # except KeyError:
-     #      return {"error": "faild to establish connection to eve server"}
-
-     # print("in esi_request : ", character_id, access_token)
      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
      res = requests.get(
           url,
@@ -45,7 +26,7 @@ def esi_request(character_id, access_token):
      # 이거 성공하면 리스트로옴
      industry_jobs = res.json()
 
-     # print("in esi_request : ", industry_jobs)
+     print("in esi_request : ", industry_jobs)
 
      return industry_jobs
 
@@ -152,21 +133,6 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
 
      # 에러 없을 경우 저장
      return save_jobs(eve_user_email, industry_jobs)
-
-
-     # # esi request가  성공했으면
-     # # 이 부분을 2번쓰니까 함수로 만들어야함
-     # user = User.objects.get(email=eve_user_email)
-     # # 잡 생성/업데이트
-     # # many=true면 dict가 아닌 list를 넘겨야함
-     # serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
-     # try:
-     #      serializer.is_valid(raise_exception=True)
-     #      serializer.save()
-     # except serializers.ValidationError:
-     #      return {"status": "failed", "errors": serializer.errors}
-     # return serializer.data
-
 
 @shared_task
 def periodic_task():

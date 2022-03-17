@@ -7,21 +7,16 @@ class AuthRouter:
     route_app_labels2 = {'eve'}
 
     def db_for_read(self, model, **hints):
-        print("디비포리드")
         """
         Attempts to read auth and contenttypes models go to auth_db.
         """
         if model._meta.app_label in self.route_app_labels:
-            print("ASASASASASASASASASASAS")
             return 'default'
         elif model._meta.app_label in self.route_app_labels2:
-            print("ss")
             return 'eve'
-        print(333333)
         return None
 
     def db_for_write(self, model, **hints):
-        print("디비포라이트")
         """
         Attempts to write auth and contenttypes models go to auth_db.
         """
