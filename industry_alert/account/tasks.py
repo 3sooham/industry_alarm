@@ -140,9 +140,8 @@ def periodic_task():
      # 이브로 회원 가입한 유저들 가져옴
      instance = User.objects.filter(character_id__gt=0)
      for user in instance:
-          access_token = EveAccessToken.objects.get(user=user)
-          # esi_result = get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
-          get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
-          # task_result.append(esi_result)
-
-     # return task_result
+          try:
+               access_token = EveAccessToken.objects.get(user=user)
+               get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
+          except EveAccessToken.DoesNotExist:
+               print("액세스토큰없음!!!!!!!!!!!!!!!!!!!!!!!", user)
