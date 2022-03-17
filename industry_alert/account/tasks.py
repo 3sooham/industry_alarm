@@ -34,6 +34,7 @@ def esi_request(character_id, access_token):
           print("---------------------")
 
      print("********************")
+     print(character_id)
      print(industry_jobs)
      print("********************")
 
@@ -70,6 +71,8 @@ def refresh_access_token(user, instance):
      except KeyError:
           # invalid 한 refresh token이면 access_token 삭제해야함
           print("리프레쉬액세스토큰", res_dict)
+
+          raise(res_dict)
           return {"status": "failed", "errors": "tasks/refresh_access_token 이브서버와 통신을 실패했습니다."}
 
      eve_user = dict()
