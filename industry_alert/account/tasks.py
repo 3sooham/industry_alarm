@@ -33,6 +33,11 @@ def esi_request(character_id, access_token):
           print(industry_jobs)
           print("---------------------")
 
+     print("********************")
+     print(e)
+     print(industry_jobs)
+     print("********************")
+
      return industry_jobs
 
 # 갱신하는 토큰으로 새 토큰 받아옴
