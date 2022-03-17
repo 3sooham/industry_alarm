@@ -19,14 +19,16 @@ def esi_request(character_id, access_token):
 
      acc = f'Bearer {access_token}'
      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
-     res = requests.get(
-          url,
-          headers={"Authorization": acc}
-     )
-     # 이거 성공하면 리스트로옴
-     industry_jobs = res.json()
 
-     print("in esi_request : ", industry_jobs)
+     try:
+          res = requests.get(
+               url,
+               headers={"Authorization": acc}
+          )
+          # 이거 성공하면 리스트로옴
+          industry_jobs = res.json()
+     except requests.exceptions.HTTPError as e:
+          print(e, industry_jobs)
 
      return industry_jobs
 
@@ -59,6 +61,7 @@ def refresh_access_token(user, instance):
           access_token = res_dict['access_token']
           res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
      except KeyError:
+          print("리프레쉬액세스토큰", print(res_dict))
           return {"status": "failed", "errors": "tasks/refresh_access_token 이브서버와 통신을 실패했습니다."}
 
      eve_user = dict()
@@ -143,5 +146,7 @@ def periodic_task():
           try:
                access_token = EveAccessToken.objects.get(user=user)
                get_industry_jobs.delay(user.character_id, access_token.access_token, user.email)
+          # access token 없는 계정이면 인더잡 가져오는거 패스해야함
+          # access token은 revoke 등으로 인해서 없을수가 있음
           except EveAccessToken.DoesNotExist:
-               print("액세스토큰없음!!!!!!!!!!!!!!!!!!!!!!!", user)
+               pass
