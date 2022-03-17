@@ -64,7 +64,7 @@ def refresh_access_token(user, instance):
           raise e
      except KeyError:
           # invalid 한 refresh token이면 access_token 삭제해야함
-          instance = EveAccessToken.get(user=user)
+          instance = EveAccessToken.objects.get(user=user)
           instance.delete()
 
           raise Exception(res_dict)
