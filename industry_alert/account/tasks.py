@@ -20,22 +20,22 @@ def esi_request(character_id, access_token):
      acc = f'Bearer {access_token}'
      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
 
-     # try:
-     res = requests.get(
-          url,
-          headers={"Authorization": acc}
-     )
-     # 이거 성공하면 리스트로옴
-     industry_jobs = res.json()
-     # except requests.exceptions.HTTPError as e:
-     #      print("--------------------------")
-     #      print(e)
-     #      print(industry_jobs)
-     #      print("---------------------")
+     try:
+          res = requests.get(
+               url,
+               headers={"Authorization": acc}
+          )
+          # 이거 성공하면 리스트로옴
+          industry_jobs = res.json()
+     except requests.exceptions.HTTPError as e:
+          print("--------------------------")
+          print(e)
+          print(industry_jobs)
+          print("---------------------")
 
-     # print("********************")
-     # print(industry_jobs)
-     # print("********************")
+     print("********************")
+     print(industry_jobs)
+     print("********************")
 
      return industry_jobs
 
@@ -68,7 +68,8 @@ def refresh_access_token(user, instance):
           access_token = res_dict['access_token']
           res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
      except KeyError:
-          print("리프레쉬액세스토큰", print(res_dict))
+          # invalid 한 refresh token이면 access_token 삭제해야함
+          print("리프레쉬액세스토큰", res_dict)
           return {"status": "failed", "errors": "tasks/refresh_access_token 이브서버와 통신을 실패했습니다."}
 
      eve_user = dict()
