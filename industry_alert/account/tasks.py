@@ -34,7 +34,6 @@ def esi_request(character_id, access_token):
           print("---------------------")
 
      print("********************")
-     print(e)
      print(industry_jobs)
      print("********************")
 
