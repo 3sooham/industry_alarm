@@ -10,11 +10,6 @@ from dotenv import load_dotenv
 import base64
 import datetime
 
-# 주기적으로 task calling 하기
-# @shared_task()
-# def temp_task(a, b):
-#      return a + b
-
 def esi_request(character_id, access_token):
 
      acc = f'Bearer {access_token}'
@@ -69,7 +64,6 @@ def refresh_access_token(user, instance):
 
           raise Exception(res_dict)
 
-
      eve_user = dict()
      eve_user['email'] = user.email
      eve_user['name'] = user.name
@@ -86,7 +80,7 @@ def refresh_access_token(user, instance):
           serializer.is_valid(raise_exception=True)
           serializer.save()
      except serializers.ValidationError:
-          return {"status": "failed login user via eve account", "errors": serializer.errors}
+          raise Exception({"status": "failed login user via eve account", "errors": serializer.errors})
 
      return serializer.data
 
@@ -100,7 +94,7 @@ def save_jobs(eve_user_email, industry_jobs):
           serializer.is_valid(raise_exception=True)
           serializer.save()
      except serializers.ValidationError:
-          return {"status": "failed", "errors": serializer.errors}
+          raise Exception({"status": "failed", "errors": serializer.errors})
      return serializer.data
 
 # async task니까 리턴해줄 필요없음
@@ -133,7 +127,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
           # 토큰 만료가 아닌 다른 에러일 경우
           raise Exception(industry_jobs)
 
-     # 에러 없을 경우 저장
+     # 에러 없을 경우 esi로 가져온 인더잡들 저장
      return save_jobs(eve_user_email, industry_jobs)
 
 @shared_task
@@ -149,3 +143,5 @@ def periodic_task():
           # access token은 revoke 등으로 인해서 없을수가 있음
           except EveAccessToken.DoesNotExist:
                pass
+
+     return 'periodic_task()'
