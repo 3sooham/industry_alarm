@@ -2,6 +2,7 @@
 from celery import shared_task
 import requests
 from esi.serializers import IndustryJobSerializer
+from esi.models import IndustryJob
 from .models import User, EveAccessToken
 from rest_framework import serializers
 
@@ -58,9 +59,18 @@ def refresh_access_token(user, instance):
      except requests.exceptions.HTTPError as e:
           raise e
      except KeyError:
-          # invalid 한 refresh token이면 access_token 삭제해야함
+          # 이거 그냥 유저를 삭제하는 식으로 해도되는데 유저가 게시판 기능을 추가할거면
+          # 삭제하면 안될것같아서 유저는 남겨둘거임
+
+          # esi 권한 회수등으로 invalid 한 refresh token이면 access_token 삭제해줌
           instance = EveAccessToken.objects.get(user=user)
           instance.delete()
+
+          # 이러면 해당 유저로 저장된 인더잡도 다 지우고
+          instance = EveAccessToken.objects.filter(user__exact=user)
+          instance.delete()
+          # 해당 유저의 장고 토큰도 없애줌
+          # 이거는 잘모르겠음 물어봐야할거같음
 
           raise Exception(res_dict)
 
