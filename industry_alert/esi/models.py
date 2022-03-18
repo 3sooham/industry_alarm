@@ -44,7 +44,7 @@ class IndustryJob(models.Model):
 class Structure(models.Model):
     # id < 100000000 면 NPC 스테이션임
     facility_id = models.BigIntegerField(primary_key=True)
-    name = models.models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     owner_id = models.IntegerField(null=True)
     type_id = models.IntegerField()
 
