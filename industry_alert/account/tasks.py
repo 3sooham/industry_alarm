@@ -67,7 +67,7 @@ def refresh_access_token(user, instance):
           instance.delete()
 
           # 이러면 해당 유저로 저장된 인더잡도 다 지우고
-          instance = EveAccessToken.objects.filter(user__exact=user)
+          instance = IndustryJob.objects.filter(user__exact=user)
           instance.delete()
           # 해당 유저의 장고 토큰도 없애줌
           # 이거는 잘모르겠음 물어봐야할거같음
