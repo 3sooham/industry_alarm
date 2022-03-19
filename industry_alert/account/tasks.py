@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 import base64
 import datetime
 
-def esi_request(character_id, access_token):
+def esi_request_industry_jobs(character_id, access_token):
 
      acc = f'Bearer {access_token}'
      url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
@@ -112,7 +112,7 @@ def save_jobs(eve_user_email, industry_jobs):
 @shared_task()
 def get_industry_jobs(character_id, access_token, eve_user_email):
      # esi request
-     industry_jobs = esi_request(character_id, access_token)
+     industry_jobs = esi_request_industry_jobs(character_id, access_token)
      # 실패했을 경우 dict로 옴
      if isinstance(industry_jobs, dict):
           errors = industry_jobs.get('error')
@@ -125,7 +125,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                access_token = refresh_access_token(user, instance)
 
                # 새로 발급 받은 토큰으로 다시 esi request함
-               industry_jobs = esi_request(character_id, access_token['access_token'])
+               industry_jobs = esi_request_industry_jobs(character_id, access_token['access_token'])
 
                # 실패하면 dict로옴
                if isinstance(industry_jobs, dict):

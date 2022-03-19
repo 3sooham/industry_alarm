@@ -18,6 +18,8 @@ class IndustryJobListSerializer(serializers.ListSerializer):
     # atomic allows us to create a block of code within which the atomicity on the database is guaranteed.
     # 이 함수는 atomic하게 transaction처리함
     # https://docs.djangoproject.com/en/3.2/topics/db/transactions/#order-of-execution
+    # create()
+    # https://github.com/encode/django-rest-framework/blob/070c32f4a62ef0544f58de404c87d86db36fd825/rest_framework/serializers.py#L927
     @transaction.atomic
     def create(self, validated_data):
         # print("in serializer validated_data = ", validated_data)
@@ -33,6 +35,9 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         # 밑처럼 하지말고 self.context['user'] 로 instance가져오기
         # instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
         # print(self.context['user'])
+        print("####################################")
+        print(validated_data)
+        print("####################################")
         instance = IndustryJob.objects.filter(user=self.context['user'])
         # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():
