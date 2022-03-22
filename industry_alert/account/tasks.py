@@ -164,7 +164,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                          result = esi_request(0, id, access_token)
                     print('************************')
                     if isinstance(result, dict):
-                         print(f'나는 스트럭쳐 에러{User.objects.get(character_id=character_id)}')
+                         print(f'나는 스트럭쳐 에러{result}, {User.objects.get(character_id=character_id)}')
                     print('************************')
                     print('############################')
                     from eve.models import Eve
