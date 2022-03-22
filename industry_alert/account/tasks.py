@@ -11,6 +11,27 @@ from dotenv import load_dotenv
 import base64
 import datetime
 
+def esi_request(esi, id, access_token):
+     api = [f'/universe/structures/{id}/',
+            f'/universe/stations/{id}/',
+            f'/characters/{id}/industry/jobs/',       
+     ]
+     
+     acc = f'Bearer {access_token}'
+     url = f'https://esi.evetech.net/latest{api[esi]}?datasource=tranquility'
+
+     try:
+          res = requests.get(
+               url,
+               headers={"Authorization": acc}
+          )
+          # 이거 성공하면 리스트로옴
+          esi_response = res.json()
+     except requests.exceptions.HTTPError as e:
+          raise e
+
+     return esi_response
+
 def esi_request_industry_jobs(character_id, access_token):
 
      acc = f'Bearer {access_token}'
@@ -130,6 +151,24 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                # 실패하면 dict로옴
                if isinstance(industry_jobs, dict):
                     raise Exception(industry_jobs)
+
+               # 가져온 잡들에서 facility_id만 분리해서 이거 다시 esi_request해서 넣어줘야함
+               for job in industry_jobs:
+                    id = job['facility_id']
+                    # 스테이션
+                    if id < 100000000:
+                         # 이거 그냥 하는것도 리스트로 오는지 확인해야함
+                         result = esi_request(1, id, access_token)
+                    # 스트럭쳐
+                    else:
+                         result = esi_request(0, id, access_token)
+                    print('************************')
+                    print(result)
+                    print('************************')
+                    print('############################')
+                    from eve.models import Eve
+                    print('############################')
+                    # job['facility_id'] = result
 
               # 성공하면 저장
                return save_jobs(eve_user_email, industry_jobs)

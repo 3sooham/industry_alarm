@@ -15,6 +15,10 @@ class EveViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(queryset, many=True)
 
         print("나는 뷰임")
+        print("-------------------")
+        instance = Eve.objects.get(typeId=16344)
+        print(instance.typeName)
+        print("-------------------")
         print(serializer.data)
 
         return Response(serializer.data)
