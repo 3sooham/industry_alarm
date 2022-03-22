@@ -168,6 +168,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                     print('************************')
                     print('############################')
                     from eve.models import Eve
+                    print(result)
                     print('############################')
                     # job['facility_id'] = result
 
