@@ -115,7 +115,6 @@ class EveLoginViewSet(viewsets.GenericViewSet):
         temp_dict = res_dict.copy()
         temp_dict['user'] = eve_user
 
-        print(temp_dict)
         # EveAccessToken 저장
         serializer = EveAccessTokenSerializer(data=temp_dict)
         try:
@@ -128,7 +127,7 @@ class EveLoginViewSet(viewsets.GenericViewSet):
             redirect_url = f'http://localhost:4200/login?token={token}'
             return redirect(redirect_url)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except serializers.ValidationError:
             return Response({"status": "failed login user via eve account", "errors": serializer.errors})

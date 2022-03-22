@@ -154,24 +154,28 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
 
                # 가져온 잡들에서 facility_id만 분리해서 이거 다시 esi_request해서 넣어줘야함
                for job in industry_jobs:
+                    print("111111111111111111111111111111")
+                    print(job)
+                    print("111111111111111111111111111111")
                     id = job['facility_id']
                     # 스테이션
                     if id < 100000000:
                          # 이거 그냥 하는것도 리스트로 오는지 확인해야함
-                         result = esi_request(1, id, access_token)
+                         facility = esi_request(1, id, access_token)
                     # 스트럭쳐
                     else:
-                         result = esi_request(0, id, access_token)
+                         facility = esi_request(0, id, access_token)
                     
                     try:
-                         error = result['error']
+                         error = facility['error']
                     except KeyError:
                          print('************************')
-                         print(f'나는 스트럭쳐 에러{result}, {User.objects.get(character_id=character_id)}')
+                         print(f'나는 스트럭쳐 에러{facility}, {User.objects.get(character_id=character_id)}')
                          print('************************')
+                         # raise Exception(result)
                     print('zzzzzzzzzzzzzzzzzzzzz')
                     # from eve.models import Eve
-                    print(result)
+                    print(facility)
                     print('zzzzzzzzzzzzzzzzzzzzzzzz')
                     # job['facility_id'] = result
 
