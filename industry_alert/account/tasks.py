@@ -162,14 +162,17 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                     # 스트럭쳐
                     else:
                          result = esi_request(0, id, access_token)
-                    print('************************')
-                    if isinstance(result, dict):
+                    
+                    try:
+                         error = result['error']
+                    except:
+                         print('************************')
                          print(f'나는 스트럭쳐 에러{result}, {User.objects.get(character_id=character_id)}')
-                    print('************************')
-                    print('############################')
-                    from eve.models import Eve
+                         print('************************')
+                    print('zzzzzzzzzzzzzzzzzzzzz')
+                    # from eve.models import Eve
                     print(result)
-                    print('############################')
+                    print('zzzzzzzzzzzzzzzzzzzzzzzz')
                     # job['facility_id'] = result
 
               # 성공하면 저장
