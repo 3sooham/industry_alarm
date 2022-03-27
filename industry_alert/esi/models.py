@@ -12,7 +12,7 @@ class Facility(models.Model):
     owner_ticker = models.CharField(max_length=255)
     type_name = models.CharField(max_length=255)
 
-class IndustryJobManager(models.BaseManager):
+class IndustryJobManager(models.Manager):
     @staticmethod
     def set_status(job, new_status):
         job.status = new_status
