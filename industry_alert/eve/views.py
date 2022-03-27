@@ -1,13 +1,13 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from .serializers import EveSerializer
-from .models import Eve
+from .models import InvTypes
 
 from rest_framework.response import Response
 
 class EveViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
-    queryset = Eve.objects.all()
+    queryset = InvTypes.objects.all()
     serializer_class = EveSerializer
 
     def list(self, request):
@@ -16,7 +16,7 @@ class EveViewSet(viewsets.GenericViewSet):
 
         print("나는 뷰임")
         print("-------------------")
-        instance = Eve.objects.get(typeId=16344)
+        instance = InvTypes.objects.get(typeId=16344)
         print(instance.typeName)
         print("-------------------")
         print(serializer.data)
