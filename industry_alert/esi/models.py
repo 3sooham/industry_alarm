@@ -50,33 +50,3 @@ class IndustryJob(models.Model):
         choices=Status.choices
     )
     successful_runs = models.IntegerField(null=True)
-
-class IndustryJob2(models.Model):
-    class Status(models.TextChoices):
-        ACTIVE = 'active', _('Active'),
-        CANCELLED = 'cancelled', _('Cancelled'),
-        DELIVERED = 'delivered', _('Delivered'),
-        PAUSED = 'paused', _('Paused'),
-        READY = 'ready', _('Ready'),
-        REVERTED = 'reverted', _('Reverted')
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_job")
-    activity_id = models.IntegerField()
-    blueprint_type_id = models.BigIntegerField()
-    completed_data = models.DateTimeField(null=True)
-    cost = models.DecimalField(max_digits=13, decimal_places=4, null=True)
-    duration = models.IntegerField()
-    end_date = models.DateTimeField()
-    facility_id = models.ForeignKey('Structure', null=True, verbose_name=_("indsutry_job"), on_delete=models.SET_NULL)
-    installer_id = models.IntegerField()
-    licensed_runs = models.IntegerField(null=True)
-    pause_date = models.DateTimeField(null=True)
-    probability = models.FloatField(null=True)
-    product_type_id = models.IntegerField()
-    runs = models.IntegerField(null=True)
-    start_date = models.DateTimeField(null=True)
-    status = models.CharField(
-        max_length=10,
-        choices=Status.choices
-    )
-    successful_runs = models.IntegerField()
