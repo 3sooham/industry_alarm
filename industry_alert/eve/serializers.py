@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Eve, SolarSystem
+from .models import InvTypes, SolarSystem
 
 class EveSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Eve
+        model = InvTypes
         # fieds에 id나 pk로 지정된 필드 꼭 있어야함
         fields = ['typeId', 'typeName', 'iconId', 'marketGroupId']
 
