@@ -13,7 +13,7 @@ class FacilitySerializer(serializers.ModelSerializer):
 class IndustryJobListSerializer(serializers.ListSerializer):
     @transaction.atomic
     def create(self, validated_data):
-        return IndustryJob.objects.bulk_create_industry_jobs(validated_data, self.context['user'])
+        return IndustryJob.objects.bulk_create_or_update(validated_data, self.context['user'])
     # # https://wikidocs.net/21054
     # # 이거를 그냥 하면 이 함수를 불러올때마다 스택에 올렸다 내렸다하니
     # # @staticmethod로 힙에 올려버리기
