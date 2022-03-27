@@ -37,6 +37,7 @@ def esi_request(esi, id, access_token):
           return esi_response
 
      # 에러 있으면 에러 기록하고 종료함
+     print(esi, id, esi_response)
      raise Exception(esi_response)
 
 def is_station(id, access_token):
@@ -201,9 +202,6 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                               print(id)
                               facility = is_structure(id, access_token)
                     # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
-                    print("----------------------------")
-                    print(facility)
-                    print("----------------------------")
                     # job['facility_id'] = facility
 
               # 성공하면 저장
