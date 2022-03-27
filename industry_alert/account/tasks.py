@@ -200,7 +200,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                          else:
                               print(id)
                               facility = is_structure(id, access_token)
-                    
+                    # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
                     print("----------------------------")
                     print(facility)
                     print("----------------------------")
