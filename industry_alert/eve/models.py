@@ -1,6 +1,6 @@
 from django.db import models
 
-class Eve(models.Model):
+class InvTypes(models.Model):
     typeId = models.IntegerField(primary_key=True )
     groupId = models.IntegerField()
     typeName = models.CharField(max_length=255)
@@ -27,3 +27,35 @@ class Eve(models.Model):
         # 이 모델이 있는 db 테이블 이름임
         # 원래는 자동으로 생성해주는데 지금은 있는 테이블에 있는 데이터를 사용하니 이렇게 명시해줘야함
         db_table = 'invTypes'
+
+class SolarSystem(models.Model):
+    regionID = models.IntegerField()
+    constellationID = models.IntegerField() # mul은 무슨 키인지 확인해봐야함
+    solarSystemID = models.IntegerField(primary_key=True)
+    solarSystemName = models.CharField(max_length=100)
+    x = models.FloatField()
+    y = models.FloatField()
+    z = models.FloatField()
+    xMin = models.FloatField()
+    xMax = models.FloatField()
+    yMin = models.FloatField()
+    yMax = models.FloatField()
+    zMin = models.FloatField()
+    zMax = models.FloatField()
+    luminosity = models.FloatField()
+    border = models.BooleanField()
+    fringe = models.BooleanField()
+    corridor = models.BooleanField()
+    hub = models.BooleanField()
+    interantional = models.BooleanField()
+    regional = models.BooleanField()
+    constellation = models.BooleanField()
+    security = models.FloatField()
+    factionID = models.IntegerField()
+    radius = models.FloatField()
+    sunTypeId = models.IntegerField()
+    securityClass = models.CharField(max_length=2)
+
+    class Meta:
+        managed = False
+        db_table = 'mapsolarsystems'

@@ -1,8 +1,9 @@
 # Create your tasks here
 from celery import shared_task
 import requests
-from esi.serializers import IndustryJobSerializer
-from esi.models import IndustryJob
+from esi.serializers import IndustryJobSerializer, FacilitySerializer
+from esi.models import IndustryJob, Facility
+from eve.models import InvTypes
 from .models import User, EveAccessToken
 from rest_framework import serializers
 
@@ -14,7 +15,8 @@ import datetime
 def esi_request(esi, id, access_token):
      api = [f'/universe/structures/{id}/',
             f'/universe/stations/{id}/',
-            f'/characters/{id}/industry/jobs/',       
+            f'/characters/{id}/industry/jobs/',
+            f'/corporation/{id}/'
      ]
      
      acc = f'Bearer {access_token}'
@@ -27,10 +29,37 @@ def esi_request(esi, id, access_token):
           )
           # 이거 성공하면 리스트로옴
           esi_response = res.json()
+          esi_response['error']
      except requests.exceptions.HTTPError as e:
           raise e
+     # 에러 없으면 esi_response 리턴해줌
+     except KeyError:
+          return esi_response
 
-     return esi_response
+     # 에러 있으면 에러 기록하고 종료함
+     raise Exception(esi_response)
+
+def is_station(id, access_token):
+     facility = esi_request(1, id, access_token)
+     corporation = esi_request(3, facility['owner'], access_token)
+
+     facility['id'] = id
+     facility['owner_name'] = corporation['name']
+     facility['owner_ticker'] = corporation['ticker']
+     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id'])
+
+     return facility
+
+def is_structure(id, access_token):
+     facility = esi_request(0, id, access_token)
+     corporation = esi_request(3, facility['owner_id'], access_token)
+
+     facility['id'] = id
+     facility['owner_name'] = corporation['name']
+     facility['owner_ticker'] = corporation['ticker']
+     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id'])
+
+     return facility
 
 def esi_request_industry_jobs(character_id, access_token):
 
@@ -152,32 +181,28 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                if isinstance(industry_jobs, dict):
                     raise Exception(industry_jobs)
 
-               # 가져온 잡들에서 facility_id만 분리해서 이거 다시 esi_request해서 넣어줘야함
+               # 가져온 인더잡에서 facility_id
                for job in industry_jobs:
-                    print("111111111111111111111111111111")
-                    print(job)
-                    print("111111111111111111111111111111")
                     id = job['facility_id']
-                    # 스테이션
-                    if id < 100000000:
-                         # 이거 그냥 하는것도 리스트로 오는지 확인해야함
-                         facility = esi_request(1, id, access_token)
-                    # 스트럭쳐
-                    else:
-                         facility = esi_request(0, id, access_token)
-                    
+                    # facility_id가 디비에 있으면 db에 있는거 불러와서 job['facility_id']에 넣어줘야함
+                    # 이거 근데 스트럭쳐 주인 바뀌면 주인 갱신도 해줘야하는데 어떻게??
+                    # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
                     try:
-                         error = facility['error']
-                    except KeyError:
-                         print('************************')
-                         print(f'나는 스트럭쳐 에러{facility}, {User.objects.get(character_id=character_id)}')
-                         print('************************')
-                         # raise Exception(result)
-                    print('zzzzzzzzzzzzzzzzzzzzz')
-                    # from eve.models import Eve
+                         facility_instance =  Facility.objects.get(facility_id=id)
+                         # job['facility'] = FacilitySerializer(facility_instance).data
+                    # 저장된 facility가 없으면
+                    except Facility.DoesNotExist:
+                         # 스테이션
+                         if id < 100000000:
+                              facility = is_station(id, access_token)
+                         # 스트럭쳐
+                         else:
+                              facility = is_structure(id, access_token)
+                    
+                    print("----------------------------")
                     print(facility)
-                    print('zzzzzzzzzzzzzzzzzzzzzzzz')
-                    # job['facility_id'] = result
+                    print("----------------------------")
+                    # job['facility_id'] = facility
 
               # 성공하면 저장
                return save_jobs(eve_user_email, industry_jobs)

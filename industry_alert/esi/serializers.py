@@ -1,9 +1,14 @@
 from rest_framework import serializers
-from .models import IndustryJob
+from .models import IndustryJob, Facility
 
 # atomic
 from django.db import transaction
 
+class FacilitySerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Facility
+        fields = ['facility_id', 'name', 'owner_name', 'owner_ticker', 'type_name']
 
 class IndustryJobListSerializer(serializers.ListSerializer):
     # https://wikidocs.net/21054
@@ -35,9 +40,11 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         # 밑처럼 하지말고 self.context['user'] 로 instance가져오기
         # instance = IndustryJob.objects.filter(user=validated_data[0]['user'])
         # print(self.context['user'])
+        '''
         print("####################################")
         print(validated_data)
         print("####################################")
+        '''
         instance = IndustryJob.objects.filter(user=self.context['user'])
         # 유저에 대해서 저장된 잡이 있으면
         if instance.exists():

@@ -116,7 +116,7 @@ class LoginSerializer(serializers.Serializer):
             # 값이 있으니 결과물이 나오는거임
             # 객체 serialize하면 __str__()로 나오는 결과물이 나옴
             # print(getattr(token, 'key'))
-            print(token.key)
+            # print(token.key)
             return {'token': token.key}
         # 일치하는 비밀번호가 없으면
         raise InvalidPassword

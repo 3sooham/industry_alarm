@@ -1,7 +1,16 @@
+from unittest.result import failfast
 from unittest.util import _MAX_LENGTH
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
+
+class Facility(models.Model):
+    # id < 100000000 면 NPC 스테이션임
+    facility_id = models.BigIntegerField(primary_key=True)
+    name = models.CharField(max_length=255)
+    owner_name = models.CharField(max_length=255)
+    owner_ticker = models.CharField(max_length=255)
+    type_name = models.CharField(max_length=255)
 
 # 클래스명 단수로
 # 이름 붙이는 거는 불려오는곳에서 이름이 얼마나 자연스러운지가 중요함
@@ -24,6 +33,7 @@ class IndustryJob(models.Model):
     cost = models.DecimalField(max_digits=13, decimal_places=4, null=True)
     duration = models.IntegerField(null=True)
     end_date = models.DateTimeField(null=True)
+    # faciliy = models.ForeignKey(Facility, on_delete=models.CASCADE)
     facility_id = models.BigIntegerField(null=True)
     installer_id = models.IntegerField(null=True)
     job_id = models.IntegerField(null=True)
@@ -40,13 +50,6 @@ class IndustryJob(models.Model):
         choices=Status.choices
     )
     successful_runs = models.IntegerField(null=True)
-
-class Structure(models.Model):
-    # id < 100000000 면 NPC 스테이션임
-    facility_id = models.BigIntegerField(primary_key=True)
-    name = models.CharField(max_length=255)
-    owner_id = models.IntegerField(null=True)
-    type_id = models.IntegerField()
 
 class IndustryJob2(models.Model):
     class Status(models.TextChoices):
