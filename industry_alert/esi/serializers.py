@@ -16,6 +16,12 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         print("******************")
         print(validated_data)
         print("******************")
+
+        # facility = {}
+        # for data in validated_data:
+        #     if data['facility_id'] not in facility:
+        #         facility[data['facility_id']] = data['facility_id']
+
         return IndustryJob.objects.bulk_create_or_update(validated_data, self.context['user'])
     # # https://wikidocs.net/21054
     # # 이거를 그냥 하면 이 함수를 불러올때마다 스택에 올렸다 내렸다하니

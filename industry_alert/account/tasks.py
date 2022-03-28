@@ -37,7 +37,7 @@ def esi_request(esi, id, access_token):
           return esi_response
 
      # 에러 있으면 에러 기록하고 종료함
-     raise Exception(f'esi={esi} id={id}', esi_response)
+     raise Exception(f'esi={esi} id={id} url={api[esi]}', esi_response)
 
 def is_station(id, access_token):
      facility = esi_request(1, id, access_token)
