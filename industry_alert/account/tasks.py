@@ -46,7 +46,7 @@ def is_station(id, access_token):
      facility['id'] = id
      facility['owner_name'] = corporation['name']
      facility['owner_ticker'] = corporation['ticker']
-     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id'])
+     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id']).typeName
 
      return facility
 
@@ -57,7 +57,7 @@ def is_structure(id, access_token):
      facility['id'] = id
      facility['owner_name'] = corporation['name']
      facility['owner_ticker'] = corporation['ticker']
-     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id'])
+     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id']).typeName
 
      return facility
 
@@ -200,8 +200,12 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                          else:
                               print(id)
                               facility = is_structure(id, access_token)
+
+                    print("99999999999999999999999")
+                    print(facility)
+                    print("99999999999999999999999")
                     # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
-                    # job['facility_id'] = facility
+                    job['facility_id'] = facility
 
               # 성공하면 저장
                return save_jobs(eve_user_email, industry_jobs)
