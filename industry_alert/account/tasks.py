@@ -166,6 +166,7 @@ def save_jobs(eve_user_email, industry_jobs):
 # 리턴하면 celery resutls에 저장됨
 @shared_task()
 def get_industry_jobs(character_id, access_token, eve_user_email):
+     print("8888888888888888888888") 
      # esi request
      industry_jobs = esi_request_industry_jobs(character_id, access_token)
      # 실패했을 경우 dict로 옴
@@ -221,6 +222,8 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
 
           # 토큰 만료가 아닌 다른 에러일 경우
           raise Exception(industry_jobs)
+
+     # 가져온 인더잡에서 facility_id 붙여넣어줘야함
 
      # 에러 없을 경우 esi로 가져온 인더잡들 저장
      return save_jobs(eve_user_email, industry_jobs)
