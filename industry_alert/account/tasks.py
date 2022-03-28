@@ -188,10 +188,12 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                     # 이거 근데 스트럭쳐 주인 바뀌면 주인 갱신도 해줘야하는데 어떻게??
                     # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
                     try:
+                         print("in try")
                          facility_instance = Facility.objects.get(facility_id=id)
                          # job['facility'] = FacilitySerializer(facility_instance).data
                     # 저장된 facility가 없으면
                     except Facility.DoesNotExist:
+                         print('in except')
                          # 스테이션
                          if id < 100000000:
                               print(id)
