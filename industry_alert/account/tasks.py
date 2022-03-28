@@ -210,8 +210,9 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                               facility = is_structure(id, access_token)
 
                     # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
-                    job['facility_id'] = facility
+                    job['facility'] = facility
 
+               raise Exception(industry_jobs)
                print("99999999999999999999")  
                print(industry_jobs)
                print("99999999999999999999")
