@@ -201,12 +201,12 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                               print(id)
                               facility = is_structure(id, access_token)
 
-                    print("99999999999999999999999")
-                    print(facility)
-                    print("99999999999999999999999")
                     # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
                     job['facility_id'] = facility
 
+               print("99999999999999999999")  
+               print(industry_jobs)
+               print("99999999999999999999")
               # 성공하면 저장
                return save_jobs(eve_user_email, industry_jobs)
 
