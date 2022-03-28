@@ -21,7 +21,7 @@ def esi_request(esi, id, access_token):
      api = [f'/universe/structures/{id}/',
             f'/universe/stations/{id}/',
             f'/characters/{id}/industry/jobs/',
-            f'/corporation/{id}/'
+            f'/corporations/{id}/'
      ]
      
      acc = f'Bearer {access_token}'
@@ -42,7 +42,7 @@ def esi_request(esi, id, access_token):
           return esi_response
 
      # 에러 있으면 에러 기록하고 종료함
-     raise Exception(f'esi={esi} id={id} url={api[esi]}', esi_response)
+     raise Exception(f'esi={esi} id={id} url={api[esi]} access_token={access_token}', esi_response)
 
 def is_station(id, access_token):
      facility = esi_request(1, id, access_token)
@@ -199,6 +199,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                     # 저장된 facility가 없으면
                     except Facility.DoesNotExist:
                          logger.info('in except')
+                         print('in except')
                          # 스테이션
                          if id < 100000000:
                               print(id)
