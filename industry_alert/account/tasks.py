@@ -16,7 +16,6 @@ import datetime
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
-
 def esi_request(esi, id, access_token):
      api = [f'/universe/structures/{id}/',
             f'/universe/stations/{id}/',
@@ -166,7 +165,8 @@ def save_jobs(eve_user_email, industry_jobs):
 # 리턴하면 celery resutls에 저장됨
 @shared_task()
 def get_industry_jobs(character_id, access_token, eve_user_email):
-     print("8888888888888888888888") 
+     logger.info(f'access_token : {access_token}')
+     print(access_token)
      # esi request
      industry_jobs = esi_request_industry_jobs(character_id, access_token)
      # 실패했을 경우 dict로 옴
@@ -194,12 +194,13 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                     # 이거 근데 스트럭쳐 주인 바뀌면 주인 갱신도 해줘야하는데 어떻게??
                     # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
                     try:
-                         logger.info('in try')
+                         logger.info('in try2')
+                         print('in try2')
                          facility_instance = Facility.objects.get(facility_id=id)
                          # job['facility'] = FacilitySerializer(facility_instance).data
                     # 저장된 facility가 없으면
                     except Facility.DoesNotExist:
-                         logger.info('in except')
+                         logger.info('in except2')
                          print('in except')
                          # 스테이션
                          if id < 100000000:
@@ -213,8 +214,8 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
                     # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
                     job['facility'] = facility
 
-               raise Exception(industry_jobs)
-               print("99999999999999999999")  
+               print("99999999999999999999")
+               logger.info(industry_jobs)
                print(industry_jobs)
                print("99999999999999999999")
               # 성공하면 저장
