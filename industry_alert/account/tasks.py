@@ -154,7 +154,7 @@ def save_jobs(eve_user_email, industry_jobs):
           serializer.is_valid(raise_exception=True)
           serializer.save()
      except serializers.ValidationError:
-          raise Exception({"status": "failed", "errors": serializer.errors})
+          raise Exception({"status": "failed", "errors": serializer.errors, "industry_jobs" : industry_jobs})
      return serializer.data
 
 # async task니까 리턴해줄 필요없음
