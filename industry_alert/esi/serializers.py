@@ -17,12 +17,12 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         print(validated_data)
         print("******************")
 
-        raise Exception(validated_data)
+        # raise Exception(validated_data)
 
         facility = {}
         for data in validated_data:
-            if data['facility_id'] not in facility:
-                facility[data['facility_id']] = data['facility_id']
+            if data['facility']['facility_id'] not in facility:
+                facility[data['facility']['facility_id'] ] = data['facility_id']
 
         print(facility)
 
