@@ -190,7 +190,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
           industry_jobs = esi_request(industry_jobs, character_id, access_token)
 
           # 인더잡에 facility 넣어줌
-          insert_facility(industry_jobs)
+          insert_facility(industry_jobs, access_token)
 
           return save_jobs(eve_user_email, industry_jobs)
 
