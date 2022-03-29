@@ -12,16 +12,12 @@ from dotenv import load_dotenv
 import base64
 import datetime
 
-# logger
-from celery.utils.log import get_task_logger
-logger = get_task_logger(__name__)
-
 def esi_request(esi, id, access_token):
-     api = [f'/universe/structures/{id}/',
-            f'/universe/stations/{id}/',
-            f'/characters/{id}/industry/jobs/',
-            f'/corporations/{id}/'
-     ]
+     api = {'structures' : f'/universe/structures/{id}/',
+            'stations' : f'/universe/stations/{id}/',
+            'industry_jobs' : f'/characters/{id}/industry/jobs/',
+            'corporations' : f'/corporations/{id}/'
+     }
      
      acc = f'Bearer {access_token}'
      url = f'https://esi.evetech.net/latest{api[esi]}?datasource=tranquility'
@@ -31,26 +27,29 @@ def esi_request(esi, id, access_token):
                url,
                headers={"Authorization": acc}
           )
-          # 이거 성공하면 리스트로옴
           esi_response = res.json()
-          esi_response['error']
-     except requests.exceptions.HTTPError as e:
-          raise e
-     # 에러 없으면 esi_response 리턴해줌
-     except KeyError:
-          return esi_response
-
+          res.raise_for_status()
      # 에러 있으면 에러 기록하고 종료함
-     raise Exception(f'esi={esi} id={id} url={api[esi]} access_token={access_token}', esi_response)
+     # 400 <= response code < 600 인 경우임
+     # 304는 그럼 어케되는거임?? 이거 들어오는 경우 확인해봐야함
+     # if res.status_code == 304:
+     #    raise raise Exception(f'esi={esi} id={id} url={api[esi]} access_token={access_token} esi_response={esi_response})
+     except requests.exceptions.HTTPError as e:
+          if esi_response['error'] == 'token is expired':
+               return 'token is expired'
+          raise Exception(f'esi={esi} id={id} url={api[esi]} access_token={access_token} esi_response={esi_response}, http_error={e}')
+
+     # 에러 없으면 response return 해줌
+     return esi_response
 
 def is_station(id, access_token):
-     facility = esi_request(1, id, access_token)
-     corporation = esi_request(3, facility['owner'], access_token)
+     facility = esi_request('stations', id, access_token)
+     corporation = esi_request('corporations', facility['owner'], access_token)
 
      facility['id'] = id
      facility['owner_name'] = corporation['name']
      facility['owner_ticker'] = corporation['ticker']
-     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id']).typeName
+     facility['type_name'] = InvTypes.objects.get(typeId=facility['type_id']).typeName
 
      return facility
 
@@ -61,26 +60,9 @@ def is_structure(id, access_token):
      facility['id'] = id
      facility['owner_name'] = corporation['name']
      facility['owner_ticker'] = corporation['ticker']
-     facility['type_name'] = InvTypes.objects.get(typeID=facility['type_id']).typeName
+     facility['type_name'] = InvTypes.objects.get(typeId=facility['type_id']).typeName
 
      return facility
-
-def esi_request_industry_jobs(character_id, access_token):
-
-     acc = f'Bearer {access_token}'
-     url = f'https://esi.evetech.net/latest/characters/{str(character_id)}/industry/jobs/?datasource=tranquility'
-
-     try:
-          res = requests.get(
-               url,
-               headers={"Authorization": acc}
-          )
-          # 이거 성공하면 리스트로옴
-          industry_jobs = res.json()
-     except requests.exceptions.HTTPError as e:
-          raise e
-
-     return industry_jobs
 
 # 갱신하는 토큰으로 새 토큰 받아옴
 def refresh_access_token(user, instance):
@@ -107,8 +89,11 @@ def refresh_access_token(user, instance):
                headers=headers,
                data=body,
           )
+          # HTTPError
+          res.raise_for_status
           res_dict = res.json()
-          access_token = res_dict['access_token']
+          res_dict['access_token']
+          # 이거 이렇게 하지말고 JWT decode 하면 시간 나오니까 그거로 넣어주면됨. 
           res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
      except requests.exceptions.HTTPError as e:
           raise e
@@ -161,72 +146,57 @@ def save_jobs(eve_user_email, industry_jobs):
           raise Exception({"status": "failed", "errors": serializer.errors, "industry_jobs" : industry_jobs})
      return serializer.data
 
+
+def insert_facility(industry_jobs, access_token):
+     for job in industry_jobs:
+          id = job['facility_id']
+          # facility_id가 디비에 있으면 db에 있는거 불러와서 job['facility_id']에 넣어줘야함
+          # 이거 근데 스트럭쳐 주인 바뀌면 주인 갱신도 해줘야하는데 어떻게??
+          # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
+          try:
+               facility_instance = Facility.objects.get(facility_id=id)
+               job['facility'] = FacilitySerializer(facility_instance).data
+          # 저장된 facility가 없으면
+          except Facility.DoesNotExist:
+               # 스테이션
+               if id < 100000000:
+                    facility = is_station(id, access_token)
+               # 스트럭쳐
+               else:
+                    facility = is_structure(id, access_token)
+
+          # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
+          job['facility'] = facility
+          print(facility)
+
+     return industry_jobs
+
 # async task니까 리턴해줄 필요없음
 # 리턴하면 celery resutls에 저장됨
 @shared_task()
 def get_industry_jobs(character_id, access_token, eve_user_email):
-     logger.info(f'access_token : {access_token}')
-     print(access_token)
-     # esi request
-     industry_jobs = esi_request_industry_jobs(character_id, access_token)
-     # 실패했을 경우 dict로 옴
-     if isinstance(industry_jobs, dict):
-          errors = industry_jobs.get('error')
-          # 토큰 만료됐으면
-          if errors == 'token is expired':
-               # refresh token
-               user = User.objects.get(character_id=character_id)
-               instance = EveAccessToken.objects.get(access_token=access_token)
-               # refresh token으로 access 토큰 갱신해줌
-               access_token = refresh_access_token(user, instance)
 
-               # 새로 발급 받은 토큰으로 다시 esi request함
-               industry_jobs = esi_request_industry_jobs(character_id, access_token['access_token'])
+     industry_jobs = esi_request('industry_jobs', character_id, access_token)
 
-               # 실패하면 dict로옴
-               if isinstance(industry_jobs, dict):
-                    raise Exception(industry_jobs)
+     # 토큰 만료됐으면
+     if industry_jobs == 'token is expired':
+          # refresh token
+          user = User.objects.get(character_id=character_id)
+          instance = EveAccessToken.objects.get(access_token=access_token)
+          # refresh token으로 access 토큰 갱신해줌
+          access_token = refresh_access_token(user, instance)
 
-               # 가져온 인더잡에서 facility_id
-               for job in industry_jobs:
-                    id = job['facility_id']
-                    # facility_id가 디비에 있으면 db에 있는거 불러와서 job['facility_id']에 넣어줘야함
-                    # 이거 근데 스트럭쳐 주인 바뀌면 주인 갱신도 해줘야하는데 어떻게??
-                    # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
-                    try:
-                         logger.info('in try2')
-                         print('in try2')
-                         facility_instance = Facility.objects.get(facility_id=id)
-                         # job['facility'] = FacilitySerializer(facility_instance).data
-                    # 저장된 facility가 없으면
-                    except Facility.DoesNotExist:
-                         logger.info('in except2')
-                         print('in except')
-                         # 스테이션
-                         if id < 100000000:
-                              print(id)
-                              facility = is_station(id, access_token)
-                         # 스트럭쳐
-                         else:
-                              print(id)
-                              facility = is_structure(id, access_token)
+          # 새로 발급 받은 토큰으로 다시 esi request함
+          industry_jobs = esi_request(industry_jobs, character_id, access_token)
 
-                    # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
-                    job['facility'] = facility
+          # 인더잡에 facility 넣어줌
+          insert_facility(industry_jobs)
 
-               print("99999999999999999999")
-               logger.info(industry_jobs)
-               print(industry_jobs)
-               print("99999999999999999999")
-              # 성공하면 저장
-               return save_jobs(eve_user_email, industry_jobs)
+          return save_jobs(eve_user_email, industry_jobs)
 
-          # 토큰 만료가 아닌 다른 에러일 경우
-          raise Exception(industry_jobs)
+     # 인더잡에 facility 넣어줌
+     industry_jobs = insert_facility(industry_jobs)
 
-     # 가져온 인더잡에서 facility_id 붙여넣어줘야함
-
-     # 에러 없을 경우 esi로 가져온 인더잡들 저장
      return save_jobs(eve_user_email, industry_jobs)
 
 @shared_task
