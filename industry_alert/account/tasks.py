@@ -182,12 +182,12 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
      if industry_jobs == 'token is expired':
           # refresh token
           user = User.objects.get(character_id=character_id)
-          instance = EveAccessToken.objects.get(access_token=access_token)
+          eve_access_token_instance = EveAccessToken.objects.get(access_token=access_token)
           # refresh token으로 access 토큰 갱신해줌
-          access_token = refresh_access_token(user, instance)
+          access_token = refresh_access_token(user, eve_access_token_instance)
 
           # 새로 발급 받은 토큰으로 다시 esi request함
-          industry_jobs = esi_request(industry_jobs, character_id, access_token)
+          industry_jobs = esi_request('industry_jobs', character_id, access_token)
 
           # 인더잡에 facility 넣어줌
           insert_facility(industry_jobs, access_token)
@@ -195,7 +195,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
           return save_jobs(eve_user_email, industry_jobs)
 
      # 인더잡에 facility 넣어줌
-     industry_jobs = insert_facility(industry_jobs)
+     industry_jobs = insert_facility(industry_jobs, access_token)
 
      return save_jobs(eve_user_email, industry_jobs)
 
