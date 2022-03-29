@@ -133,20 +133,6 @@ def refresh_access_token(user, instance):
 
      return serializer.data
 
-def save_jobs(eve_user_email, industry_jobs):
-     user = User.objects.get(email=eve_user_email)
-
-     # 잡 생성/업데이트
-     # many=true면 dict가 아닌 list를 넘겨야함
-     serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
-     try:
-          serializer.is_valid(raise_exception=True)
-          serializer.save()
-     except serializers.ValidationError:
-          raise Exception({"status": "failed", "errors": serializer.errors, "industry_jobs" : industry_jobs})
-     return serializer.data
-
-
 def insert_facility(industry_jobs, access_token):
      for job in industry_jobs:
           id = job['facility_id']
@@ -169,7 +155,22 @@ def insert_facility(industry_jobs, access_token):
           job['facility'] = facility
           print(facility)
 
+     raise Exception(industry_jobs)
+
      return industry_jobs
+
+def save_jobs(eve_user_email, industry_jobs):
+     user = User.objects.get(email=eve_user_email)
+
+     # 잡 생성/업데이트
+     # many=true면 dict가 아닌 list를 넘겨야함
+     serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
+     try:
+          serializer.is_valid(raise_exception=True)
+          serializer.save()
+     except serializers.ValidationError:
+          raise Exception({"status": "failed", "errors": serializer.errors, "industry_jobs" : industry_jobs})
+     return serializer.data
 
 # async task니까 리턴해줄 필요없음
 # 리턴하면 celery resutls에 저장됨
