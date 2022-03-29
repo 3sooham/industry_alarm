@@ -37,7 +37,7 @@ def esi_request(esi, id, access_token):
      except requests.exceptions.HTTPError as e:
           if esi_response['error'] == 'token is expired':
                return 'token is expired'
-          raise Exception(f'esi={esi} id={id} url={api[esi]} access_token={access_token} esi_response={esi_response}, http_error={e}')
+          raise Exception(f'ESI_REQUEST() esi={esi} id={id} url={api[esi]} access_token={access_token} esi_response={esi_response}, http_error={e}')
 
      # 에러 없으면 response return 해줌
      return esi_response
@@ -113,7 +113,8 @@ def refresh_access_token(user, instance):
                data=body,
           )
           # HTTPError
-          res.raise_for_status
+          # 이거 지금 다시 바꿔야함 raise_for_status의 Exception 처리에서 토큰 지우기 처리해야함
+          # res.raise_for_status
           res_dict = res.json()
           res_dict['access_token']
           # 이거 이렇게 하지말고 JWT decode 하면 시간 나오니까 그거로 넣어주면됨. 

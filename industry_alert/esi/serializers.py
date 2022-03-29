@@ -22,9 +22,10 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         facility = {}
         for data in validated_data:
             if data['facility']['facility_id'] not in facility:
-                facility[data['facility']['facility_id'] ] = data['facility_id']
+                facility[data['facility_id']] = data['facility']['facility_id']
 
         print(facility)
+        raise Exception(facility)
 
         return IndustryJob.objects.bulk_create_or_update(validated_data, self.context['user'])
     # # https://wikidocs.net/21054
