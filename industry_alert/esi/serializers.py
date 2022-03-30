@@ -33,13 +33,13 @@ class IndustryJobListSerializer(serializers.ListSerializer):
         #         data['facility'] = facilities[data['facility']['facility_id']]
 
         # validated_data에 facility instance가 없으면 facility를 facilities에 넣어줌
-        for data in validated_data:
-            if not isinstance(data['facility'], Facility):
-                data['facility'] = Facility.objects.create(**data['facility'])
+        # for data in validated_data:
+        #     if not isinstance(data['facility'], Facility):
+        #         data['facility'] = Facility.objects.create(**data['facility'])
 
-        print("*********************")
-        print(validated_data)
-        print("*********************")
+        # print("*********************")
+        # print(validated_data)
+        # print("*********************")
 
         return IndustryJob.objects.bulk_create_or_update(validated_data, self.context['user'])
     # # https://wikidocs.net/21054
@@ -116,7 +116,7 @@ class IndustryJobSerializer(serializers.ModelSerializer):
     probability = serializers.FloatField(required=False)
     product_type_id = serializers.IntegerField(required=False)
     successful_runs = serializers.IntegerField(required=False)
-    facility = FacilitySerializer()
+    facility = FacilitySerializer(read_only=True)
 
     class Meta:
         list_serializer_class = IndustryJobListSerializer
@@ -129,6 +129,7 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'successful_runs']
 
     def validate(self, attr):
+        raise Exception(attr, self.context)
         if self.context.get('user'):
             attr['user'] = self.context['user']
             return attr
