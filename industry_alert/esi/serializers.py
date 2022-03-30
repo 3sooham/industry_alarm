@@ -13,7 +13,9 @@ class FacilitySerializer(serializers.ModelSerializer):
 class IndustryJobListSerializer(serializers.ListSerializer):
     @transaction.atomic
     def create(self, validated_data):
-        # validated_data에 facility instance가 없으면 facility 데이터로 facility instance 만들어서 다시 넣어줌    
+        # validated_data에 facility instance가 없으면 facility 데이터로 facility instance 만들어서 다시 넣어줌 
+
+        raise Exception(validated_data)  
         facilities = dict()
         for data in validated_data:
             if not isinstance(data['facility'], Facility) and data['facility']['facility_id'] not in facility:
