@@ -57,7 +57,7 @@ def is_station(id, access_token):
      return facility
 
 def is_structure(id, access_token):
-     facility = esi_request('stations', id, access_token)
+     facility = esi_request('structures', id, access_token)
      corporation = esi_request('corporations', facility['owner_id'], access_token)
 
      facility['facility_id'] = id
@@ -168,12 +168,13 @@ def refresh_access_token(user, instance):
 
      return serializer.data
 
-def save_jobs(eve_user_email, industry_jobs):
-     user = User.objects.get(email=eve_user_email)
+def save_jobs(eve_user_email, industry_jobs, context):
+     user_instance = User.objects.get(email=eve_user_email)
+     context['user'] = user_instance
 
      # 잡 생성/업데이트
      # many=true면 dict가 아닌 list를 넘겨야함
-     serializer = IndustryJobSerializer(data=industry_jobs, many=True, context={'user': user})
+     serializer = IndustryJobSerializer(data=industry_jobs, many=True, context=context)
      try:
           serializer.is_valid(raise_exception=True)
           serializer.save()
@@ -202,7 +203,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
           # 인더잡에 facility 넣어줌
           context = insert_facility(industry_jobs, access_token)
 
-          return save_jobs(eve_user_email, industry_jobs)
+          return save_jobs(eve_user_email, industry_jobs, context)
 
      # 인더잡에 facility 넣어줌
      industry_jobs = insert_facility(industry_jobs, access_token)
