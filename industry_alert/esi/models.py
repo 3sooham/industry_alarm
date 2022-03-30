@@ -84,7 +84,7 @@ class IndustryJob(models.Model):
     cost = models.DecimalField(max_digits=13, decimal_places=4, null=True)
     duration = models.IntegerField(null=True)
     end_date = models.DateTimeField(null=True)
-    faciliy = models.ForeignKey(Facility, on_delete=models.CASCADE)
+    facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
     # facility_id = models.BigIntegerField(null=True)
     installer_id = models.IntegerField(null=True)
     job_id = models.IntegerField(null=True)
