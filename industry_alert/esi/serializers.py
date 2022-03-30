@@ -13,19 +13,18 @@ class FacilitySerializer(serializers.ModelSerializer):
 class IndustryJobListSerializer(serializers.ListSerializer):
     @transaction.atomic
     def create(self, validated_data):
-        print("******************")
-        print(validated_data)
-        print("******************")
-
-        # raise Exception(validated_data)
-
-        facility = {}
+        # validated_data에 facility instance가 없으면 facility 데이터로 facility instance 만들어서 다시 넣어줌    
+        facilities = dict()
         for data in validated_data:
-            if data['facility']['facility_id'] not in facility:
-                facility[data['facility']['facility_id']] = data['facility']
+            if not isinstance(data['facility'], Facility) and data['facility']['facility_id'] not in facility:
+                facilities[data['facility']['facility_id']] = data['facility']
 
-        print(facility)
-        raise Exception(facility)
+
+        need_bulk_create = [Facility(**val) for _, val in facilities.itmes()]
+        print(Facility.objects.bulk_create(need_bulk_create))
+
+        # for facility in facilities:
+        #     Facility.objects.get(facility_id=facility[''])
 
         return IndustryJob.objects.bulk_create_or_update(validated_data, self.context['user'])
     # # https://wikidocs.net/21054

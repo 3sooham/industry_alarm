@@ -72,7 +72,7 @@ def insert_facility(industry_jobs, access_token):
           # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
           try:
                facility_instance = Facility.objects.get(facility_id=id)
-               job['facility'] = FacilitySerializer(facility_instance).data
+               job['facility'] = facility_instance
           # 저장된 facility가 없으면
           except Facility.DoesNotExist:
                # 스테이션
