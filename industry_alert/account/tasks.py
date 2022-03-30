@@ -208,7 +208,7 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
      # 인더잡에 facility 넣어줌
      industry_jobs = insert_facility(industry_jobs, access_token)
 
-     return save_jobs(eve_user_email, industry_jobs)
+     return save_jobs(eve_user_email, industry_jobs, context)
 
 @shared_task
 def periodic_task():
