@@ -21,7 +21,10 @@ class IndustryJobListSerializer(serializers.ListSerializer):
                 facilities[data['facility']['facility_id']] = data['facility']
 
 
-        need_bulk_create = [Facility(**val) for _, val in facilities.itmes()]
+        print('***************')
+        print(facilities)
+        print('***************')
+        need_bulk_create = [Facility(**val) for _, val in facilities.items()]
         print(Facility.objects.bulk_create(need_bulk_create))
 
         # for facility in facilities:
