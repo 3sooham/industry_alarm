@@ -13,28 +13,33 @@ class FacilitySerializer(serializers.ModelSerializer):
 class IndustryJobListSerializer(serializers.ListSerializer):
     @transaction.atomic
     def create(self, validated_data):
+        # # validated_data에 facility instance가 없으면 facility를 facilities에 넣어줌
+        # facilities = dict()
+        # for data in validated_data:
+        #     if not isinstance(data['facility'], Facility) and data['facility']['facility_id'] not in facilities:
+        #         facilities[data['facility']['facility_id']] = data['facility']
+
+        # # facility들 bulk_create 해주고
+        # need_bulk_create = [Facility(**val) for _, val in facilities.items()]
+        # facility_instances = Facility.objects.bulk_create(need_bulk_create)
+
+        # # facilities에 생성한 인스턴스들 넣어줌
+        # for instance in facility_instances:
+        #     facilities[instance.facility_id] = instance
+
+        # # 다시 validated_data의 facility 항목에 facility 인스턴스 넣어줌
+        # for data in validated_data:
+        #     if not isinstance(data['facility'], Facility) and data['facility']['facility_id'] in facilities:
+        #         data['facility'] = facilities[data['facility']['facility_id']]
+
         # validated_data에 facility instance가 없으면 facility를 facilities에 넣어줌
-        facilities = dict()
         for data in validated_data:
-            if not isinstance(data['facility'], Facility) and data['facility']['facility_id'] not in facilities:
-                facilities[data['facility']['facility_id']] = data['facility']
+            if not isinstance(data['facility'], Facility):
+                data['facility'] = Facility.objects.create(**data['facility'])
 
-        # facility들 bulk_create 해주고
-        need_bulk_create = [Facility(**val) for _, val in facilities.items()]
-        facility_instances = Facility.objects.bulk_create(need_bulk_create)
-
-        # facilities에 생성한 인스턴스들 넣어줌
-        for instance in facility_instances:
-            facilities[instance.facility_id] = instance
-
-        # 다시 validated_data의 facility 항목에 facility 인스턴스 넣어줌
-        for data in validated_data:
-            if not isinstance(data['facility'], Facility) and data['facility']['facility_id'] in facilities:
-                data['facility'] = facilities[data['facility']['facility_id']]
-
-        print("******************")
+        print("*********************")
         print(validated_data)
-        print("******************")
+        print("*********************")
 
         return IndustryJob.objects.bulk_create_or_update(validated_data, self.context['user'])
     # # https://wikidocs.net/21054
