@@ -200,13 +200,13 @@ def get_industry_jobs(character_id, access_token, eve_user_email):
           # 새로 발급 받은 토큰으로 다시 esi request함
           industry_jobs = esi_request('industry_jobs', character_id, access_token)
 
-          # 인더잡에 facility 넣어줌
+          # context에 facility instance들 넣어줌
           context = insert_facility(industry_jobs, access_token)
 
           return save_jobs(eve_user_email, industry_jobs, context)
 
-     # 인더잡에 facility 넣어줌
-     industry_jobs = insert_facility(industry_jobs, access_token)
+     # context에 facility instance들 넣어줌
+     context = insert_facility(industry_jobs, access_token)
 
      return save_jobs(eve_user_email, industry_jobs, context)
 
