@@ -81,9 +81,9 @@ def insert_facility(industry_jobs, access_token):
                # 스트럭쳐
                else:
                     facility = is_structure(id, access_token)
-
+               
+               job['facility'] = facility
           # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
-          job['facility'] = facility
 
      return industry_jobs
 
