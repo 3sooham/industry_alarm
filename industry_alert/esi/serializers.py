@@ -129,7 +129,11 @@ class IndustryJobSerializer(serializers.ModelSerializer):
                   'successful_runs']
 
     def validate(self, attr):
-        raise Exception(attr, self.context)
+        attr['facility'] = self.context[attr['job_id']]
+
+        raise Exception(attr, '**********', self.context)
+
+        # user 집어넣어주고
         if self.context.get('user'):
             attr['user'] = self.context['user']
             return attr

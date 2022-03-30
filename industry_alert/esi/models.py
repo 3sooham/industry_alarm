@@ -85,7 +85,6 @@ class IndustryJob(models.Model):
     duration = models.IntegerField(null=True)
     end_date = models.DateTimeField(null=True)
     facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
-    # facility_id = models.BigIntegerField(null=True)
     installer_id = models.IntegerField(null=True)
     job_id = models.IntegerField(null=True)
     licensed_runs = models.IntegerField(null=True)

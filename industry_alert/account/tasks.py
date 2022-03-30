@@ -69,13 +69,14 @@ def is_structure(id, access_token):
 
 def insert_facility(industry_jobs, access_token):
      facilities = dict()
-     for i, job in enumerate(industry_jobs):
+     for job in industry_jobs:
           id = job['facility_id']
           # facility_id가 디비에 있으면 db에 있는거 불러와서 job['facility_id']에 넣어줘야함
           # 이거 근데 스트럭쳐 주인 바뀌면 주인 갱신도 해줘야하는데 어떻게??
           # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
           try:
-               facilities[i] = Facility.objects.get(facility_id=id)
+               # facilities에 unique 한 job_id를 키로 facility_instance를 넣어줌
+               facilities[job['job_id']] = Facility.objects.get(facility_id=id)
           # 저장된 facility가 없으면
           except Facility.DoesNotExist:
                # 스테이션
@@ -93,7 +94,7 @@ def insert_facility(industry_jobs, access_token):
                except serializers.ValidationError:
                     raise Exception(serializer.errors)
 
-               facilities[i] = facility_instance
+               facilities[job['job_id']] = facility_instance
           # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
 
      return facilities
