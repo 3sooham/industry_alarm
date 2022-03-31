@@ -19,7 +19,8 @@ def esi_request(esi, id, access_token):
      api = {'structures' : f'/universe/structures/{id}/',
             'stations' : f'/universe/stations/{id}/',
             'industry_jobs' : f'/characters/{id}/industry/jobs/',
-            'corporations' : f'/corporations/{id}/'
+            'corporations' : f'/corporations/{id}/',
+            'systems' : f'/universe/systems/{id}/'
      }
      
      acc = f'Bearer {access_token}'
@@ -48,23 +49,26 @@ def esi_request(esi, id, access_token):
 def is_station(id, access_token):
      facility = esi_request('stations', id, access_token)
      corporation = esi_request('corporations', facility['owner'], access_token)
+     solar_system = esi_request('systems', facility['system_id'], access_token)
 
      facility['facility_id'] = id
      facility['owner_name'] = corporation['name']
      facility['owner_ticker'] = corporation['ticker']
      facility['type_name'] = InvTypes.objects.get(typeId=facility['type_id']).typeName
-
+     facility['solar_system'] = solar_system['name']
+ 
      return facility
 
 def is_structure(id, access_token):
      facility = esi_request('structures', id, access_token)
      corporation = esi_request('corporations', facility['owner_id'], access_token)
+     solar_system = esi_request('systems', facility['solar_system_id'], access_token)
 
      facility['facility_id'] = id
      facility['owner_name'] = corporation['name']
      facility['owner_ticker'] = corporation['ticker']
      facility['type_name'] = InvTypes.objects.get(typeId=facility['type_id']).typeName
-
+     facility['solar_system'] = solar_system['name']
      return facility
 
 def insert_facility(industry_jobs, access_token):

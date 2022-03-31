@@ -11,6 +11,7 @@ class Facility(models.Model):
     owner_name = models.CharField(max_length=255)
     owner_ticker = models.CharField(max_length=255)
     type_name = models.CharField(max_length=255)
+    solar_system = models.CharField(max_length=255)
 
 class IndustryJobManager(models.Manager):
     @staticmethod

@@ -8,7 +8,7 @@ class FacilitySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Facility
-        fields = ['facility_id', 'name', 'owner_name', 'owner_ticker', 'type_name']
+        fields = ['facility_id', 'name', 'owner_name', 'owner_ticker', 'type_name', 'solar_system']
 
 class IndustryJobListSerializer(serializers.ListSerializer):
     @transaction.atomic
