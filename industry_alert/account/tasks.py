@@ -95,10 +95,13 @@ def insert_facility(industry_jobs, access_token):
                     raise Exception(serializer.errors)
 
                facilities[job['job_id']] = facility_instance
+
+          # blueprint_id로 db에서 blueprint_name 집어넣어줌
+          job['blueprint'] = InvTypes.objects.get(type_id=job['blueprint_type_id']).name
           # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
 
      return facilities
-
+     
 # 갱신하는 토큰으로 새 토큰 받아옴
 def refresh_access_token(user, instance):
      load_dotenv()
