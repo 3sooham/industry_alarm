@@ -76,6 +76,8 @@ class IndustryJob(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_jobs")
     activity_id = models.IntegerField(null=True)
+    blueprint = models.CharField(max_length=255)
+    # 이거뭐임?
     blueprint_id = models.BigIntegerField(null=True)
     blueprint_type_id = models.BigIntegerField(null=True)
     completed_character_id = models.IntegerField(null=True)
