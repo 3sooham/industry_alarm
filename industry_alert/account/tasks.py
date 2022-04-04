@@ -34,8 +34,6 @@ def esi_request(esi, id, access_token):
           esi_response = res.json()
           res.raise_for_status()
      # 에러 있으면 에러 기록하고 종료함
-     # 400 <= response code < 600 인 경우임
-     # 304는 그럼 어케되는거임?? 이거 들어오는 경우 확인해봐야함
      # if res.status_code == 304:
      #    raise raise Exception(f'esi={esi} id={id} url={api[esi]} access_token={access_token} esi_response={esi_response})
      except requests.exceptions.HTTPError as e:
@@ -136,6 +134,9 @@ def refresh_access_token(user, instance):
           # res.raise_for_status
           res_dict = res.json()
           res_dict['access_token']
+          # jwt 받은거 validate 해야함
+          # 그리고 이거 view에서 callback() 뷰랑 이거랑 합쳐서 함수하나 만들어가지고 그거로 한번에 하도록 해야할 것 같음.
+          # https://github.com/esi/esi-docs/pull/69/files
           # 이거 이렇게 하지말고 JWT decode 하면 시간 나오니까 그거로 넣어주면됨. 
           res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
      except requests.exceptions.HTTPError as e:
