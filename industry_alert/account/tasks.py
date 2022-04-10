@@ -4,7 +4,7 @@ from celery import shared_task
 import requests
 from esi.serializers import IndustryJobSerializer, FacilitySerializer
 from esi.models import IndustryJob, Facility
-from eve.models import InvTypes
+from eve.models import InvTypes, RamActivity
 from .models import User, EveAccessToken
 from rest_framework import serializers
 
@@ -78,6 +78,7 @@ def insert_facility(industry_jobs, access_token):
           # 따로 주기적으로 facility만 갱신하는 task 있어야할 것 같음
           try:
                # facilities에 unique 한 job_id를 키로 facility_instance를 넣어줌
+               # 이거 facility 찾으면 dict에 추가하던지 해서 계속 db hit 안하도록 해야함 -> 그전에 get() 하면 db hit 하는거임??
                facilities[job['job_id']] = Facility.objects.get(facility_id=id)
           # 저장된 facility가 없으면
           except Facility.DoesNotExist:

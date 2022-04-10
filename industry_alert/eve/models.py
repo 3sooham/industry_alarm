@@ -1,7 +1,7 @@
 from django.db import models
 
 class InvTypes(models.Model):
-    typeId = models.IntegerField(primary_key=True )
+    typeId = models.IntegerField(primary_key=True)
     groupId = models.IntegerField()
     typeName = models.CharField(max_length=255)
     description = models.TextField()
@@ -59,3 +59,14 @@ class SolarSystem(models.Model):
     class Meta:
         managed = False
         db_table = 'mapsolarsystems'
+
+class RamActivity(models.Model):
+    activityId = models.IntegerField(primary_key=True)
+    activityName = models.CharField(max_length=100)
+    iconNo = models.CharField(max_length=5)
+    description = models.CharField(max_length=1000)
+    published = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = 'ramactivities'

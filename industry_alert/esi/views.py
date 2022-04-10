@@ -14,7 +14,7 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
     queryset = IndustryJob.objects.all()
     serializer_class = IndustryJobSerializer
 
-    # http GET http://127.0.0.1:8000/api/v1/post "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
+    # http GET http://127.0.0.1:8000/api/v1/esi "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
     def list(self, request):
         print("in liiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
         print(request)
