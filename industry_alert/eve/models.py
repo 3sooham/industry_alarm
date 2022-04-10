@@ -47,7 +47,7 @@ class SolarSystem(models.Model):
     fringe = models.BooleanField()
     corridor = models.BooleanField()
     hub = models.BooleanField()
-    interantional = models.BooleanField()
+    international = models.BooleanField()
     regional = models.BooleanField()
     constellation = models.BooleanField()
     security = models.FloatField()
@@ -58,7 +58,7 @@ class SolarSystem(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'mapsolarsystems'
+        db_table = 'mapSolarSystems'
 
 class RamActivity(models.Model):
     activityId = models.IntegerField(primary_key=True)
@@ -69,4 +69,4 @@ class RamActivity(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'ramactivities'
+        db_table = 'ramActivities'
