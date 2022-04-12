@@ -107,7 +107,6 @@ class IndustryJobListSerializer(serializers.ListSerializer):
 
 class IndustryJobSerializer(serializers.ModelSerializer):
     # 이거 id 기본으로는 read_only여가지고 이렇게 해줘야함
-    id = serializers.IntegerField(write_only=True)
     completed_character_id = serializers.IntegerField(required=False)
     completed_date = serializers.DateTimeField(required=False)
     cost = serializers.DecimalField(max_digits=13, decimal_places=4, required=False)
@@ -123,7 +122,7 @@ class IndustryJobSerializer(serializers.ModelSerializer):
         model = IndustryJob
         # 이거 context로 user넣어줄거라서 user일단 fields에서 뺌
         fields = ['id', 'start_date', 'end_date', 'facility', 'activity_id', 'runs', 'blueprint', 'blueprint_type_id', 'blueprint_id',
-                  'installer_id',
+                  'installer_id', 'installer_name',
                   'completed_character_id', 'completed_date', 'cost',
                   'duration', 'job_id', 'licensed_runs',
                   'pause_date', 'probability', 'product_type_id', 'station_id', 'status',

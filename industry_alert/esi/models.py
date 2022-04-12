@@ -76,6 +76,7 @@ class IndustryJob(models.Model):
         REVERTED = 'reverted', _('Reverted')
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="indsutry_jobs")
+    installer_name = models.CharField(max_length=255)
     activity_id = models.IntegerField(null=True)
     blueprint = models.CharField(max_length=255)
     # 이거뭐임?

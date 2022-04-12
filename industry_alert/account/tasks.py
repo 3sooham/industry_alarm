@@ -104,7 +104,7 @@ def insert_facility(industry_jobs, access_token):
           # blueprint_id로 db에서 blueprint이름 가져와서 job['blueprint']에다가 넣어줌
           job['blueprint'] = InvTypes.objects.get(typeId=job['blueprint_type_id']).typeName
           # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
-          job['installer_id'] = name
+          job['installer_name'] = name
 
      return facilities
      
