@@ -117,15 +117,18 @@ class IndustryJobSerializer(serializers.ModelSerializer):
     product_type_id = serializers.IntegerField(required=False)
     successful_runs = serializers.IntegerField(required=False)
     facility = FacilitySerializer(read_only=True)
+    user = serializers.CharField(write_only=True)
 
     class Meta:
         list_serializer_class = IndustryJobListSerializer
         model = IndustryJob
         # 이거 context로 user넣어줄거라서 user일단 fields에서 뺌
-        fields = ['id', 'activity_id', 'blueprint_id', 'blueprint', 'blueprint_type_id',
+        fields = ['id', 'start_date', 'end_date', 'facility', 'activity_id', 'runs', 'blueprint', 'blueprint_type_id', 'blueprint_id',
+                  'user',
+                  'installer_id',
                   'completed_character_id', 'completed_date', 'cost',
-                  'duration', 'end_date', 'facility', 'installer_id', 'job_id', 'licensed_runs',
-                  'pause_date', 'probability', 'product_type_id', 'runs', 'start_date', 'station_id', 'status',
+                  'duration', 'job_id', 'licensed_runs',
+                  'pause_date', 'probability', 'product_type_id', 'station_id', 'status',
                   'successful_runs']
 
     def validate(self, attr):
