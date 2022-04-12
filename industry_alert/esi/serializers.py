@@ -124,7 +124,6 @@ class IndustryJobSerializer(serializers.ModelSerializer):
         model = IndustryJob
         # 이거 context로 user넣어줄거라서 user일단 fields에서 뺌
         fields = ['id', 'start_date', 'end_date', 'facility', 'activity_id', 'runs', 'blueprint', 'blueprint_type_id', 'blueprint_id',
-                  'user',
                   'installer_id',
                   'completed_character_id', 'completed_date', 'cost',
                   'duration', 'job_id', 'licensed_runs',

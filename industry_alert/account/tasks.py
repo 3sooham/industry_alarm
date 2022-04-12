@@ -71,6 +71,8 @@ def is_structure(id, access_token):
 
 def insert_facility(industry_jobs, access_token):
      facilities = dict()
+     name = EveAccessToken.objects.get(access_token=access_token).user.name
+
      for job in industry_jobs:
           id = job['facility_id']
           # facility_id가 디비에 있으면 db에 있는거 불러와서 job['facility_id']에 넣어줘야함
@@ -102,6 +104,7 @@ def insert_facility(industry_jobs, access_token):
           # blueprint_id로 db에서 blueprint이름 가져와서 job['blueprint']에다가 넣어줌
           job['blueprint'] = InvTypes.objects.get(typeId=job['blueprint_type_id']).typeName
           # django.db.utils.IntegrityError: (1062, "Duplicate entry '1' for key 'blog_post.PRIMARY'")
+          job['installer_id'] = name
 
      return facilities
      
