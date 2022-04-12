@@ -117,7 +117,6 @@ class IndustryJobSerializer(serializers.ModelSerializer):
     product_type_id = serializers.IntegerField(required=False)
     successful_runs = serializers.IntegerField(required=False)
     facility = FacilitySerializer(read_only=True)
-    user = serializers.CharField(write_only=True)
 
     class Meta:
         list_serializer_class = IndustryJobListSerializer
