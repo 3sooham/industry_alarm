@@ -9,10 +9,16 @@ from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+# pagination
+from rest_framework.pagination import PageNumberPagination
+
+class PageNumberPagination(PageNumberPagination):
+    page_size = 2
 
 class IndustryJobViewSet(viewsets.GenericViewSet):
     queryset = IndustryJob.objects.all()
     serializer_class = IndustryJobSerializer
+    pagination_class = PageNumberPagination
 
     # http GET http://127.0.0.1:8000/api/v1/esi "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
     def list(self, request):

@@ -214,6 +214,9 @@ REST_FRAMEWORK = {
     ],
 	# drf-spectacular
 	'DEFAULT_SCHEMA_CLASS' : 'drf_spectacular.openapi.AutoSchema',
+    # pagination
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100,
 }
 
 # drf-spectacular
