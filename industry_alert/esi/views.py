@@ -24,7 +24,7 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
     def list(self, request):
         print("in liiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
         print(request)
-        queryset = self.get_queryset()gi
+        queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
