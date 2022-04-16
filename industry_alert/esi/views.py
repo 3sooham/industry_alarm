@@ -21,10 +21,25 @@ class IndustryJobViewSet(viewsets.GenericViewSet):
     pagination_class = CustomPagination
 
     # http GET http://127.0.0.1:8000/api/v1/esi "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
-    def list(self, request):
-        print("in liiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-        print(request)
-        queryset = self.get_queryset()
+    # def list(self, request):
+    #     print("in liiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+    #     print(request)
+    #     queryset = self.get_queryset()
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
+
+    # pagination test
+    # 이거는 나중가면 없애야함. 테스트용임.
+    # https://stackoverflow.com/questions/31785966/django-rest-framework-turn-on-pagination-on-a-viewset-like-modelviewset-pagina
+    # 이거  listmodelmixin이랑 똑같음
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
