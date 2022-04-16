@@ -12,19 +12,19 @@ from rest_framework.response import Response
 # pagination
 from rest_framework.pagination import PageNumberPagination
 
-class PageNumberPagination(PageNumberPagination):
+class CustomPagination(PageNumberPagination):
     page_size = 2
 
 class IndustryJobViewSet(viewsets.GenericViewSet):
     queryset = IndustryJob.objects.all()
     serializer_class = IndustryJobSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
 
     # http GET http://127.0.0.1:8000/api/v1/esi "Authorization: Token 65b51c4fbf5914eda00efdeb7828842dd0d4dcc6"
     def list(self, request):
         print("in liiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
         print(request)
-        queryset = self.get_queryset()
+        queryset = self.get_queryset()gi
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
