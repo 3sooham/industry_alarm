@@ -39,7 +39,6 @@ class EveAccessTokenSerializer(serializers.Serializer):
     # 여기 token 넣어줘야지 create()에서 리턴해줄 수 있음 아니면 serialize를 못함
     token = serializers.CharField(read_only=True)
 
-
     class Meta:
         model = EveAccessToken
         fields = ['id', 'user', 'access_token', 'expires_in', 'token_type', 'refresh_token', 'token']
@@ -47,6 +46,18 @@ class EveAccessTokenSerializer(serializers.Serializer):
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user_email = user_data.pop('email')
+
+
+        # if self.context['link']:
+        #     link_insatce = UserLinkInfo.objects.get(name=self.context['link'])
+        #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
+        # else:
+        #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
+        #     #  링크 인스턴스 생성 name이 user_instacne.name임
+        # context로 {link: name}이 들어오면
+        # User.get(name=name).link로 유저를 연결해줘야함
+        # 그게 아니라면 유저를 get_or_create해서 해당 유저에 link가 없으면 만들어줌. 
+ 
         # 계정을 kwargs로 찾고 계정이 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
         user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
         # 내 토큰 발급

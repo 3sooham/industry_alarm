@@ -9,6 +9,7 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter(trailing_slash=False)
 router.register(r'user', views.AccountViewSet, basename='logins')
 router.register(r'evelogin', views.EveLoginViewSet, basename='evelogins')
+router.register(r'evelogin2', views.EveLogin, basename='evelogins2')
 
 urlpatterns = [
     path('', include(router.urls)),

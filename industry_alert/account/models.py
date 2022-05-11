@@ -5,6 +5,10 @@ from django.conf import settings
 from django.db.models.fields import related
 from django.utils import timezone
 
+
+class UserLinkInfo(models.Model):
+    name = models.CharField(max_length=255)
+
 # 이런거 다 eve_access_token 이렇게 바꿔야함
 # myqsl에서 보기가 너무 힘듬
 class EveAccessToken(models.Model):
