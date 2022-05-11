@@ -128,6 +128,10 @@ class EveLogin(viewsets.GenericViewSet, EveLoginUtils):
         code = request.GET.get('code')
         state = request.GET.get('state')
 
+        print("나는 스테이트")
+        print(state)
+        print(type(state))
+
         # 이브 서버에서 GET request로 받은 code를 사용해서 다시 이브 서버로 post_request 보내서
         # access_token 받아옴
         res_dict = self.post_request(code)
@@ -170,7 +174,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         client_id = f"client_id={os.getenv('ID')}&"
         scope = f"scope={parse.quote(os.getenv('REDIRECT_SCOPE'), safe='')}&"
         # state = f"state={os.getenv('STATE')}"
-        state = ''
+        state = 1
 
         url = url + response_type + redirect_uri + client_id + scope + state
         print("리다이렉트중임")
