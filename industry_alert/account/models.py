@@ -70,7 +70,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     character_id = models.IntegerField(verbose_name='character_id', default=0, blank=True)
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    link_info = models.ForeignKey(UserLinkInfo, related_name='users', on_delete=SET_NULL, null=True)
+    link_info = models.ForeignKey(UserLinkInfo, related_name='users', on_delete=models.SET_NULLL, null=True)
 
     # username으로 'email' field 사용함
     USERNAME_FIELD = 'email'
