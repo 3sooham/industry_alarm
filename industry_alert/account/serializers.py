@@ -52,9 +52,26 @@ class EveAccessTokenSerializer(serializers.Serializer):
         user_data = validated_data.pop('user')
         user_email = user_data.pop('email')
 
+        # 일단 계정 생성시 링크 만들고
+        # A로 처음 로그인하면 A 이름으로 링크 생성함
+        # B로 처음 로그인하면 B 이름으로 링크 생성함
+        # 이 상태에서 A를 B에 추가하고 싶으면
+        # A의 링크를 없애고 B의 이름으로 된 링크에 A를 넣어줌.
+        # 이제 한 번도 로그인 한 적이 없는 C를 B에 넣어주고 싶으면
+        # C의 계정을 생성하면서 B의 링크에 C를 넣어줌.
         # if self.context['link']:
         #     link_insatce = UserLinkInfo.objects.get(name=self.context['link'])
         #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
+            # serializer = EveAccessTokenSerializer(data=temp_dict)
+            # try:
+            #     serializer.is_valid(raise_exception=True)
+            #     serializer.save()
+
+            #     token = serializer.data['token']
+            #     # 다 저장했으면 클라이언트로 리다이렉트 해줌.
+            #     redirect_url = f'http://localhost:4200/login?token={token}&name={character_dict["CharacterName"]}'
+            #     return redirect(redirect_url)
+
         # else:
         #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
             #  링크 인스턴스 생성 name이 user_instacne.name임
