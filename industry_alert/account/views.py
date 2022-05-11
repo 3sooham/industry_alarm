@@ -169,7 +169,8 @@ class AccountViewSet(viewsets.GenericViewSet):
         redirect_uri = f"redirect_uri={parse.quote(os.getenv('REDIRECT_REDIRECT_URI'), safe='')}&"
         client_id = f"client_id={os.getenv('ID')}&"
         scope = f"scope={parse.quote(os.getenv('REDIRECT_SCOPE'), safe='')}&"
-        state = f"state={os.getenv('STATE')}"
+        # state = f"state={os.getenv('STATE')}"
+        state = ''
 
         url = url + response_type + redirect_uri + client_id + scope + state
         print("리다이렉트중임")
