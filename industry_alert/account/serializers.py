@@ -62,26 +62,23 @@ class EveAccessTokenSerializer(serializers.Serializer):
         # if self.context['link']:
         #     link_insatce = UserLinkInfo.objects.get(name=self.context['link'])
         #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
-            # serializer = EveAccessTokenSerializer(data=temp_dict)
-            # try:
-            #     serializer.is_valid(raise_exception=True)
-            #     serializer.save()
-
-            #     token = serializer.data['token']
-            #     # 다 저장했으면 클라이언트로 리다이렉트 해줌.
-            #     redirect_url = f'http://localhost:4200/login?token={token}&name={character_dict["CharacterName"]}'
-            #     return redirect(redirect_url)
-
+        #     # serializer = EveAccessTokenSerializer(data=temp_dict)
+        #     # try:
+        #     #     serializer.is_valid(raise_exception=True)
+        #     #     serializer.save()
+        #     # except:
+        #     #     pass
         # else:
         #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
-            #  링크 인스턴스 생성 name이 user_instacne.name임
+        #  링크 인스턴스 생성 name이 user_instacne.name임
         # context로 {link: name}이 들어오면
         # User.get(name=name).link로 유저를 연결해줘야함
         # 그게 아니라면 유저를 get_or_create해서 해당 유저에 link가 없으면 만들어줌. 
  
         # 계정을 kwargs로 찾고 계정이 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
-        if self.context is None:
-            print("컨텍스트없다!!@!@!@!@!@")
+        print("------------------")
+        print(self.context['link_name'])
+        print("------------------")
         user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
 
         # 내 토큰 발급

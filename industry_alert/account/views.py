@@ -102,8 +102,11 @@ class EveLoginUtils():
         temp_dict = res_dict.copy()
         temp_dict['user'] = eve_user
 
+        context = self.get_serializer_context()
+        context['link_name'] = character_dict['CharacterName']
+
         # EveAccessToken 저장
-        serializer = EveAccessTokenSerializer(data=temp_dict)
+        serializer = EveAccessTokenSerializer(data=temp_dict, context=context)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -126,11 +129,8 @@ class EveLogin(viewsets.GenericViewSet, EveLoginUtils):
     @action(methods=['get'], detail=False)
     def callback(self, request):
         code = request.GET.get('code')
+        # 이거 state는 string임
         state = request.GET.get('state')
-
-        print("나는 state")
-        print(state)
-        print(type(state))
 
         # 이브 서버에서 GET request로 받은 code를 사용해서 다시 이브 서버로 post_request 보내서
         # access_token 받아옴
