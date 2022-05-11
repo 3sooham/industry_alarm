@@ -174,7 +174,8 @@ class AccountViewSet(viewsets.GenericViewSet):
         client_id = f"client_id={os.getenv('ID')}&"
         scope = f"scope={parse.quote(os.getenv('REDIRECT_SCOPE'), safe='')}&"
         # state = f"state={os.getenv('STATE')}"
-        state = 1
+        # state  이거 없으면 연결이 안됨. 대충 이브 아이디 생성 규칙에 맞지 않는 것으로 넣어주면 될 것같음.
+        state = '!'
 
         url = url + response_type + redirect_uri + client_id + scope + state
         print("리다이렉트중임")
