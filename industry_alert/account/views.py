@@ -122,7 +122,7 @@ class EveLogin(viewsets.GenericViewSet, EveLoginUtils):
     queryset = User.objects.all()
     serializer_class = EveUserSerializer
 
-    @action(mmethods=['get'], detail=False)
+    @action(methods=['get'], detail=False)
     def callback(self, request):
         code = request.GET.get('code')
         state = request.GET.get('state')
@@ -139,7 +139,7 @@ class EveLogin(viewsets.GenericViewSet, EveLoginUtils):
 
     # 메인 케릭터 스트링 받아올 때 암호화 해서 받아와야하는지 생각 좀 해보기.
     # 케릭터를 메인 케릭터에 링크해주는 콜백임.
-    @action(mmethods=['get'], detail=False)
+    @action(methods=['get'], detail=False)
     def callback2(self, request):
         pass
 
