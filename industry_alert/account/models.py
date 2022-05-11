@@ -54,7 +54,6 @@ class AccountManager(BaseUserManager):
         user.is_superuser = True
         user.save()
 
-
 # drf login
 # https://medium.com/geekculture/register-login-and-logout-users-in-django-rest-framework-51486390c29
 # https://github.com/django/django/blob/910ecd1b8df7678f45c3d507dde6bcb1faafa243/django/contrib/auth/base_user.py#L16 참조하기
@@ -62,6 +61,7 @@ class AccountManager(BaseUserManager):
 
 
 # 여기에다가 eve esi account id 추가해야함 그래야지 그거가지고 esi request함
+# model methods는 row에 해당하는 것만 넣어주고 manager methods는 테이블 전체에 적용되는 것을 적는게 좋음
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name="email", max_length=60, unique=True, default=None)
     password = models.CharField(verbose_name='password', max_length=255)
@@ -70,8 +70,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     character_id = models.IntegerField(verbose_name='character_id', default=0, blank=True)
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    # link_info = models.ForeignKey(UserLinkInfo, related_name='users')
-
+    link_info = models.ForeignKey(UserLinkInfo, related_name='users', on_delete=SET_NULL, null=True)
 
     # username으로 'email' field 사용함
     USERNAME_FIELD = 'email'

@@ -1,6 +1,6 @@
 from requests.api import get
 from rest_framework import serializers
-from .models import User, EveAccessToken
+from .models import User, EveAccessToken, UserLinkInfo
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 # get_user_model() : 클래스이다.
@@ -18,6 +18,11 @@ from .tasks import get_industry_jobs
 class InvalidPassword(Exception):
     pass
 
+
+class UserLinkInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserLinkInfo
+        fields = ['id', 'name']
 
 class EveUserSerializer(serializers.Serializer):
     email = serializers.CharField(write_only=True)
@@ -47,19 +52,21 @@ class EveAccessTokenSerializer(serializers.Serializer):
         user_data = validated_data.pop('user')
         user_email = user_data.pop('email')
 
-
         # if self.context['link']:
         #     link_insatce = UserLinkInfo.objects.get(name=self.context['link'])
         #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
         # else:
         #     user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
-        #     #  링크 인스턴스 생성 name이 user_instacne.name임
+            #  링크 인스턴스 생성 name이 user_instacne.name임
         # context로 {link: name}이 들어오면
         # User.get(name=name).link로 유저를 연결해줘야함
         # 그게 아니라면 유저를 get_or_create해서 해당 유저에 link가 없으면 만들어줌. 
  
         # 계정을 kwargs로 찾고 계정이 없으면 kwargs랑 defaults 둘 다 이용해서 생성해줌
+        if self.context is None:
+            print("컨텍스트없다!!@!@!@!@!@")
         user_instance, _ = User.objects.get_or_create(email=user_email, defaults=user_data)
+
         # 내 토큰 발급
         token, _ = Token.objects.get_or_create(user=user_instance)
 

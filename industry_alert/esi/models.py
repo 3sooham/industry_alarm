@@ -21,6 +21,7 @@ class IndustryJobManager(models.Manager):
 
     def bulk_create_or_update(self, validated_data, user):
         # instance = IndustryJob.objects.filter(user=user) 이건데
+        # IndustryJob.objects = IndustryJobManager로
         # 커스텀 매니저를 만들었으니 self로 바꿔줘야함
         instance = self.filter(user=user)
         # 유저에 대해서 저장된 잡이 있으면
