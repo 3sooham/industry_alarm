@@ -133,118 +133,119 @@ class EveLogin(viewsets.GenericViewSet, EveLoginUtils):
         if type(res_dict) == boolean:
             return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / access_token 가져오는 것 실패"})
 
-        # 가져온 access_token으로 로그인 진행함.
-        # 에러 코드 받으면 
+        # 이브에 로그인한 계정과 access_token을 가지고 장고 계정을 새로 만들던가 로그인을 해줌
+        # 에러 코드 받으면 리턴해주니 그대로 리턴해주면됨
         return self.login_user(res_dict)
 
     # 메인 케릭터 스트링 받아올 때 암호화 해서 받아와야하는지 생각 좀 해보기.
     # 케릭터를 메인 케릭터에 링크해주는 콜백임.
+    # 연결을 시도하면 현재 로그인 한 계정을 메인 케릭터로 해서 새로 로그인하는거를 메인 케릭터 밑으로 넣어줌.
     @action(methods=['get'], detail=False)
     def callback2(self, request):
         pass
 
 # 이브 로그인 관련
-class EveLoginViewSet(viewsets.GenericViewSet):
-    permission_classes = [AllowAny]
-    queryset = User.objects.all()
-    serializer_class = EveUserSerializer
+# class EveLoginViewSet(viewsets.GenericViewSet):
+#     permission_classes = [AllowAny]
+#     queryset = User.objects.all()
+#     serializer_class = EveUserSerializer
 
-    @action(methods=['get'], detail=False)
-    def callback(self, request):
-        # get()
-        # Returns the value for key in the dictionary; if not found returns a default value.
-        # Optional. 
-        # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
+#     @action(methods=['get'], detail=False)
+#     def callback(self, request):
+#         # get()
+#         # Returns the value for key in the dictionary; if not found returns a default value.
+#         # Optional. 
+#         # Value that is returned when the key is not found. Defaults to None, so that this method never raises a KeyError.
         
-        # 저쪽에서 이쪽으로 request 보낸거는 정상으로 간주하고 해야함
-        auth_code = request.GET.get('code')
-        state = request.GET.get('state')
+#         # 저쪽에서 이쪽으로 request 보낸거는 정상으로 간주하고 해야함
+#         auth_code = request.GET.get('code')
+#         state = request.GET.get('state')
 
-        load_dotenv()
-        client_id = os.getenv('ID')
-        secret_key = os.getenv('KEY')
+#         load_dotenv()
+#         client_id = os.getenv('ID')
+#         secret_key = os.getenv('KEY')
 
-        # You will need to send the following HTTP headers (replace anything between <>, including <>)
-        # Authorization: Basic <URL safe Base64 encoded credentials>
-        # Content-Type: application/x-www-form-urlencoded
-        # Host: login.eveonline.com
-        user_pass = f'{client_id}:{secret_key}'
-        basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
-        auth_header = f'Basic {basic_auth}'
+#         # You will need to send the following HTTP headers (replace anything between <>, including <>)
+#         # Authorization: Basic <URL safe Base64 encoded credentials>
+#         # Content-Type: application/x-www-form-urlencoded
+#         # Host: login.eveonline.com
+#         user_pass = f'{client_id}:{secret_key}'
+#         basic_auth = base64.urlsafe_b64encode(user_pass.encode()).decode()
+#         auth_header = f'Basic {basic_auth}'
 
-        headers = {
-            "Authorization": auth_header,
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Host": "login.eveonline.com",
-        }
-        body = {
-            'grant_type': 'authorization_code',
-            'code': auth_code
-        }
+#         headers = {
+#             "Authorization": auth_header,
+#             "Content-Type": "application/x-www-form-urlencoded",
+#             "Host": "login.eveonline.com",
+#         }
+#         body = {
+#             'grant_type': 'authorization_code',
+#             'code': auth_code
+#         }
 
-        # Finally, send a POST request to https://login.eveonline.com/v2/oauth/token with your form encoded values and the headers from the last step.
-        try:
-            res = requests.post(
-                'https://login.eveonline.com/v2/oauth/token',
-                headers=headers,
-                data=body
-            )
-            # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
-            # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
-            res_dict = res.json()
-            # access_token = res_dict.get('access_token')
-            # get()은 default를 return 하니때문에 keyerror생성안하니 get()이거 쓰면 안됨
-            access_token = res_dict['access_token']
-            # 이거 JWT validation 하면 거기에 시간 다있어서 그거로 바꿀거임
-            res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
-            # 이거 어차피 여기서 access_token이 안온거면 연결이  실패한거임
-            # 그러니까 예외는 여기서 keyError하나만 잡고 나머지 다른 에러는
-            # django에서 500에러 주니 이거 logging 해서 잡아내면됨
-            # 클라이언트는 잡다한 예외 상황 알 필요없고 여기 기준으로는 이브와의 서버 통신을 실패한거만 알면 되기 떄문에
-            # 그냥 access_token 없으면 이브 서버와의 통신이 실패한거니 실패했다고 알려주면됨.
-        except KeyError:
-            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / access_token 가져오는 것 실패"})
+#         # Finally, send a POST request to https://login.eveonline.com/v2/oauth/token with your form encoded values and the headers from the last step.
+#         try:
+#             res = requests.post(
+#                 'https://login.eveonline.com/v2/oauth/token',
+#                 headers=headers,
+#                 data=body
+#             )
+#             # If the previous step was done correctly, the EVE SSO will respond with a JSON payload containing an access token (which is a Json Web Token) 
+#             # and a refresh token that looks like this (Anything wrapped by <> will look different for you):
+#             res_dict = res.json()
+#             # access_token = res_dict.get('access_token')
+#             # get()은 default를 return 하니때문에 keyerror생성안하니 get()이거 쓰면 안됨
+#             access_token = res_dict['access_token']
+#             # 이거 JWT validation 하면 거기에 시간 다있어서 그거로 바꿀거임
+#             res_dict['expires_in'] = datetime.datetime.now() + datetime.timedelta(minutes=19, seconds=59)
+#             # 이거 어차피 여기서 access_token이 안온거면 연결이  실패한거임
+#             # 그러니까 예외는 여기서 keyError하나만 잡고 나머지 다른 에러는
+#             # django에서 500에러 주니 이거 logging 해서 잡아내면됨
+#             # 클라이언트는 잡다한 예외 상황 알 필요없고 여기 기준으로는 이브와의 서버 통신을 실패한거만 알면 되기 떄문에
+#             # 그냥 access_token 없으면 이브 서버와의 통신이 실패한거니 실패했다고 알려주면됨.
+#         except KeyError:
+#             return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / access_token 가져오는 것 실패"})
 
-        # 여기서 말하는 JSON payload가 위의 res에 저장됨
+#         # 여기서 말하는 JSON payload가 위의 res에 저장됨
 
-        # access_token으로 eve character name 가져옴
-        acc = f'Bearer {access_token}'
-        try:
-            character_res = requests.get(
-                "https://login.eveonline.com/oauth/verify",
-                headers={"Authorization": acc}
-            )
-            character_dict = character_res.json()
-            character_id = character_dict['CharacterID']
-        except KeyError:
-            return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / esi request 실패"})
+#         # access_token으로 eve character name 가져옴
+#         acc = f'Bearer {access_token}'
+#         try:
+#             character_res = requests.get(
+#                 "https://login.eveonline.com/oauth/verify",
+#                 headers={"Authorization": acc}
+#             )
+#             character_dict = character_res.json()
+#             character_id = character_dict['CharacterID']
+#         except KeyError:
+#             return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / esi request 실패"})
 
-        # create django user and return its token
-        # eve_user = {} 이렇게 하는거보다 {}이 set, dictionary 둘 다여서 dict()해주는게 좋음
-        eve_user = dict()
-        eve_user_email = email_creator(character_dict['CharacterName'])
-        eve_user['email'] = eve_user_email
-        eve_user['name'] = character_dict['CharacterName']
-        eve_user['password'] = create_random_string()
-        eve_user['character_id'] = character_id
+#         # create django user and return its token
+#         # eve_user = {} 이렇게 하는거보다 {}이 set, dictionary 둘 다여서 dict()해주는게 좋음
+#         eve_user = dict()
+#         eve_user_email = email_creator(character_dict['CharacterName'])
+#         eve_user['email'] = eve_user_email
+#         eve_user['name'] = character_dict['CharacterName']
+#         eve_user['password'] = create_random_string()
+#         eve_user['character_id'] = character_id
 
-        temp_dict = res_dict.copy()
-        temp_dict['user'] = eve_user
+#         temp_dict = res_dict.copy()
+#         temp_dict['user'] = eve_user
 
-        # EveAccessToken 저장
-        serializer = EveAccessTokenSerializer(data=temp_dict)
-        try:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+#         # EveAccessToken 저장
+#         serializer = EveAccessTokenSerializer(data=temp_dict)
+#         try:
+#             serializer.is_valid(raise_exception=True)
+#             serializer.save()
 
-            token = serializer.data['token']
-            redirect_url = f'http://localhost:4200/login?token={token}&name={character_dict["CharacterName"]}'
-            return redirect(redirect_url)
+#             token = serializer.data['token']
+#             redirect_url = f'http://localhost:4200/login?token={token}&name={character_dict["CharacterName"]}'
+#             return redirect(redirect_url)
 
-            # return Response(serializer.data, status=status.HTTP_201_CREATED)
+#             # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        except serializers.ValidationError:
-            return Response({"status": "failed login user via eve account", "errors": serializer.errors})
+#         except serializers.ValidationError:
+#             return Response({"status": "failed login user via eve account", "errors": serializer.errors})
 
 # drf login
 # https://stackoverflow.com/questions/26906630/django-rest-framework-authentication-credentials-were-not-provided 이거 지금 해결안되고있음
