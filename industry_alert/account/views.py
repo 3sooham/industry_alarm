@@ -129,7 +129,7 @@ class EveLogin(viewsets.GenericViewSet, EveLoginUtils):
 
         # 이브 서버에서 GET request로 받은 code를 사용해서 다시 이브 서버로 post_request 보내서
         # access_token 받아옴
-        res_dict = self.post_request(self, code)
+        res_dict = self.post_request(code)
         if type(res_dict) == boolean:
             return Response({"status": "failed", "errors": "이브서버와 통신을 실패했습니다. / access_token 가져오는 것 실패"})
 
